@@ -29,6 +29,9 @@ export const site = {
   ],
 };
 
+/** Public base URL (set SITE_URL in the host to your real domain). */
+export const siteUrl = (process.env.SITE_URL || "https://masjid-production.up.railway.app").replace(/\/$/, "");
+
 export const nav = [
   { label: "Prayer Times", href: "/prayer-times" },
   { label: "Jummah", href: "/jummah" },
