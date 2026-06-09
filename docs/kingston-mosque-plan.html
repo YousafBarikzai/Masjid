@@ -1,0 +1,326 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kingston Mosque — Website Rebuild Proposal</title><style>
+:root{--green:#0f5132;--green2:#157347;--gold:#b8860b;--cream:#fbf9f4;--ink:#26211b;--line:#e7e0d2;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:Georgia,'Times New Roman',serif;line-height:1.65;}
+.wrap{max-width:880px;margin:0 auto;padding:32px 22px 80px;}
+.banner{background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;border-radius:16px;padding:30px 28px;margin-bottom:28px;box-shadow:0 10px 30px rgba(15,81,50,.18);position:relative;overflow:hidden;}
+.banner:after{content:"";position:absolute;inset:0;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.14) 1px,transparent 0);background-size:18px 18px;opacity:.5;}
+.banner h1{margin:0 0 6px;color:#fff;border:0;font-size:1.7rem;}
+.banner p{margin:4px 0 0;color:#eafaf0;font-family:Helvetica,Arabel,sans-serif;font-size:.95rem;}
+.kicker{font-family:Helvetica,sans-serif;letter-spacing:.16em;text-transform:uppercase;font-size:.72rem;color:var(--gold);}
+h1,h2,h3,h4{font-family:Georgia,serif;color:var(--green);line-height:1.25;}
+h1{font-size:1.55rem;border-bottom:2px solid var(--gold);padding-bottom:.3em;margin-top:1.8em;}
+h2{font-size:1.28rem;margin-top:1.7em;border-bottom:1px solid var(--line);padding-bottom:.25em;}
+h3{font-size:1.08rem;color:var(--green2);margin-top:1.4em;}
+h4{font-size:.98rem;color:var(--gold);text-transform:none;}
+p{font-family:Helvetica,Arial,sans-serif;font-size:.96rem;}
+li{font-family:Helvetica,Arial,sans-serif;font-size:.95rem;margin:.25em 0;}
+a{color:var(--green2);}
+hr{border:0;border-top:1px solid var(--line);margin:2em 0;}
+code{background:#efeada;border:1px solid var(--line);border-radius:5px;padding:.06em .35em;font-family:Menlo,Consolas,monospace;font-size:.85em;color:#7a4a00;}
+pre{background:#0f2a1e;color:#e9f5ee;border-radius:12px;padding:16px 18px;overflow:auto;}
+pre code{background:none;border:0;color:inherit;padding:0;font-size:.82rem;line-height:1.5;}
+table{border-collapse:collapse;width:100%;margin:1.1em 0;font-family:Helvetica,Arial,sans-serif;font-size:.88rem;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+th{background:var(--green);color:#fff;text-align:left;padding:9px 11px;font-weight:600;}
+td{padding:8px 11px;border-top:1px solid var(--line);vertical-align:top;}
+tr:nth-child(even) td{background:#faf7ef;}
+blockquote{margin:1em 0;padding:.6em 1em;background:#fff8e6;border-left:4px solid var(--gold);border-radius:0 8px 8px 0;font-family:Helvetica,sans-serif;font-size:.92rem;}
+.note{font-family:Helvetica,sans-serif;font-size:.82rem;color:#6b6253;margin-top:8px;}
+</style></head>
+<body><div class="wrap">
+<div class="banner">
+<div class="kicker">Kingston Muslim Association</div>
+<h1>Website Rebuild — Proposal &amp; Audit</h1>
+<p>Pre-build plan for review. This is a written proposal, not the website itself.</p>
+</div>
+<h1>Kingston Mosque (Kingston Muslim Association) — Website Rebuild Plan</h1>
+<p><strong>Status:</strong> Proposal / pre-implementation. No application code is written yet.</p>
+<p><strong>Prepared for:</strong> Kingston Muslim Association (KMA), 55 East Rd, Kingston upon Thames, KT2 6EJ.</p>
+<p><strong>Scope:</strong> Full rebuild of https://www.kingstonmosque.org with a custom, easy-to-manage CMS, a prayer‑times engine driven by the supplied 365‑day calendar, and a premium Islamic design system.</p>
+<h3>Decisions confirmed by KMA</h3>
+<ul>
+<li><strong>Tech stack:</strong> Next.js (App Router) + <strong>Payload CMS</strong> + PostgreSQL (single integrated app).</li>
+<li><strong>Hosting:</strong> Managed — Vercel + managed Postgres (e.g. Neon/Supabase), with daily backups &amp; staging.</li>
+<li><strong>Donations:</strong> <strong>Bank transfer + in-person only</strong> at launch (display bank details + Iftar donation box). No online card payments for now; the donation data model will keep an online-payments option open for the future.</li>
+</ul>
+<hr>
+<h2>1. Audit of the existing website</h2>
+<h3>1.1 How the audit was performed</h3>
+<p>The live site blocks automated fetching (HTTP 403 / bot protection), so the current inventory was reconstructed from search‑engine indexes, public directory listings, and the site&#x27;s own URL patterns. The site is built on <strong>WordPress</strong> (evidence: <code>/page/2/</code>, <code>/news/page/3/</code>, <code>/author/admin/</code>, year archives <code>/2021/</code>, <code>/2023/</code>). Before implementation we will do a <strong>complete crawl with credentials/owner access</strong> to capture every page, post, PDF, image, and menu item verbatim (see §1.4).</p>
+<h3>1.2 Pages &amp; sections discovered (to be migrated — nothing dropped)</h3>
+<table><thead><tr><th>Current page / URL</th><th>Purpose</th><th>Migrate to (new site)</th></tr></thead><tbody>
+<tr><td><code>/</code> Home</td><td>Landing, prayer times, notices</td><td><strong>Homepage</strong> (redesigned)</td></tr>
+<tr><td><code>/overview/</code></td><td>About KMA — founded 1979, purpose‑built mosque 1985, accommodates 800+ worshippers</td><td><strong>About the Mosque</strong></td></tr>
+<tr><td><code>/congregational-prayers/</code></td><td>Facilities &amp; prayer hall info (men ground floor; women 2nd‑floor hall; new ablution facilities, disabled toilets, shower)</td><td><strong>Facilities</strong> + <strong>Prayer Times</strong></td></tr>
+<tr><td><code>/prayers/</code></td><td>Prayer times / monthly timetable downloads</td><td><strong>Prayer Times</strong></td></tr>
+<tr><td><code>/sermon/</code></td><td>Friday Khutbah info</td><td><strong>Jummah</strong></td></tr>
+<tr><td><code>/announcement-jummuah-prayer-guidelines/</code></td><td>1st Jummah doors 12:50 / khutbah ~1:10–1:20pm; 2nd Jummah doors 2:00 / khutbah 2:10pm; English + Arabic khutbahs</td><td><strong>Jummah</strong></td></tr>
+<tr><td><code>/madrasah/</code></td><td>Islamic education, ages 6–16, evenings + weekends; Islamic Studies, Qur&#x27;an Recitation, Hifz; teacher vacancies</td><td><strong>Education / Children&#x27;s Classes</strong></td></tr>
+<tr><td><code>/youth-programs/</code></td><td>KMA Youth Club, weekly sessions (~35 attendees)</td><td><strong>Education / Youth</strong></td></tr>
+<tr><td><code>/sisters-circles/</code></td><td>Sisters&#x27; Sunday Circle (faith, social events, Qiyam‑ul‑Lail, fundraisers)</td><td><strong>Community Support / Adult Classes</strong></td></tr>
+<tr><td><code>/marriage-services/</code></td><td>Nikah services by local Imams</td><td><strong>Nikah</strong></td></tr>
+<tr><td>*(Ghusl &amp; burial info — referenced across site)*</td><td>Free Ghusl &amp; burial arrangement assistance</td><td><strong>Funeral Services</strong></td></tr>
+<tr><td><code>/itikaaf-registration/</code></td><td>I&#x27;tikaaf registration (Ramadan)</td><td><strong>Ramadan</strong></td></tr>
+<tr><td><code>/news/</code> (+ <code>/page/2</code>, <code>/page/3</code>)</td><td>Announcements &amp; news (e.g., &quot;KMA Announces Eid Al Adha 2026&quot;)</td><td><strong>News &amp; Announcements</strong></td></tr>
+<tr><td><code>/blog/</code></td><td>Blog posts</td><td><strong>News &amp; Announcements</strong></td></tr>
+<tr><td><code>/media/</code></td><td>Photos / media</td><td><strong>Facilities / About galleries</strong></td></tr>
+<tr><td><code>/contact/</code></td><td>Address, phone, email, map</td><td><strong>Contact Us</strong></td></tr>
+<tr><td><code>/2021/</code>, <code>/2023/</code>, <code>/author/admin/</code></td><td>WP archives</td><td>Replaced by tag/date filters; old URLs redirected</td></tr>
+</tbody></table>
+<h3>1.3 Content, services &amp; data to preserve</h3>
+<ul>
+<li><strong>Identity / history:</strong> KMA founded 1979; converted to purpose‑built mosque 1985; capacity 800+ (some sources 1,000+). Registered charity (capture Charity Commission number during migration).</li>
+<li><strong>Services:</strong> Madrasah (ages 6–16), Nikah, free Ghusl &amp; burial assistance, school visits, Youth Club, Sisters&#x27; Circle, two Jummahs (English + Arabic), Taraweeh &amp; I&#x27;tikaaf in Ramadan, Eid prayers.</li>
+<li><strong>Facilities:</strong> Separate men&#x27;s (ground floor) and women&#x27;s (2nd‑floor hall) prayer areas; new ablution facilities; disabled toilets; shower.</li>
+<li><strong>Prayer schedule:</strong> Daily begins + jamaah times (from the supplied calendar); two‑Jummah schedule; seasonal jamaah changes.</li>
+<li><strong>Contact details:</strong> 55 East Rd, Kingston upon Thames, KT2 6EJ · <strong>020 8549 5315</strong> · <strong>info@kingstonmosque.org</strong>.</li>
+<li><strong>Donations:</strong> In person (Iftar donation box by the main office door) and bank transfer — *account name / sort code / account number to be re‑confirmed from the live site during migration*.</li>
+<li><strong>Social / external:</strong> Facebook (<code>/kmosque/</code>), Telegram (<code>t.me/kingstonmosque</code>), existing mobile app (link if retained).</li>
+<li><strong>Assets:</strong> All existing photos, logos, PDFs (monthly timetables), and any embedded videos.</li>
+</ul>
+<blockquote>⚠️ Specific figures above (exact Jummah khutbah minute, bank details, capacity, charity number) were read from third‑party indexes and <strong>must be verified against the live site</strong> before go‑live.</blockquote>
+<h3>1.4 Pre‑build audit checklist (to run with owner access)</h3>
+<ol>
+<li>Authenticated crawl of every URL (Screaming Frog / WP export) → full page &amp; media inventory.</li>
+<li>Export WordPress content (XML) + media library; list all PDFs and downloads.</li>
+<li>Capture the full navigation menu (primary, footer, mobile) and any widgets.</li>
+<li>Record all forms (contact, I&#x27;tikaaf, madrasah enrolment) and where submissions go.</li>
+<li>Note Google Analytics/Search Console, any embedded maps, social embeds, donation links.</li>
+<li>Pull top‑landing URLs (Search Console) to plan <strong>301 redirects</strong> and protect SEO.</li>
+<li>Photograph/screenshot every page for design reference and a &quot;nothing lost&quot; sign‑off.</li>
+</ol>
+<hr>
+<h2>2. Proposed sitemap</h2>
+<pre><code>
+Home
+├─ Prayer Times
+│   ├─ Daily &amp; Monthly Timetable (download)
+│   ├─ Jummah Times
+│   └─ Ramadan Timetable
+├─ About
+│   ├─ About the Mosque (history &amp; vision)
+│   ├─ Imam &amp; Team
+│   ├─ Facilities
+│   └─ Annual Reports / Governance (charity info)
+├─ Services
+│   ├─ Nikah (Marriage)
+│   ├─ Funeral Services (Ghusl &amp; Burial)
+│   ├─ New Muslims / Reverts
+│   └─ School &amp; Community Visits
+├─ Education
+│   ├─ Children&#x27;s Classes (Madrasah)
+│   ├─ Adult Classes &amp; Circles
+│   ├─ Youth Programmes
+│   ├─ Sisters&#x27; Circle
+│   └─ Courses, Lectures &amp; Programmes
+├─ Events
+│   ├─ Upcoming Events
+│   ├─ Ramadan (Taraweeh, I&#x27;tikaaf, Iftar)
+│   └─ Eid (announcements &amp; prayer details)
+├─ Donate
+│   ├─ Donation Campaigns / Appeals
+│   ├─ Zakat &amp; Sadaqah
+│   └─ How to Give (bank / in person / online)
+├─ Community Support
+│   ├─ Welfare &amp; Food support
+│   └─ Volunteering
+├─ News &amp; Announcements
+├─ Contact Us
+└─ Admin Dashboard (private)
+</code></pre>
+<p><strong>Redirects:</strong> every old URL (<code>/overview/</code>, <code>/madrasah/</code>, <code>/marriage-services/</code>, <code>/congregational-prayers/</code>, <code>/sermon/</code>, <code>/itikaaf-registration/</code>, <code>/news/…</code>, etc.) → mapped 301 to its new home so no links or search rankings break.</p>
+<hr>
+<h2>3. Proposed homepage layout (top → bottom)</h2>
+<ol>
+<li><strong>Top utility bar</strong> — phone, email, &quot;Donate&quot; button, language/social icons.</li>
+<li><strong>Sticky header</strong> — logo (KMA), primary nav, prominent <strong>Donate</strong> CTA.</li>
+<li><strong>Hero banner</strong> — mosque imagery + Islamic geometric motif, name, tagline (e.g. *&quot;Serving the Muslim community of Kingston since 1979&quot;*), and a compact <strong>&quot;Next prayer in 02:14&quot;</strong> chip. Admin‑editable headline, sub‑text, background image, and two buttons.</li>
+<li><strong>Today&#x27;s Prayer Times</strong> — the centrepiece card (see §5): all five daily prayers with <strong>Begins</strong> and <strong>Jamā&#x27;ah</strong> columns, today&#x27;s date (Gregorian + Hijri), sunrise, the <strong>next prayer highlighted</strong> with a live countdown. &quot;View full timetable&quot; link.</li>
+<li><strong>Jummah times</strong> — two‑Jummah block (English / Arabic), doors &amp; khutbah times, plus a download for the monthly PDF.</li>
+<li><strong>Important announcements / alert banner</strong> — dismissible site‑wide alert for urgent notices (e.g. Eid moon sighting, closures); managed in admin.</li>
+<li><strong>Donation call‑to‑action</strong> — featured campaign with progress bar + &quot;Donate now&quot;; Zakat/Sadaqah quick links.</li>
+<li><strong>Upcoming events</strong> — 3 cards (Ramadan, Eid, classes), date chips, &quot;All events&quot;.</li>
+<li><strong>Education &amp; classes</strong> — Madrasah, Youth, Sisters&#x27; Circle, Adult courses tiles.</li>
+<li><strong>Our services</strong> — Nikah, Funeral (Ghusl &amp; burial), New Muslims, Community support icons.</li>
+<li><strong>Latest news</strong> — 3 most recent posts.</li>
+<li><strong>About / community impact</strong> — short history, capacity, a few stats (since 1979, 800+ capacity).</li>
+<li><strong>Location &amp; contact</strong> — embedded map, address, phone, email, opening times, &quot;Get directions&quot;.</li>
+<li><strong>Footer</strong> — quick links, prayer summary, social, charity number, newsletter sign‑up, copyright.</li>
+</ol>
+<p>All numbered blocks are <strong>reorderable / hideable</strong> from the admin (block‑based homepage — see §4).</p>
+<hr>
+<h2>4. Admin / CMS structure</h2>
+<p>A single, <strong>WordPress‑like but purpose‑built</strong> admin tailored to KMA. Left‑nav sections:</p>
+<ul>
+<li><strong>Dashboard</strong> — at‑a‑glance: today&#x27;s prayer times, next event, draft items, recent edits.</li>
+<li><strong>Pages</strong> — create / edit / <strong>reorder (drag‑drop)</strong> / hide / delete; each page is built from <strong>reusable blocks</strong> (Rich Text, Image, Image+Text, Gallery, Button/CTA, Video embed, PDF/Download, Accordion/FAQ, Quote/Ayah, Prayer‑times block, Event list, Donation block, Map, Contact block, Alert). *(Admin capability #1, #3, #4)*</li>
+<li><strong>Homepage</strong> — manage the homepage sections (the §3 blocks): edit content, toggle visibility, reorder. *(#2)*</li>
+<li><strong>Prayer Times</strong></li>
+<li><strong>Annual Timetable</strong> — upload/replace the yearly CSV; preview &amp; validation report. *(#8)*</li>
+<li><strong>Daily overrides</strong> — edit any single day&#x27;s begins/jamaah times. *(#9)*</li>
+<li><strong>Jummah</strong> — 1st/2nd Jummah doors, khutbah, language, seasonal rules. *(#10)*</li>
+<li><strong>Special prayers</strong> — Ramadan (Taraweeh, Suhūr/Iftar), Eid (date, time, location, overflow). *(#11, #12)*</li>
+<li><strong>Announcements</strong> — site alerts/banners with start/end dates, severity, target pages. *(#5, #15)*</li>
+<li><strong>Events</strong> — title, date/time, location, description, image, registration link, recurring. *(#6)*</li>
+<li><strong>Education</strong> — classes, courses, lectures, programmes (age group, schedule, fees, enrol link). *(#7)*</li>
+<li><strong>Services</strong> — Nikah, Funeral, New Muslims, Community service pages. *(#14)*</li>
+<li><strong>Donations</strong> — campaigns (goal, raised, image, link), Zakat/Sadaqah, bank details, donation buttons. *(#13)*</li>
+<li><strong>Media Library</strong> — images, PDFs, downloads, video links; reused across blocks. *(#4)*</li>
+<li><strong>Site Settings</strong> — contact details, opening times, address, map coords, social links, header/footer. *(#16)*</li>
+<li><strong>Users &amp; Roles</strong> — invite users, assign roles &amp; permissions. *(#19)*</li>
+</ul>
+<p><strong>Cross‑cutting editor features:</strong> every content item supports <strong>Save Draft</strong>, <strong>Preview</strong> (renders the exact public layout via a secure preview link), <strong>Publish</strong>, <strong>version history / revert</strong>, and <strong>scheduled publish</strong>. *(#17, #18)*</p>
+<hr>
+<h2>5. Prayer‑timetable handling (the 365‑day calendar)</h2>
+<h3>5.1 What the file contains (validated)</h3>
+<ul>
+<li><strong>365 rows, contiguous 01/01/2026 → 31/12/2026</strong>, UK date format <code>DD/MM/YYYY</code>.</li>
+<li>Columns: <code>Day, Date, Fajr, Sunrise, Zawwal, Duhur, Asr, Sunset, Maghrib, Isha, J‑Fajr, J‑Duhur, J‑Asr, J‑Maghrib, J‑Isha</code>.</li>
+<li><strong>Begins</strong>: Fajr, Sunrise, Dhuhr (<code>Duhur</code>), Asr, Maghrib, Isha.</li>
+<li><strong>Jamā&#x27;ah</strong> (congregation): <code>J‑Fajr, J‑Duhur, J‑Asr, J‑Maghrib, J‑Isha</code>.</li>
+<li><code>Zawwal</code> and <code>Sunset</code> columns are <strong>empty placeholders</strong> (kept for layout; ignored).</li>
+<li><strong>Maghrib begins == J‑Maghrib on every row</strong> (jamaah at sunset).</li>
+<li>Times are <strong>local wall‑clock (Europe/London)</strong> with <strong>BST/GMT already baked in</strong> — confirmed by the hour‑jumps on <strong>29/03/2026</strong> (clocks forward) and <strong>25/10/2026</strong> (clocks back). ➜ <strong>No timezone maths needed</strong>: simply show today&#x27;s row as‑is.</li>
+<li><strong>One data anomaly to fix on import:</strong> <code>J‑Isha = 22:30</code> on <strong>15/04/2026</strong> (neighbours are 21:30) — the validator will flag it for the admin to confirm or correct.</li>
+</ul>
+<h3>5.2 Storage model</h3>
+<p>Each day stored as one <strong>PrayerDay</strong> record keyed by full date (so the yearly upload and per‑day overrides coexist):</p>
+<pre><code>
+PrayerDay {
+  date              # 2026-04-15
+  weekday
+  fajrBegins, fajrJamaah
+  sunrise
+  dhuhrBegins, dhuhrJamaah
+  asrBegins, asrJamaah
+  maghribBegins (= maghribJamaah)
+  ishaBegins, ishaJamaah
+  source: &quot;import&quot; | &quot;manual&quot;   # manual overrides win
+  note                          # e.g. &quot;Eid&quot;, &quot;Ramadan&quot;
+}
+</code></pre>
+<p>Jummah is <strong>not</strong> in the CSV (the <code>J‑Duhur</code> column is the regular Dhuhr jamaah). The two‑Jummah schedule (doors/khutbah/language, seasonal) is stored separately in <strong>JummahSetting</strong> and shown on Fridays.</p>
+<h3>5.3 Upload &amp; validation flow (admin)</h3>
+<ol>
+<li>Admin uploads the yearly CSV (or pastes a Google‑Sheet export).</li>
+<li>System <strong>parses &amp; validates</strong>: 365/366 rows, contiguous dates, <code>HH:MM</code> format, sane ordering (Fajr &lt; Sunrise &lt; Dhuhr &lt; Asr &lt; Maghrib &lt; Isha), and <strong>outlier detection</strong> (e.g. the 22:30 case) with a clear pre‑publish report.</li>
+<li><strong>Preview diff</strong> vs current data → <strong>Publish</strong> (replaces that year; previous version retained for revert).</li>
+<li>Per‑day <strong>manual override</strong> UI for ad‑hoc changes; clearly badged so it survives re‑imports.</li>
+</ol>
+<h3>5.4 Display logic</h3>
+<ul>
+<li><strong>Homepage &quot;Today&quot; widget:</strong> look up today&#x27;s date → render five prayers (Begins + Jamā&#x27;ah), sunrise, Hijri date, and <strong>highlight the next prayer with a live countdown</strong>; after Isha, roll to tomorrow&#x27;s Fajr.</li>
+<li><strong>Fridays:</strong> swap the Dhuhr row for the <strong>Jummah</strong> block (1st &amp; 2nd).</li>
+<li><strong>Ramadan/Eid:</strong> when an active Ramadan/Eid record exists, surface Suhūr/Iftar and Eid prayer details.</li>
+<li><strong>Annual rollover:</strong> the calendar is year‑specific. Admin uploads next year&#x27;s file each year; if a date has no record (e.g. before upload), the UI shows a graceful &quot;timetable updating&quot; state and the monthly PDF. <strong>Leap years (Feb 29)</strong> are supported by the date‑keyed model.</li>
+</ul>
+<hr>
+<h2>6. Recommended roles &amp; permissions</h2>
+<table><thead><tr><th>Role</th><th>Capabilities</th></tr></thead><tbody>
+<tr><td><strong>Super Admin</strong></td><td>Everything: users/roles, site settings, delete, publish, billing/integrations.</td></tr>
+<tr><td><strong>Admin</strong></td><td>All content + prayer times + settings; manage Editors/Contributors; cannot manage Super Admins.</td></tr>
+<tr><td><strong>Prayer Times Manager</strong></td><td>Upload annual timetable, daily overrides, Jummah, Ramadan/Eid only.</td></tr>
+<tr><td><strong>Editor</strong></td><td>Create/edit/<strong>publish</strong> pages, posts, events, announcements, classes; media library.</td></tr>
+<tr><td><strong>Contributor</strong></td><td>Create/edit <strong>drafts only</strong>; cannot publish (submits for review).</td></tr>
+<tr><td><strong>Viewer / Auditor</strong></td><td>Read‑only access to admin (for trustees/oversight).</td></tr>
+</tbody></table>
+<p>Role‑based access control enforced <strong>server‑side</strong> on every collection and action; granular per‑collection permissions (e.g. an Editor for &quot;Events&quot; but not &quot;Donations&quot;). All logins protected (strong passwords, optional 2FA, audit log of changes).</p>
+<hr>
+<h2>7. Recommended content / database structure</h2>
+<p>Core collections (relational, Postgres):</p>
+<ul>
+<li><strong>Page</strong> (slug, title, status, order, parent, blocks[], SEO, draft/version)</li>
+<li><strong>HomepageSection</strong> (type, order, visible, content JSON)</li>
+<li><strong>Block</strong> library (polymorphic; embedded in pages/sections)</li>
+<li><strong>PrayerDay</strong> (see §5.2) and <strong>TimetableImport</strong> (file, year, status, validation report)</li>
+<li><strong>JummahSetting</strong> (seasonal rules, 1st/2nd doors/khutbah/language)</li>
+<li><strong>SpecialSchedule</strong> (Ramadan/Eid: type, dates, times, location, notes)</li>
+<li><strong>Announcement</strong> (message, severity, start/end, target, dismissible)</li>
+<li><strong>Event</strong> (title, start/end, location, description, image, registration URL, recurring)</li>
+<li><strong>Class</strong> (name, category=children/adult/youth/course, ages, schedule, fees, enrol URL)</li>
+<li><strong>Service</strong> (Nikah/Funeral/NewMuslim/Community: body blocks, contact, downloads)</li>
+<li><strong>DonationCampaign</strong> (title, goal, raised, image, link, active) + <strong>DonationSettings</strong> (bank details, Zakat/Sadaqah copy)</li>
+<li><strong>Post</strong> (news/blog: title, body, date, tags, author, image)</li>
+<li><strong>Media</strong> (image/pdf/file/videoEmbed, alt, caption)</li>
+<li><strong>SiteSettings</strong> (singleton: contact, address, geo, opening times, socials, header/footer, theme)</li>
+<li><strong>User</strong> + <strong>Role</strong> (RBAC), <strong>AuditLog</strong></li>
+</ul>
+<p>All content types support <strong>draft / published / scheduled</strong>, <strong>revisions</strong>, and a <strong>preview token</strong>.</p>
+<hr>
+<h2>8. Design style &amp; UI/UX direction</h2>
+<ul>
+<li><strong>Mood:</strong> Islamic, elegant, sophisticated, calm, modern, trustworthy — premium but uncluttered.</li>
+<li><strong>Colour:</strong> soft, refined palette — deep teal/emerald <strong>green</strong> and warm <strong>gold</strong> accents on generous off‑white/cream backgrounds, with a calm dark mode. High contrast for accessibility.</li>
+<li><strong>Pattern:</strong> tasteful <strong>Islamic geometric</strong> motifs and subtle arabesque borders used sparingly (hero, section dividers, cards) — never busy. SVG patterns for crispness on all screens.</li>
+<li><strong>Typography:</strong> refined serif/display for headings (with an Arabic‑friendly companion for Bismillah/āyāt), clean humanist sans for body; strong type scale; comfortable line length.</li>
+<li><strong>Layout:</strong> spacious grid, soft shadows, rounded cards, clear hierarchy; the <strong>prayer‑times card</strong> is the visual anchor.</li>
+<li><strong>Imagery:</strong> real photography of the mosque + community (replace stock over time).</li>
+<li><strong>Mobile‑first &amp; accessible:</strong> WCAG 2.1 AA, keyboard nav, semantic HTML, large tap targets, fast on 3G. Hijri + Gregorian dates; English first, with structure ready for additional languages.</li>
+<li><strong>Performance:</strong> static/ISR pages, optimised images, minimal JS → fast on phones in the prayer hall car park.</li>
+</ul>
+<p>A small <strong>design system</strong> (tokens, components, pattern library) will be built first so the look is consistent and the admin&#x27;s blocks always render beautifully.</p>
+<hr>
+<h2>9. Recommended technical approach</h2>
+<p><strong>Recommendation: a single integrated app — Next.js (App Router) frontend + Payload CMS, with PostgreSQL.</strong></p>
+<ul>
+<li><strong>Why this stack:</strong></li>
+<li><strong>Payload</strong> gives a <strong>WordPress‑like admin</strong> that is fully <strong>custom to KMA</strong> (custom collections for Prayer Times, Events, Donations, etc.), with <strong>drafts, versions, live preview, scheduled publish, media library, and role‑based access control built in</strong> — covering admin requirements #1–#19 without plugin sprawl.</li>
+<li><strong>Next.js</strong> delivers a <strong>fast, SEO‑friendly, mobile‑first</strong> public site (static + incremental regeneration), and Payload runs <strong>inside the same Next.js app</strong> → one codebase, one deploy, lower cost and maintenance.</li>
+<li><strong>PostgreSQL</strong> for reliable relational content; <strong>self‑hostable</strong> (no vendor lock‑in).</li>
+<li><strong>Secure &amp; scalable:</strong> modern stack, far smaller attack surface than a plugin‑heavy WordPress; scales from a single VPS to managed hosting.</li>
+<li><strong>Styling:</strong> Tailwind CSS + a custom design‑system/component library (§8).</li>
+<li><strong>Prayer engine:</strong> custom CSV importer/validator + override UI + &quot;today&quot; API (§5).</li>
+<li><strong>Hosting options:</strong> (a) <strong>Vercel + managed Postgres (Neon/Supabase)</strong> — easiest, scalable; or (b) a single <strong>VPS</strong> (cheaper, more ops). Either supports daily backups and staging.</li>
+<li><strong>Integrations:</strong> donations via <strong>a hosted provider</strong> (e.g. Stripe, GoCardless, or an Islamic‑charity platform) to avoid handling card data; email for forms; Google Maps embed; analytics (privacy‑friendly).</li>
+</ul>
+<p><strong>Alternative (lower budget / max familiarity):</strong> keep <strong>WordPress</strong> with a premium theme + ACF + a <strong>custom prayer‑times plugin</strong>. Cheaper hosting and very familiar, but more ongoing security/plugin maintenance and a less bespoke &quot;premium&quot; feel. *Recommended only if budget or in‑house WP familiarity is the deciding factor.*</p>
+<hr>
+<h2>10. Phased development plan</h2>
+<table><thead><tr><th>Phase</th><th>Deliverables</th></tr></thead><tbody>
+<tr><td><strong>0 — Discovery &amp; sign‑off</strong></td><td>Authenticated audit (§1.4), confirm content/bank/charity details, lock sitemap, tech &amp; hosting decision, brand assets.</td></tr>
+<tr><td><strong>1 — Foundations</strong></td><td>Repo, Next.js + Payload + Postgres scaffold, hosting/staging, design tokens &amp; component library, base layout/nav/footer.</td></tr>
+<tr><td><strong>2 — Prayer engine</strong></td><td>CSV import + validation + override UI, JummahSetting, Today widget, full timetable page, monthly PDF. *(highest‑value, do early)*</td></tr>
+<tr><td><strong>3 — Core pages &amp; blocks</strong></td><td>Block system, Homepage builder, Pages CMS, About/Facilities/Services/Education, News, Contact.</td></tr>
+<tr><td><strong>4 — Events, donations, announcements</strong></td><td>Events, donation campaigns + provider, site‑wide alert banners, Ramadan/Eid schedules.</td></tr>
+<tr><td><strong>5 — Roles, drafts, preview</strong></td><td>RBAC, draft/preview/version/scheduling polish, audit log, 2FA.</td></tr>
+<tr><td><strong>6 — Content migration &amp; redirects</strong></td><td>Move all existing content/media, set 301 redirects, SEO metadata, accessibility pass.</td></tr>
+<tr><td><strong>7 — QA, training &amp; launch</strong></td><td>Cross‑device/perf/security testing, admin training + short guide, backups, DNS cutover, post‑launch monitoring.</td></tr>
+</tbody></table>
+<p>Each phase ships behind staging with stakeholder review; the prayer engine and homepage are prioritised because they are the most‑used features.</p>
+<hr>
+<h2>11. Risks, assumptions &amp; questions</h2>
+<p><strong>Assumptions</strong></p>
+<ul>
+<li>The supplied CSV is the authoritative source for 2026; a new file will be supplied each year (admin upload covers this).</li>
+<li>Times are intentionally local wall‑clock with BST/GMT baked in (validated) — we will <strong>not</strong> apply timezone shifts.</li>
+<li>KMA wants to <strong>own and self‑host</strong> the site (no proprietary lock‑in).</li>
+<li>Existing branding (logo/colours) can be refined but the KMA identity is retained.</li>
+</ul>
+<p><strong>Risks &amp; mitigations</strong></p>
+<ul>
+<li>*Content loss* → full authenticated crawl + export + screenshot sign‑off before launch (§1.4).</li>
+<li>*SEO/link loss* → comprehensive 301 redirect map from old WordPress URLs.</li>
+<li>*Prayer‑time errors* (e.g. the 22:30 outlier) → import validation, preview diff, per‑day overrides, version revert.</li>
+<li>*Maintenance burden* → integrated single‑app stack, managed DB/backups, minimal third‑party plugins.</li>
+<li>*Donations/PCI* → use a hosted payment provider; never store card data.</li>
+<li>*Unverified figures* (bank details, capacity, charity no., exact Jummah minutes) → confirm with KMA before go‑live.</li>
+</ul>
+<p><strong>Questions for KMA (before implementation)</strong></p>
+<ol>
+<li><strong>Tech direction:</strong> approve <strong>Next.js + Payload (custom CMS)</strong>, or prefer to stay on <strong>WordPress</strong>?</li>
+<li><strong>Hosting &amp; budget:</strong> managed (Vercel + managed Postgres) or a self‑managed VPS? Rough annual budget?</li>
+<li><strong>Donations:</strong> which provider/links should we use (Stripe / GoCardless / existing platform)? Provide live bank details &amp; Zakat/Sadaqah wording.</li>
+<li><strong>Migration access:</strong> can you grant WordPress admin/FTP (or a full export) so nothing is missed?</li>
+<li><strong>Prayer details:</strong> confirm the exact <strong>two‑Jummah</strong> times/languages and whether the calculation method/jamaah rules ever change mid‑year.</li>
+<li><strong>Branding:</strong> existing logo/brand guidelines, or shall we refresh the identity?</li>
+<li><strong>Languages:</strong> English only at launch, or also Arabic/Urdu/others?</li>
+<li><strong>Domains/email:</strong> keep <code>kingstonmosque.org</code> and <code>info@</code> mailbox? Who controls DNS?</li>
+<li><strong>Charity governance:</strong> Charity Commission number and any required trustee/financial disclosures to display.</li>
+<li><strong>Existing app:</strong> keep linking the current mobile app, or fold its function into the new site?</li>
+</ol>
+<pre><code>
+
+<p class="note">Generated 09 June 2026 from docs/PROJECT_PLAN.md. The colours, patterns and typography here hint at the proposed design direction.</p>
+</div></body></html>
