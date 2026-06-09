@@ -149,6 +149,7 @@ export const Events: CollectionConfig = {
     { name: "start", type: "date", admin: { date: { pickerAppearance: "dayAndTime" } } },
     { name: "end", type: "date", admin: { date: { pickerAppearance: "dayAndTime" } } },
     { name: "location", type: "text" },
+    { name: "summary", type: "textarea", admin: { description: "Short text shown on cards" } },
     { name: "image", type: "upload", relationTo: "media" },
     { name: "description", type: "richText" },
     { name: "registrationUrl", type: "text" },

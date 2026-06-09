@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/layout/PageHero";
 import CardGrid from "@/components/sections/CardGrid";
-import { services } from "@/lib/content";
+import { getServices } from "@/lib/cms";
 
 export const metadata: Metadata = { title: "Services" };
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const services = await getServices();
   return (
     <>
       <PageHero

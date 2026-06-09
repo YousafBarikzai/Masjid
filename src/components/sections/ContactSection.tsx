@@ -1,6 +1,7 @@
-import { site } from "@/lib/content";
+import { getSite } from "@/lib/cms";
 
-export default function ContactSection() {
+export default async function ContactSection() {
+  const site = await getSite();
   const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(site.mapsQuery)}&output=embed`;
   return (
     <section className="contact" id="contact" style={{ background: "var(--cream-2)" }}>

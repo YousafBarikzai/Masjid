@@ -69,9 +69,9 @@ await post("globals/donation-settings", {
 
 // events
 for (const e of [
-  { title: "Eid Prayer", slug: "eid-prayer", category: "Eid", location: "Main prayer hall", registrationUrl: "" },
-  { title: "Taraweeh & I‘tikaaf", slug: "taraweeh-itikaaf", category: "Ramadan", location: "Kingston Mosque" },
-  { title: "KMA Youth Club", slug: "youth-club", category: "Youth", location: "Community hall" },
+  { title: "Eid Prayer", slug: "eid-prayer", category: "Eid", location: "Main prayer hall", summary: "Two congregations with overflow space. Full timing and parking guidance announced — please arrive early." },
+  { title: "Taraweeh & I‘tikaaf", slug: "taraweeh-itikaaf", category: "Ramadan", location: "Kingston Mosque", summary: "Nightly Taraweeh and I‘tikaaf registration during the last ten nights. Suhūr & Iftar timings provided." },
+  { title: "KMA Youth Club", slug: "youth-club", category: "Youth", location: "Community hall", summary: "Weekly sessions for young people — faith, friendship, sport and skills in a welcoming environment." },
 ]) await post("events", e, token);
 
 // news posts

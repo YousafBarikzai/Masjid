@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { site } from "@/lib/content";
+import { getSite } from "@/lib/cms";
 import Brand from "./Brand";
 
-export default function SiteFooter() {
+export default async function SiteFooter() {
+  const site = await getSite();
   return (
     <footer className="site">
       <div className="wrap">

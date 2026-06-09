@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getToday, getNextDay, dayRows, formatGregorian, formatHijri } from "@/lib/prayer";
-import { site, events as eventItems, classes, services as serviceItems, stats } from "@/lib/content";
+import { site, stats } from "@/lib/content";
+import { getEvents, getClasses, getServices, getPrayerOverride } from "@/lib/cms";
 import PrayerCard from "@/components/home/PrayerCard";
 import NextPrayerChip from "@/components/home/NextPrayerChip";
 import JummahSection from "@/components/sections/JummahSection";
@@ -11,12 +12,14 @@ import CardGrid from "@/components/sections/CardGrid";
 // Render per-request so "today" is always correct in Europe/London.
 export const dynamic = "force-dynamic";
 
-export default function Home() {
-  const today = getToday();
+export default async function Home() {
+  const base = getToday();
+  const override = await getPrayerOverride(base.date);
+  const today = override ?? base;
   const rows = dayRows(today);
-  const tomorrowFajr = getNextDay(today.date).fajr.jamaah;
-  const gregorian = formatGregorian(today.date);
-  const hijri = formatHijri(today.date);
+  const tomorrowFajr = getNextDay(base.date).fajr.jamaah;
+
+  const [events, classes, services] = await Promise.all([getEvents(), getClasses(), getServices()]);
 
   return (
     <>
@@ -40,7 +43,12 @@ export default function Home() {
             </div>
           </div>
           <div id="prayer">
-            <PrayerCard gregorian={gregorian} hijri={hijri} rows={rows} tomorrowFajr={tomorrowFajr} />
+            <PrayerCard
+              gregorian={formatGregorian(today.date)}
+              hijri={formatHijri(today.date)}
+              rows={rows}
+              tomorrowFajr={tomorrowFajr}
+            />
           </div>
         </div>
       </section>
@@ -54,7 +62,7 @@ export default function Home() {
             <h2>Upcoming Events</h2>
             <p>Programmes, prayers and gatherings for the whole community.</p>
           </div>
-          <CardGrid cols={3} items={eventItems} />
+          <CardGrid cols={3} items={events} />
         </div>
       </section>
 
@@ -78,7 +86,7 @@ export default function Home() {
             <h2>Our Services</h2>
             <p>Supporting the community through every stage of life.</p>
           </div>
-          <CardGrid cols={4} items={serviceItems} />
+          <CardGrid cols={4} items={services} />
         </div>
       </section>
 

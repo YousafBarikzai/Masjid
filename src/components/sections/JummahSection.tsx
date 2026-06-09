@@ -1,6 +1,7 @@
-import { jummah } from "@/lib/content";
+import { getJummah } from "@/lib/cms";
 
-export default function JummahSection() {
+export default async function JummahSection() {
+  const jummah = await getJummah();
   return (
     <section className="jummah" id="jummah">
       <div className="wrap">

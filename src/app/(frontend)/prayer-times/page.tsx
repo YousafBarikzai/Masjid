@@ -3,14 +3,16 @@ import PageHero from "@/components/layout/PageHero";
 import PrayerCard from "@/components/home/PrayerCard";
 import MonthlyTimetable from "@/components/prayer/MonthlyTimetable";
 import { getToday, getNextDay, dayRows, formatGregorian, formatHijri, timetableYear } from "@/lib/prayer";
+import { getPrayerOverride } from "@/lib/cms";
 
 export const metadata: Metadata = { title: "Prayer Times" };
 export const dynamic = "force-dynamic";
 
-export default function PrayerTimesPage() {
-  const today = getToday();
+export default async function PrayerTimesPage() {
+  const base = getToday();
+  const today = (await getPrayerOverride(base.date)) ?? base;
   const rows = dayRows(today);
-  const tomorrowFajr = getNextDay(today.date).fajr.jamaah;
+  const tomorrowFajr = getNextDay(base.date).fajr.jamaah;
 
   return (
     <>

@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   },
 };
 
+// The header/footer read live data from the CMS, so render at request time.
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">

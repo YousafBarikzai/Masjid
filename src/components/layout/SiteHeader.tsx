@@ -1,9 +1,12 @@
 import Link from "next/link";
-import { nav, site, alert } from "@/lib/content";
+import { nav } from "@/lib/content";
+import { getSite, getAnnouncement } from "@/lib/cms";
 import Brand from "./Brand";
 import MobileMenu from "./MobileMenu";
 
-export default function SiteHeader() {
+export default async function SiteHeader() {
+  const [site, alert] = await Promise.all([getSite(), getAnnouncement()]);
+
   return (
     <>
       <div className="topbar">
@@ -49,7 +52,7 @@ export default function SiteHeader() {
         </div>
       </header>
 
-      {alert.enabled && (
+      {alert.enabled && alert.message && (
         <div className="alert">
           <div className="wrap">
             <b>{alert.label}</b>

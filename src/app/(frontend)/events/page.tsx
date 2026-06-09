@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/layout/PageHero";
 import CardGrid from "@/components/sections/CardGrid";
-import { events } from "@/lib/content";
+import { getEvents } from "@/lib/cms";
 
 export const metadata: Metadata = { title: "Events" };
 
-export default function EventsPage() {
+export default async function EventsPage() {
+  const events = await getEvents();
   return (
     <>
       <PageHero

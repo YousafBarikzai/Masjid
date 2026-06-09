@@ -1,6 +1,7 @@
-import { donation } from "@/lib/content";
+import { getDonation } from "@/lib/cms";
 
-export default function DonateSection() {
+export default async function DonateSection() {
+  const donation = await getDonation();
   return (
     <section className="donate" id="donate">
       <div className="wrap">

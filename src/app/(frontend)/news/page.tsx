@@ -1,27 +1,18 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/layout/PageHero";
+import { getPosts, type NewsItem } from "@/lib/cms";
 
 export const metadata: Metadata = { title: "News & Announcements" };
 
-const posts = [
-  {
-    date: "Latest",
-    title: "Eid prayer arrangements announced",
-    body: "Details of Eid congregations, timings and overflow space for the community.",
-  },
-  {
-    date: "Ramadan",
-    title: "Taraweeh & I‘tikaaf registration open",
-    body: "Join us for nightly Taraweeh and register for I‘tikaaf during the last ten nights.",
-  },
-  {
-    date: "Madrasah",
-    title: "Teacher vacancies at the KMA Madrasah",
-    body: "We are looking for dedicated teachers to join our growing children's Madrasah.",
-  },
+const samplePosts: NewsItem[] = [
+  { date: "Latest", title: "Eid prayer arrangements announced", body: "Details of Eid congregations, timings and overflow space for the community." },
+  { date: "Ramadan", title: "Taraweeh & I‘tikaaf registration open", body: "Join us for nightly Taraweeh and register for I‘tikaaf during the last ten nights." },
+  { date: "Madrasah", title: "Teacher vacancies at the KMA Madrasah", body: "We are looking for dedicated teachers to join our growing children's Madrasah." },
 ];
 
-export default function NewsPage() {
+export default async function NewsPage() {
+  const fromCms = await getPosts();
+  const posts = fromCms.length ? fromCms : samplePosts;
   return (
     <>
       <PageHero
@@ -40,10 +31,6 @@ export default function NewsPage() {
               </article>
             ))}
           </div>
-          <p className="note-box center mt">
-            These articles are samples. Once the admin area is connected, staff will publish real news
-            and announcements here without any coding.
-          </p>
         </div>
       </section>
     </>
