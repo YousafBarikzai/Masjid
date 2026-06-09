@@ -180,6 +180,80 @@ export const getPosts = cache(async (): Promise<NewsItem[]> => {
   }
 });
 
+/* ----------------------------- Ramadan & Eid ----------------------------- */
+export interface SpecialSchedule {
+  ramadanEnabled: boolean;
+  ramadanHeading: string;
+  ramadanIntro: string;
+  ramadanItems: { label: string; value: string }[];
+  eidEnabled: boolean;
+  eidTitle: string;
+  eidDateText: string;
+  eidPrayers: { label: string; time: string; location?: string }[];
+  eidNotes: string;
+}
+export const getSpecialSchedule = cache(async (): Promise<SpecialSchedule> => {
+  const empty: SpecialSchedule = {
+    ramadanEnabled: false,
+    ramadanHeading: "Ramadan at Kingston Mosque",
+    ramadanIntro: "",
+    ramadanItems: [],
+    eidEnabled: false,
+    eidTitle: "",
+    eidDateText: "",
+    eidPrayers: [],
+    eidNotes: "",
+  };
+  try {
+    const p = await getPayloadClient();
+    const g = (await p.findGlobal({ slug: "special-schedule", depth: 0 })) as Record<string, any>;
+    return {
+      ramadanEnabled: Boolean(g?.ramadanEnabled),
+      ramadanHeading: val(g?.ramadanHeading, empty.ramadanHeading),
+      ramadanIntro: val(g?.ramadanIntro, ""),
+      ramadanItems: Array.isArray(g?.ramadanItems)
+        ? g.ramadanItems.map((i: any) => ({ label: val(i.label, ""), value: val(i.value, "") }))
+        : [],
+      eidEnabled: Boolean(g?.eidEnabled),
+      eidTitle: val(g?.eidTitle, ""),
+      eidDateText: val(g?.eidDateText, ""),
+      eidPrayers: Array.isArray(g?.eidPrayers)
+        ? g.eidPrayers.map((i: any) => ({ label: val(i.label, ""), time: val(i.time, ""), location: val(i.location, "") }))
+        : [],
+      eidNotes: val(g?.eidNotes, ""),
+    };
+  } catch {
+    return empty;
+  }
+});
+
+/* ------------------------------ About page ------------------------------- */
+const DEFAULT_ABOUT_PARAS = [
+  "The Kingston Muslim Association (KMA) was founded in 1979 and converted into a purpose-built mosque in 1985. Today the mosque can accommodate more than 800 worshippers, many of whom travel from surrounding areas to pray and learn here.",
+  "Over four decades, KMA has grown into a hub for worship, Islamic education and community life — offering daily prayers, a thriving Madrasah, youth and sisters' programmes, and essential services such as Nikah and free funeral support.",
+];
+export interface AboutContent {
+  heading: string;
+  paragraphs: string[];
+  facilities: string[];
+}
+export const getAbout = cache(async (): Promise<AboutContent> => {
+  try {
+    const p = await getPayloadClient();
+    const g = (await p.findGlobal({ slug: "site-settings", depth: 0 })) as Record<string, any>;
+    const a = g?.about ?? {};
+    const paragraphs = a.historyBody
+      ? String(a.historyBody).split(/\n\s*\n/).map((s: string) => s.trim()).filter(Boolean)
+      : DEFAULT_ABOUT_PARAS;
+    const facilities = Array.isArray(a.facilities) && a.facilities.length
+      ? a.facilities.map((f: any) => f.item).filter(Boolean)
+      : seed.facilities;
+    return { heading: val(a.historyHeading, "Our story"), paragraphs, facilities };
+  } catch {
+    return { heading: "Our story", paragraphs: DEFAULT_ABOUT_PARAS, facilities: seed.facilities };
+  }
+});
+
 /* ------------------------------ CMS Pages -------------------------------- */
 export const getPageBySlug = cache(async (slug: string): Promise<Record<string, any> | null> => {
   try {

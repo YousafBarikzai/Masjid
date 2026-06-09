@@ -21,7 +21,7 @@ export default async function SiteFooter() {
             <h4>Visit</h4>
             <Link href="/prayer-times">Prayer Times</Link>
             <Link href="/jummah">Jummah</Link>
-            <Link href="/events">Ramadan &amp; Eid</Link>
+            <Link href="/ramadan">Ramadan &amp; Eid</Link>
             <Link href="/contact">Contact</Link>
           </div>
           <div>

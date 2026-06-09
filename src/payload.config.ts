@@ -4,7 +4,6 @@ import { buildConfig } from "payload";
 import { sqliteAdapter } from "@payloadcms/db-sqlite";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
-import { vercelBlobStorage } from "@payloadcms/storage-vercel-blob";
 import sharp from "sharp";
 
 import {
@@ -17,8 +16,9 @@ import {
   Services,
   Announcements,
   PrayerDays,
+  TimetableUploads,
 } from "./payload/collections";
-import { SiteSettings, JummahSettings, DonationSettings } from "./payload/globals";
+import { SiteSettings, JummahSettings, DonationSettings, SpecialSchedule } from "./payload/globals";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -45,22 +45,17 @@ export default buildConfig({
     Services,
     Announcements,
     PrayerDays,
+    TimetableUploads,
     Media,
     Users,
   ],
-  globals: [SiteSettings, JummahSettings, DonationSettings],
+  globals: [SiteSettings, JummahSettings, DonationSettings, SpecialSchedule],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "dev-secret-change-me",
   db,
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   sharp,
-  plugins: [
-    // On Vercel, set BLOB_READ_WRITE_TOKEN to store uploaded images/PDFs in
-    // Vercel Blob. Locally (no token) Payload uses the local /media folder.
-    vercelBlobStorage({
-      enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
-      collections: { media: true },
-      token: process.env.BLOB_READ_WRITE_TOKEN || "",
-    }),
-  ],
+  // Note: cloud media storage (Vercel Blob / S3) is a planned follow-up so that
+  // uploaded images/PDFs persist on serverless hosting. Text content, prayer
+  // times, events, etc. work fully without it.
 });

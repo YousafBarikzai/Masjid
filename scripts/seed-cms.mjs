@@ -46,6 +46,36 @@ await post("globals/site-settings", {
     { label: "Facebook", url: "https://www.facebook.com/kmosque/" },
     { label: "Telegram", url: "https://t.me/kingstonmosque" },
   ],
+  about: {
+    historyHeading: "Our story",
+    historyBody:
+      "The Kingston Muslim Association (KMA) was founded in 1979 and converted into a purpose-built mosque in 1985. Today the mosque can accommodate more than 800 worshippers, many of whom travel from surrounding areas to pray and learn here.\n\nOver four decades, KMA has grown into a hub for worship, Islamic education and community life — offering daily prayers, a thriving Madrasah, youth and sisters' programmes, and essential services such as Nikah and free funeral support.",
+    facilities: [
+      { item: "Separate prayer halls for men (ground floor) and women (second-floor hall)" },
+      { item: "Brand-new ablution (wudu) facilities" },
+      { item: "Disabled-accessible toilets and a shower" },
+      { item: "Capacity for over 800 worshippers" },
+    ],
+  },
+}, token);
+
+await post("globals/special-schedule", {
+  ramadanEnabled: true,
+  ramadanHeading: "Ramadan at Kingston Mosque",
+  ramadanIntro: "Nightly Taraweeh and a vibrant community programme throughout the blessed month.",
+  ramadanItems: [
+    { label: "Taraweeh", value: "Nightly after Isha" },
+    { label: "I‘tikaaf", value: "Last ten nights — register at the office" },
+    { label: "Suhūr & Iftar", value: "See the daily timetable" },
+  ],
+  eidEnabled: true,
+  eidTitle: "Eid al-Adha",
+  eidDateText: "Date subject to moon sighting — confirmed nearer the time",
+  eidPrayers: [
+    { label: "First Jamā‘ah", time: "7:30 am", location: "Main hall" },
+    { label: "Second Jamā‘ah", time: "9:00 am", location: "Main hall" },
+  ],
+  eidNotes: "Overflow space available. Please arrive early and follow parking guidance.",
 }, token);
 
 await post("globals/jummah-settings", {

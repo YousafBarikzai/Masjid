@@ -1,6 +1,7 @@
 import path from "path";
 import type { Block, CollectionConfig } from "payload";
 import { anyone, isAdmin, isAdminFieldLevel, isEditor, isPrayerManager, isStaff } from "./access";
+import { parseTimetableCsv } from "../lib/parseTimetable";
 
 const TIME_HINT = "Use 24-hour HH:MM, e.g. 13:30";
 
@@ -272,4 +273,99 @@ export const PrayerDays: CollectionConfig = {
     },
     { name: "note", type: "text", admin: { description: "e.g. Ramadan, Eid" } },
   ],
+};
+
+/* --------------------- Timetable uploads (annual CSV) --------------------- */
+export const TimetableUploads: CollectionConfig = {
+  slug: "timetable-uploads",
+  labels: { singular: "Timetable upload", plural: "Upload Annual Timetable" },
+  admin: {
+    useAsTitle: "filename",
+    defaultColumns: ["filename", "mode", "importedCount", "createdAt"],
+    group: "Prayer Times",
+    description:
+      "Upload the year's CSV (Day,Date,Fajr,Sunrise,Zawwal,Duhur,Asr,Sunset,Maghrib,Isha,J-Fajr,J-Duhur,J-Asr,J-Maghrib,J-Isha). It is parsed, validated and imported into the Prayer Timetable automatically. The report appears below after saving.",
+  },
+  access: { read: isPrayerManager, create: isPrayerManager, update: isPrayerManager, delete: isPrayerManager },
+  upload: {
+    staticDir: path.resolve(process.cwd(), "media"),
+    mimeTypes: ["text/csv", "application/csv", "application/vnd.ms-excel", "text/plain"],
+  },
+  fields: [
+    {
+      name: "mode",
+      type: "select",
+      defaultValue: "create-missing",
+      admin: { description: "Create only missing days, or replace existing days too." },
+      options: [
+        { label: "Add missing days only", value: "create-missing" },
+        { label: "Replace existing days too", value: "replace-all" },
+      ],
+    },
+    { name: "report", type: "textarea", admin: { readOnly: true, description: "Auto-filled after import" } },
+    { name: "importedCount", type: "number", admin: { readOnly: true } },
+  ],
+  hooks: {
+    afterChange: [
+      async ({ doc, req, operation, context }) => {
+        if (operation !== "create" || (context as Record<string, unknown>)?.imported) return;
+        const buf = (req as unknown as { file?: { data?: Buffer } }).file?.data;
+        if (!buf) return;
+
+        const { days, warnings, errors } = parseTimetableCsv(buf.toString("utf8"));
+        const mode = (doc as Record<string, unknown>).mode || "create-missing";
+
+        const all = await req.payload.find({ collection: "prayer-days", limit: 100000, depth: 0 });
+        const byDate = new Map<string, string | number>();
+        for (const d of all.docs as Array<Record<string, unknown>>) {
+          byDate.set(String(d.date).slice(0, 10), d.id as string | number);
+        }
+
+        let created = 0;
+        let updated = 0;
+        let skipped = 0;
+        for (const d of days) {
+          const data = {
+            date: d.date,
+            fajrBegins: d.fajr.begins,
+            fajrJamaah: d.fajr.jamaah,
+            sunrise: d.sunrise,
+            dhuhrBegins: d.dhuhr.begins,
+            dhuhrJamaah: d.dhuhr.jamaah,
+            asrBegins: d.asr.begins,
+            asrJamaah: d.asr.jamaah,
+            maghrib: d.maghrib.begins,
+            ishaBegins: d.isha.begins,
+            ishaJamaah: d.isha.jamaah,
+            source: "import" as const,
+          };
+          const existingId = byDate.get(d.date);
+          try {
+            if (existingId !== undefined) {
+              if (mode === "replace-all") {
+                await req.payload.update({ collection: "prayer-days", id: existingId, data });
+                updated++;
+              } else skipped++;
+            } else {
+              await req.payload.create({ collection: "prayer-days", data });
+              created++;
+            }
+          } catch {
+            /* keep going */
+          }
+        }
+
+        const lines = [`Parsed ${days.length} day(s). Created ${created}, updated ${updated}, skipped ${skipped}.`];
+        if (errors.length) lines.push(`Errors (${errors.length}): ${errors.slice(0, 8).join("; ")}`);
+        lines.push(warnings.length ? `Warnings (${warnings.length}): ${warnings.slice(0, 8).join("; ")}` : "No warnings.");
+
+        await req.payload.update({
+          collection: "timetable-uploads",
+          id: doc.id,
+          data: { report: lines.join("\n"), importedCount: created + updated },
+          context: { imported: true },
+        });
+      },
+    ],
+  },
 };

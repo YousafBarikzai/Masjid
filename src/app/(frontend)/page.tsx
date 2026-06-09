@@ -5,6 +5,7 @@ import { getEvents, getClasses, getServices, getPrayerOverride } from "@/lib/cms
 import PrayerCard from "@/components/home/PrayerCard";
 import NextPrayerChip from "@/components/home/NextPrayerChip";
 import JummahSection from "@/components/sections/JummahSection";
+import SpecialSection from "@/components/sections/SpecialSection";
 import DonateSection from "@/components/sections/DonateSection";
 import ContactSection from "@/components/sections/ContactSection";
 import CardGrid from "@/components/sections/CardGrid";
@@ -54,6 +55,8 @@ export default async function Home() {
       </section>
 
       <JummahSection />
+
+      <SpecialSection />
 
       <section id="events">
         <div className="wrap">

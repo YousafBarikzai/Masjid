@@ -29,6 +29,24 @@ export const SiteSettings: GlobalConfig = {
         { name: "url", type: "text" },
       ],
     },
+    {
+      type: "group",
+      name: "about",
+      label: "About page",
+      fields: [
+        { name: "historyHeading", type: "text", defaultValue: "Our story" },
+        {
+          name: "historyBody",
+          type: "textarea",
+          admin: { description: "One paragraph per line (blank line between paragraphs)." },
+        },
+        {
+          name: "facilities",
+          type: "array",
+          fields: [{ name: "item", type: "text" }],
+        },
+      ],
+    },
   ],
 };
 
@@ -80,6 +98,53 @@ export const DonationSettings: GlobalConfig = {
         { name: "image", type: "upload", relationTo: "media" },
         { name: "link", type: "text" },
         { name: "active", type: "checkbox", defaultValue: true },
+      ],
+    },
+  ],
+};
+
+export const SpecialSchedule: GlobalConfig = {
+  slug: "special-schedule",
+  label: "Ramadan & Eid",
+  admin: { group: "Prayer Times" },
+  access: { read: anyone, update: isPrayerManager },
+  fields: [
+    {
+      type: "collapsible",
+      label: "Ramadan",
+      fields: [
+        { name: "ramadanEnabled", type: "checkbox", label: "Show Ramadan section", defaultValue: false },
+        { name: "ramadanHeading", type: "text", defaultValue: "Ramadan at Kingston Mosque" },
+        { name: "ramadanIntro", type: "textarea" },
+        {
+          name: "ramadanItems",
+          type: "array",
+          labels: { singular: "Item", plural: "Items" },
+          fields: [
+            { name: "label", type: "text", admin: { description: "e.g. Taraweeh, Suhūr ends, Iftar" } },
+            { name: "value", type: "text", admin: { description: "e.g. After Isha, see timetable" } },
+          ],
+        },
+      ],
+    },
+    {
+      type: "collapsible",
+      label: "Eid",
+      fields: [
+        { name: "eidEnabled", type: "checkbox", label: "Show Eid section", defaultValue: false },
+        { name: "eidTitle", type: "text", admin: { description: "e.g. Eid al-Adha" } },
+        { name: "eidDateText", type: "text", admin: { description: "e.g. Saturday 28 March (subject to moon sighting)" } },
+        {
+          name: "eidPrayers",
+          type: "array",
+          labels: { singular: "Jamā‘ah", plural: "Eid prayers" },
+          fields: [
+            { name: "label", type: "text", admin: { description: "e.g. First Jamā‘ah" } },
+            { name: "time", type: "text" },
+            { name: "location", type: "text" },
+          ],
+        },
+        { name: "eidNotes", type: "textarea" },
       ],
     },
   ],
