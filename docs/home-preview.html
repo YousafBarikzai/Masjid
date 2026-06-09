@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kingston Mosque — Kingston Muslim Association</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Amiri&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#0b3d2e; --green-2:#0f5132; --green-3:#157f54; --gold:#c9a227; --gold-soft:#e8d59a;
+  --cream:#faf7f0; --cream-2:#f3eee2; --ink:#23201a; --muted:#6c6557; --line:#e7e0d0; --white:#fff;
+  --shadow:0 14px 40px rgba(11,61,46,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--cream);line-height:1.6}
+h1,h2,h3,.display{font-family:'Cormorant Garamond','Georgia',serif}
+.ar{font-family:'Amiri',serif}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1140px;margin:0 auto;padding:0 20px}
+.pattern{background-image:
+  radial-gradient(circle at 20px 20px, rgba(201,162,39,.10) 2px, transparent 0),
+  radial-gradient(circle at 0 0, rgba(201,162,39,.06) 2px, transparent 0);
+  background-size:40px 40px}
+.btn{display:inline-flex;align-items:center;gap:.5em;padding:.8em 1.5em;border-radius:999px;font-weight:600;font-size:.95rem;transition:.2s;cursor:pointer;border:0}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#b8860b);color:#3a2c00;box-shadow:0 8px 22px rgba(201,162,39,.35)}
+.btn-gold:hover{transform:translateY(-2px)}
+.btn-outline{border:1.5px solid rgba(255,255,255,.55);color:#fff}
+.btn-outline:hover{background:rgba(255,255,255,.12)}
+.btn-green{background:var(--green-2);color:#fff}
+.eyebrow{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:700}
+section{padding:72px 0}
+.section-head{text-align:center;max-width:620px;margin:0 auto 44px}
+.section-head h2{font-size:2.4rem;color:var(--green);margin:.2em 0}
+.section-head p{color:var(--muted)}
+
+/* top bar */
+.topbar{background:var(--green);color:#dfeee7;font-size:.82rem}
+.topbar .wrap{display:flex;justify-content:space-between;align-items:center;height:40px;flex-wrap:wrap;gap:8px}
+.topbar a{opacity:.9} .topbar a:hover{opacity:1;color:var(--gold-soft)}
+.topbar .sep{opacity:.4;margin:0 10px}
+
+/* header */
+header.site{position:sticky;top:0;z-index:50;background:rgba(250,247,240,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header.site .wrap{display:flex;align-items:center;justify-content:space-between;height:74px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .mark{width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 30% 30%,var(--green-3),var(--green));display:grid;place-items:center;color:var(--gold-soft);box-shadow:var(--shadow)}
+.brand b{font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--green);line-height:1;display:block}
+.brand small{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+nav.main{display:flex;gap:26px;align-items:center}
+nav.main a{font-weight:500;font-size:.95rem;color:var(--ink);padding:6px 0;position:relative}
+nav.main a:hover{color:var(--green-3)}
+@media(max-width:900px){nav.main{display:none}}
+
+/* hero */
+.hero{position:relative;background:linear-gradient(150deg,#0a352a 0%,#0b3d2e 55%,#0f5132 100%);color:#eaf4ee;overflow:hidden}
+.hero:before{content:"";position:absolute;inset:0;opacity:.5;background-image:
+  radial-gradient(circle at 14px 14px, rgba(201,162,39,.16) 2px, transparent 0);
+  background-size:28px 28px}
+.hero .wrap{position:relative;display:grid;grid-template-columns:1.15fr .85fr;gap:48px;align-items:center;padding:84px 20px}
+.hero h1{font-size:3.5rem;line-height:1.05;color:#fff;font-weight:700}
+.hero h1 span{color:var(--gold-soft)}
+.hero p.lead{margin:18px 0 28px;font-size:1.12rem;color:#cfe3d9;max-width:30em}
+.hero .cta{display:flex;gap:14px;flex-wrap:wrap}
+.next-chip{display:inline-flex;align-items:center;gap:10px;margin-bottom:22px;padding:8px 16px;border:1px solid rgba(232,213,154,.4);border-radius:999px;background:rgba(255,255,255,.06);font-size:.86rem}
+.next-chip .dot{width:9px;height:9px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px rgba(201,162,39,.25)}
+.next-chip b{color:var(--gold-soft)}
+@media(max-width:860px){.hero .wrap{grid-template-columns:1fr;padding:56px 20px}.hero h1{font-size:2.6rem}}
+
+/* prayer card */
+.pcard{background:var(--white);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--line)}
+.pcard .pc-top{background:linear-gradient(135deg,var(--green-2),var(--green));color:#fff;padding:20px 24px;text-align:center;position:relative}
+.pcard .pc-top .eyebrow{color:var(--gold-soft)}
+.pcard .pc-top h3{font-size:1.5rem;margin-top:4px;color:#fff}
+.pcard .pc-top .hijri{font-size:.85rem;color:#bfe0d0}
+.countdown{margin-top:14px;background:rgba(0,0,0,.18);border:1px solid rgba(232,213,154,.3);border-radius:12px;padding:10px 14px;font-size:.9rem}
+.countdown b{color:var(--gold-soft);font-variant-numeric:tabular-nums}
+.pcard table{width:100%;border-collapse:collapse}
+.pcard thead th{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:14px 24px 8px;text-align:right}
+.pcard thead th:first-child{text-align:left}
+.pcard tbody td{padding:13px 24px;border-top:1px solid var(--line)}
+.pcard .pname .en{font-weight:600;font-size:1.05rem}
+.pcard .pname .ar{display:block;font-size:1rem;color:var(--muted)}
+.pcard .ptime{text-align:right;font-variant-numeric:tabular-nums;font-size:1.12rem;font-weight:600}
+.pcard .begins{color:var(--muted);font-weight:500}
+.pcard tr.muted .pname .en{font-weight:500;color:var(--muted)}
+.pcard tr.muted .jamaah{color:var(--line)}
+.pcard tr.next{background:linear-gradient(90deg,rgba(201,162,39,.14),rgba(201,162,39,.04))}
+.pcard tr.next .jamaah{color:var(--green-2)}
+.pcard tr.next .pname .en:after{content:"NEXT";font-family:'Inter';font-size:.6rem;letter-spacing:.1em;background:var(--gold);color:#3a2c00;padding:2px 7px;border-radius:6px;margin-left:8px;vertical-align:middle;font-weight:700}
+.pc-foot{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--cream-2);font-size:.85rem;color:var(--muted)}
+
+/* generic cards grid */
+.grid{display:grid;gap:22px}
+.g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)} .g2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:860px){.g3,.g4{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.card{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:26px;box-shadow:0 6px 18px rgba(0,0,0,.04);transition:.2s}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.card .ic{width:50px;height:50px;border-radius:13px;background:var(--cream-2);display:grid;place-items:center;font-size:1.5rem;margin-bottom:14px}
+.card h3{font-size:1.4rem;color:var(--green);margin-bottom:6px}
+.card p{color:var(--muted);font-size:.92rem}
+.tag{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green-3);background:rgba(21,127,84,.1);padding:4px 10px;border-radius:6px;margin-bottom:10px}
+
+/* jummah */
+.jummah{background:var(--green);color:#eaf4ee}
+.jummah .section-head h2{color:#fff}.jummah .section-head p{color:#bcd6ca}
+.jrow{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;max-width:760px;margin:0 auto}
+.jcard{background:rgba(255,255,255,.06);border:1px solid rgba(232,213,154,.25);border-radius:16px;padding:26px;text-align:center}
+.jcard .eyebrow{color:var(--gold-soft)}
+.jcard .big{font-family:'Cormorant Garamond',serif;font-size:2.6rem;color:#fff;margin:6px 0}
+.jcard small{color:#bcd6ca}
+
+/* alert */
+.alert{background:linear-gradient(90deg,#7a5b00,#9a7400);color:#fff;font-size:.92rem}
+.alert .wrap{display:flex;align-items:center;gap:14px;padding:13px 20px}
+.alert b{background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase}
+
+/* donate */
+.donate .inner{background:linear-gradient(135deg,var(--green-2),var(--green));color:#fff;border-radius:24px;padding:48px;display:grid;grid-template-columns:1.3fr 1fr;gap:40px;align-items:center;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.donate .inner:before{content:"";position:absolute;inset:0;opacity:.4;background-image:radial-gradient(circle at 14px 14px,rgba(201,162,39,.18) 2px,transparent 0);background-size:30px 30px}
+.donate h2{font-size:2.4rem;color:#fff;position:relative}
+.donate p{color:#cfe3d9;position:relative;margin:10px 0 0}
+.give-box{position:relative;background:rgba(255,255,255,.08);border:1px solid rgba(232,213,154,.3);border-radius:16px;padding:22px}
+.give-box .line{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed rgba(255,255,255,.18);font-size:.92rem}
+.give-box .line:last-child{border:0} .give-box .line b{color:var(--gold-soft)}
+@media(max-width:760px){.donate .inner{grid-template-columns:1fr;padding:32px}}
+
+/* contact */
+.contact .grid{grid-template-columns:1fr 1fr;align-items:stretch}
+@media(max-width:760px){.contact .grid{grid-template-columns:1fr}}
+.map{background:var(--cream-2);border-radius:16px;min-height:280px;display:grid;place-items:center;color:var(--muted);border:1px solid var(--line);text-align:center;padding:20px}
+.info li{list-style:none;display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:.95rem}
+.info .k{color:var(--gold);font-weight:700;min-width:90px}
+
+/* impact */
+.impact{background:var(--green);color:#fff}
+.impact .grid{grid-template-columns:repeat(4,1fr);text-align:center}
+.impact .n{font-family:'Cormorant Garamond',serif;font-size:3rem;color:var(--gold-soft);line-height:1}
+.impact .l{color:#bcd6ca;font-size:.9rem;margin-top:4px}
+@media(max-width:560px){.impact .grid{grid-template-columns:1fr 1fr}}
+
+/* footer */
+footer{background:#072a20;color:#a9c4b8;font-size:.9rem;padding:54px 0 26px}
+footer .cols{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:30px}
+footer h4{color:#fff;font-family:'Inter';font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px}
+footer a{display:block;padding:5px 0} footer a:hover{color:var(--gold-soft)}
+footer .base{border-top:1px solid rgba(255,255,255,.1);margin-top:34px;padding-top:18px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:.82rem;opacity:.8}
+@media(max-width:760px){footer .cols{grid-template-columns:1fr 1fr}}
+.preview-flag{position:fixed;bottom:14px;right:14px;background:var(--ink);color:#fff;font-size:.72rem;padding:8px 13px;border-radius:8px;opacity:.82;z-index:99}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="wrap">
+  <div><a href="tel:02085495315">📞 020 8549 5315</a><span class="sep">|</span><a href="mailto:info@kingstonmosque.org">✉ info@kingstonmosque.org</a></div>
+  <div><a href="#">Facebook</a><span class="sep">·</span><a href="#">Telegram</a><span class="sep">·</span><a href="#donate" style="color:var(--gold-soft);font-weight:600">Donate</a></div>
+</div></div>
+
+<header class="site"><div class="wrap">
+  <a class="brand" href="#">
+    <span class="mark">✦</span>
+    <span><b>Kingston Mosque</b><small>Kingston Muslim Association</small></span>
+  </a>
+  <nav class="main">
+    <a href="#prayer">Prayer Times</a><a href="#jummah">Jummah</a><a href="#education">Education</a>
+    <a href="#services">Services</a><a href="#events">Events</a><a href="#contact">Contact</a>
+  </nav>
+  <a class="btn btn-gold" href="#donate">Donate</a>
+</div></header>
+
+<div class="alert"><div class="wrap">
+  <b>Notice</b><span>Jumu‘ah every Friday — 1st khutbah (English) 1:10 pm · 2nd khutbah (Arabic) 2:10 pm. Please arrive early.</span>
+</div></div>
+
+<section class="hero"><div class="wrap">
+  <div>
+    <div class="next-chip"><span class="dot"></span> Next prayer: <b id="chip-name">—</b> jamā‘ah at <b id="chip-time">—</b> · <span id="chip-count">—</span></div>
+    <h1>A home for worship,<br><span>learning &amp; community</span></h1>
+    <p class="lead">Serving the Muslim community of Kingston upon Thames since 1979 — daily prayers, Islamic education, and support for families across the borough.</p>
+    <div class="cta">
+      <a class="btn btn-gold" href="#prayer">View Prayer Times</a>
+      <a class="btn btn-outline" href="#about">About the Mosque</a>
+    </div>
+  </div>
+  <div id="prayer">
+    <div class="pcard">
+      <div class="pc-top">
+        <div class="eyebrow">Today at Kingston Mosque</div>
+        <h3>Tuesday, 9 June 2026</h3>
+        <div class="hijri">23 Dhuʻl-Hijjah 1447 AH</div>
+        <div class="countdown">⏳ <span id="cd-label">Next jamā‘ah</span> · <b id="cd-timer">00:00:00</b></div>
+      </div>
+      <table>
+        <thead><tr><th>Prayer</th><th>Begins</th><th>Jamā‘ah</th></tr></thead>
+        <tbody>
+        <tr data-prayer="Fajr" class="">
+          <td class="pname"><span class="en">Fajr</span><span class="ar">الفجر</span></td>
+          <td class="ptime begins">02:44</td>
+          <td class="ptime jamaah">03:30</td>
+        </tr>
+        <tr data-prayer="Sunrise" class="muted">
+          <td class="pname"><span class="en">Sunrise</span><span class="ar">الشروق</span></td>
+          <td class="ptime begins">04:42</td>
+          <td class="ptime jamaah">—</td>
+        </tr>
+        <tr data-prayer="Dhuhr" class="">
+          <td class="pname"><span class="en">Dhuhr</span><span class="ar">الظهر</span></td>
+          <td class="ptime begins">13:05</td>
+          <td class="ptime jamaah">13:30</td>
+        </tr>
+        <tr data-prayer="Asr" class="">
+          <td class="pname"><span class="en">Asr</span><span class="ar">العصر</span></td>
+          <td class="ptime begins">18:35</td>
+          <td class="ptime jamaah">19:00</td>
+        </tr>
+        <tr data-prayer="Maghrib" class="">
+          <td class="pname"><span class="en">Maghrib</span><span class="ar">المغرب</span></td>
+          <td class="ptime begins">21:20</td>
+          <td class="ptime jamaah">21:20</td>
+        </tr>
+        <tr data-prayer="Isha" class="">
+          <td class="pname"><span class="en">Isha</span><span class="ar">العشاء</span></td>
+          <td class="ptime begins">22:36</td>
+          <td class="ptime jamaah">22:45</td>
+        </tr>
+        </tbody>
+      </table>
+      <div class="pc-foot"><span>Times for Kingston upon Thames (KT2)</span><a href="#" style="color:var(--green-3);font-weight:600">Full timetable →</a></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="jummah" id="jummah"><div class="wrap">
+  <div class="section-head"><div class="eyebrow" style="color:var(--gold-soft)">Friday Prayer</div><h2>Jummah Times</h2><p>Two congregations every Friday — the first in English, the second in Arabic.</p></div>
+  <div class="jrow">
+    <div class="jcard"><div class="eyebrow">First Jummah · English</div><div class="big">1:10 <small style="font-size:1rem">pm</small></div><small>Doors 12:50 pm · Khutbah 1:10 pm</small></div>
+    <div class="jcard"><div class="eyebrow">Second Jummah · Arabic</div><div class="big">2:10 <small style="font-size:1rem">pm</small></div><small>Doors 2:00 pm · Khutbah 2:10 pm</small></div>
+  </div>
+</div></section>
+
+<section id="events"><div class="wrap">
+  <div class="section-head"><div class="eyebrow">What's On</div><h2>Upcoming Events</h2><p>Programmes, prayers and gatherings for the whole community.</p></div>
+  <div class="grid g3">
+    <div class="card"><span class="tag">Eid</span><h3>Eid al-Adha Prayer</h3><p>Two congregations with overflow space. Full timing and parking guidance announced — please arrive early.</p></div>
+    <div class="card"><span class="tag">Ramadan</span><h3>Taraweeh &amp; I‘tikaaf</h3><p>Nightly Taraweeh and I‘tikaaf registration during the last ten nights. Suhūr &amp; Iftar timings provided.</p></div>
+    <div class="card"><span class="tag">Youth</span><h3>KMA Youth Club</h3><p>Weekly sessions for young people — faith, friendship, sport and skills in a welcoming environment.</p></div>
+  </div>
+</div></section>
+
+<section class="donate" id="donate"><div class="wrap">
+  <div class="inner">
+    <div>
+      <div class="eyebrow" style="color:var(--gold-soft)">Support your mosque</div>
+      <h2>Your Sadaqah keeps the doors open</h2>
+      <p>Kingston Mosque runs entirely on the generosity of the community — funding daily prayers, the Madrasah, and free funeral support. Give your Zakat &amp; Sadaqah by bank transfer or in person at the masjid.</p>
+    </div>
+    <div class="give-box">
+      <div class="line"><span>Account name</span><b>Kingston Muslim Association</b></div>
+      <div class="line"><span>Bank</span><b>NatWest</b></div>
+      <div class="line"><span>Sort code</span><b>60-60-02</b></div>
+      <div class="line"><span>Account no.</span><b>•••• 6156</b></div>
+      <div class="line"><span>In person</span><b>Donation box by the office</b></div>
+    </div>
+  </div>
+</div></section>
+
+<section id="education" style="background:var(--cream-2)"><div class="wrap">
+  <div class="section-head"><div class="eyebrow">Seeking Knowledge</div><h2>Education &amp; Classes</h2><p>Nurturing faith and knowledge for every age, from children to adults.</p></div>
+  <div class="grid g4">
+    <div class="card"><div class="ic">📖</div><h3>Madrasah</h3><p>Qur'an, Islamic Studies &amp; Hifz for children aged 6–16, evenings &amp; weekends.</p></div>
+    <div class="card"><div class="ic">🧒</div><h3>Youth Club</h3><p>Weekly youth sessions building confidence, character and community.</p></div>
+    <div class="card"><div class="ic">🌸</div><h3>Sisters' Circle</h3><p>A Sunday forum for girls and women — learning, friendship and events.</p></div>
+    <div class="card"><div class="ic">🎓</div><h3>Adult Classes</h3><p>Courses, lectures and study circles in Qur'an and Islamic knowledge.</p></div>
+  </div>
+</div></section>
+
+<section id="services"><div class="wrap">
+  <div class="section-head"><div class="eyebrow">How We Help</div><h2>Our Services</h2><p>Supporting the community through every stage of life.</p></div>
+  <div class="grid g4">
+    <div class="card"><div class="ic">💍</div><h3>Nikah</h3><p>Marriage services conducted by our Imams in line with authentic Islamic tradition.</p></div>
+    <div class="card"><div class="ic">🤲</div><h3>Funeral &amp; Ghusl</h3><p>Free assistance arranging and managing Ghusl and burials for the community.</p></div>
+    <div class="card"><div class="ic">🕌</div><h3>New Muslims</h3><p>Guidance, support and a warm welcome for those embracing or exploring Islam.</p></div>
+    <div class="card"><div class="ic">🏫</div><h3>School Visits</h3><p>Welcoming schools across the borough to learn about Islam and the mosque.</p></div>
+  </div>
+</div></section>
+
+<section class="impact"><div class="wrap">
+  <div class="grid">
+    <div><div class="n">1979</div><div class="l">Serving since</div></div>
+    <div><div class="n">800+</div><div class="l">Worshipper capacity</div></div>
+    <div><div class="n">2</div><div class="l">Jummah congregations</div></div>
+    <div><div class="n">6–16</div><div class="l">Madrasah ages</div></div>
+  </div>
+</div></section>
+
+<section class="contact" id="contact" style="background:var(--cream-2)"><div class="wrap">
+  <div class="section-head"><div class="eyebrow">Visit Us</div><h2>Location &amp; Contact</h2><p>You are always welcome at Kingston Mosque.</p></div>
+  <div class="grid">
+    <div class="map">🗺️<br>Interactive map<br><small>55 East Road, Kingston upon Thames, KT2 6EJ</small></div>
+    <ul class="info">
+      <li><span class="k">Address</span><span>55 East Road, Kingston upon Thames, KT2 6EJ</span></li>
+      <li><span class="k">Phone</span><span>020 8549 5315</span></li>
+      <li><span class="k">Email</span><span>info@kingstonmosque.org</span></li>
+      <li><span class="k">Facilities</span><span>Separate men's &amp; women's prayer halls · ablutions · disabled access</span></li>
+      <li><span class="k">Follow</span><span>Facebook · Telegram</span></li>
+    </ul>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <div class="cols">
+    <div>
+      <div class="brand" style="margin-bottom:12px"><span class="mark">✦</span><span><b style="color:#fff">Kingston Mosque</b><small style="color:#7fa294">Kingston Muslim Association</small></span></div>
+      <p style="max-width:26em">A registered charity providing prayer, education and community services in Kingston upon Thames since 1979.</p>
+    </div>
+    <div><h4>Visit</h4><a href="#prayer">Prayer Times</a><a href="#jummah">Jummah</a><a href="#events">Ramadan &amp; Eid</a><a href="#contact">Contact</a></div>
+    <div><h4>Get Involved</h4><a href="#education">Education</a><a href="#services">Services</a><a href="#donate">Donate</a><a href="#">Volunteer</a></div>
+    <div><h4>Contact</h4><a href="tel:02085495315">020 8549 5315</a><a href="mailto:info@kingstonmosque.org">info@kingstonmosque.org</a><a href="#">55 East Road, KT2 6EJ</a></div>
+  </div>
+  <div class="base"><span>© 2026 Kingston Muslim Association. Registered charity.</span><span>Built with care for the Ummah</span></div>
+</div></footer>
+
+<div class="preview-flag">Design preview · live data for Tuesday, 9 June 2026</div>
+
+<script>
+const PRAYERS = [{"en":"Fajr","jamaah":"03:30"},{"en":"Dhuhr","jamaah":"13:30"},{"en":"Asr","jamaah":"19:00"},{"en":"Maghrib","jamaah":"21:20"},{"en":"Isha","jamaah":"22:45"}];
+const TOMORROW_FAJR = "03:30";
+function toMin(t){const [h,m]=t.split(':').map(Number);return h*60+m;}
+function findNext(){
+  const now=new Date();const nm=now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
+  for(const p of PRAYERS){if(toMin(p.jamaah)>nm) return {name:p.en,time:p.jamaah,min:toMin(p.jamaah)};}
+  return {name:'Fajr',time:TOMORROW_FAJR,min:toMin(TOMORROW_FAJR)+1440};
+}
+function pad(n){return String(n).padStart(2,'0');}
+function tick(){
+  const nx=findNext();const now=new Date();const nm=now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
+  let diff=(nx.min-nm)*60; if(diff<0)diff+=86400;
+  const h=Math.floor(diff/3600),m=Math.floor(diff%3600/60),s=Math.floor(diff%60);
+  document.getElementById('cd-timer').textContent=pad(h)+':'+pad(m)+':'+pad(s);
+  document.getElementById('cd-label').textContent=nx.name+' jamā‘ah at '+nx.time;
+  document.getElementById('chip-name').textContent=nx.name;
+  document.getElementById('chip-time').textContent=nx.time;
+  document.getElementById('chip-count').textContent='in '+(h>0?h+'h ':'')+m+'m';
+  document.querySelectorAll('tr[data-prayer]').forEach(tr=>tr.classList.remove('next'));
+  const row=document.querySelector('tr[data-prayer="'+nx.name+'"]'); if(row)row.classList.add('next');
+}
+tick();setInterval(tick,1000);
+</script>
+</body>
+</html>
