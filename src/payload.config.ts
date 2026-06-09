@@ -23,7 +23,11 @@ import { SiteSettings, JummahSettings, DonationSettings, SpecialSchedule } from 
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const dbUri = process.env.DATABASE_URI || process.env.POSTGRES_URL || "file:./kma.db";
+const dbUri =
+  process.env.DATABASE_URI ||
+  process.env.POSTGRES_URL ||
+  process.env.DATABASE_URL ||
+  "file:./kma.db";
 // Use Postgres in production (Vercel/Neon), SQLite for local development.
 // `push: true` keeps the schema in sync automatically — simplest for this site.
 const db = dbUri.startsWith("postgres")
