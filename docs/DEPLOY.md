@@ -53,10 +53,19 @@ You will need:
 In Vercel: **Settings → Domains → Add** `www.kingstonmosque.org`, then update the
 DNS records as Vercel instructs. (Do this once you're happy with the site.)
 
-## Good to know
-- **Text content works immediately.** Uploading **images/PDFs** needs cloud file
-  storage (Vercel Blob or S3). It's a small add-on we can switch on next — until
-  then, manage text, times, events and links freely.
+## Optional: persistent images & PDFs (S3 / Cloudflare R2)
+Text content, prayer times, events and links all work immediately. To make
+**uploaded images and PDFs** persist on Vercel, add an S3-compatible bucket
+(AWS S3 or Cloudflare R2 — R2 has a generous free tier) and set these
+environment variables in **Vercel → Settings → Environment Variables**:
+
+- `S3_BUCKET` — your bucket name
+- `S3_REGION` — e.g. `eu-west-2` (for R2 use `auto`)
+- `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY`
+- `S3_ENDPOINT` — only for R2/other providers (the bucket's S3 API endpoint); leave blank for AWS S3
+
+Redeploy after adding them. With these unset, uploads fall back to local disk
+(fine for testing, not persistent on serverless).
 - The site uses **per-day prayer-time overrides** and the annual timetable from
   `data/prayer-times-2026.json`. Each year, upload the new timetable (CSV → run
   `npm run generate:prayer`, or use the upcoming in-admin upload screen).

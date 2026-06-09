@@ -4,6 +4,7 @@ import { buildConfig } from "payload";
 import { sqliteAdapter } from "@payloadcms/db-sqlite";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
+import { s3Storage } from "@payloadcms/storage-s3";
 import sharp from "sharp";
 
 import {
@@ -28,6 +29,28 @@ const dbUri = process.env.DATABASE_URI || process.env.POSTGRES_URL || "file:./km
 const db = dbUri.startsWith("postgres")
   ? postgresAdapter({ pool: { connectionString: dbUri }, push: true })
   : sqliteAdapter({ client: { url: dbUri }, push: true });
+
+// Persistent media storage (S3 / Cloudflare R2 / any S3-compatible). Activates
+// only when S3_BUCKET is set, so it never blocks a deploy. Uses server-side
+// uploads (no client component) to keep the admin bundle clean.
+const plugins =
+  process.env.S3_BUCKET
+    ? [
+        s3Storage({
+          collections: { media: true },
+          bucket: process.env.S3_BUCKET,
+          config: {
+            region: process.env.S3_REGION,
+            endpoint: process.env.S3_ENDPOINT || undefined,
+            forcePathStyle: Boolean(process.env.S3_ENDPOINT),
+            credentials: {
+              accessKeyId: process.env.S3_ACCESS_KEY_ID || "",
+              secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "",
+            },
+          },
+        }),
+      ]
+    : [];
 
 export default buildConfig({
   admin: {
@@ -55,7 +78,5 @@ export default buildConfig({
   db,
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   sharp,
-  // Note: cloud media storage (Vercel Blob / S3) is a planned follow-up so that
-  // uploaded images/PDFs persist on serverless hosting. Text content, prayer
-  // times, events, etc. work fully without it.
+  plugins,
 });
