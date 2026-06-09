@@ -4,6 +4,11 @@
 **Prepared for:** Kingston Muslim Association (KMA), 55 East Rd, Kingston upon Thames, KT2 6EJ.
 **Scope:** Full rebuild of https://www.kingstonmosque.org with a custom, easy-to-manage CMS, a prayer‑times engine driven by the supplied 365‑day calendar, and a premium Islamic design system.
 
+### Decisions confirmed by KMA
+- **Tech stack:** Next.js (App Router) + **Payload CMS** + PostgreSQL (single integrated app).
+- **Hosting:** Managed — Vercel + managed Postgres (e.g. Neon/Supabase), with daily backups & staging.
+- **Donations:** **Bank transfer + in-person only** at launch (display bank details + Iftar donation box). No online card payments for now; the donation data model will keep an online-payments option open for the future.
+
 ---
 
 ## 1. Audit of the existing website
