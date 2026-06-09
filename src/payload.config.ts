@@ -18,6 +18,7 @@ import {
   Announcements,
   PrayerDays,
   TimetableUploads,
+  ContactSubmissions,
 } from "./payload/collections";
 import { SiteSettings, JummahSettings, DonationSettings, SpecialSchedule } from "./payload/globals";
 
@@ -73,6 +74,7 @@ export default buildConfig({
     Announcements,
     PrayerDays,
     TimetableUploads,
+    ContactSubmissions,
     Media,
     Users,
   ],
@@ -83,4 +85,19 @@ export default buildConfig({
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   sharp,
   plugins,
+  // Payload's adapters only auto-create the schema in development. Production
+  // (e.g. `next start` on Railway) expects migrations, which can't be generated
+  // in this environment — so we sync the schema on first boot instead. This is
+  // idempotent (applies only diffs) and keeps the managed DB in step with the code.
+  onInit: async (payload) => {
+    if (process.env.NODE_ENV === "production" && process.env.PAYLOAD_MIGRATING !== "true") {
+      try {
+        const { pushDevSchema } = await import("@payloadcms/drizzle");
+        await pushDevSchema(payload.db as never);
+        payload.logger.info("✓ Database schema synced on boot.");
+      } catch (err) {
+        payload.logger.error("Schema sync on boot failed: " + (err as Error).message);
+      }
+    }
+  },
 });

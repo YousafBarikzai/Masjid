@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import PageHero from "@/components/layout/PageHero";
 import { getPosts, type NewsItem } from "@/lib/cms";
 
@@ -23,13 +24,24 @@ export default async function NewsPage() {
       <section>
         <div className="wrap">
           <div className="grid g3">
-            {posts.map((p) => (
-              <article className="card" key={p.title}>
-                <span className="tag">{p.date}</span>
-                <h3>{p.title}</h3>
-                <p>{p.body}</p>
-              </article>
-            ))}
+            {posts.map((p) => {
+              const inner = (
+                <>
+                  <span className="tag">{p.date}</span>
+                  <h3>{p.title}</h3>
+                  <p>{p.body}</p>
+                </>
+              );
+              return p.slug ? (
+                <Link className="card" href={`/news/${p.slug}`} key={p.title}>
+                  {inner}
+                </Link>
+              ) : (
+                <article className="card" key={p.title}>
+                  {inner}
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>

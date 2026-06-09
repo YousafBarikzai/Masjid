@@ -106,8 +106,8 @@ for (const e of [
 
 // news posts
 for (const p of [
-  { title: "Eid prayer arrangements announced", slug: "eid-arrangements", publishedDate: new Date().toISOString(), excerpt: "Details of Eid congregations, timings and overflow space." },
-  { title: "Teacher vacancies at the KMA Madrasah", slug: "madrasah-vacancies", publishedDate: new Date().toISOString(), excerpt: "We are looking for dedicated teachers to join our Madrasah." },
+  { title: "Eid prayer arrangements announced", slug: "eid-arrangements", _status: "published", publishedDate: new Date().toISOString(), excerpt: "Details of Eid congregations, timings and overflow space." },
+  { title: "Teacher vacancies at the KMA Madrasah", slug: "madrasah-vacancies", _status: "published", publishedDate: new Date().toISOString(), excerpt: "We are looking for dedicated teachers to join our Madrasah." },
 ]) await post("posts", p, token);
 
 // classes

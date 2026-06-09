@@ -369,3 +369,39 @@ export const TimetableUploads: CollectionConfig = {
     ],
   },
 };
+
+/* --------------------------- Contact submissions -------------------------- */
+export const ContactSubmissions: CollectionConfig = {
+  slug: "contact-submissions",
+  labels: { singular: "Contact message", plural: "Contact Messages" },
+  admin: {
+    useAsTitle: "name",
+    defaultColumns: ["name", "email", "subject", "handled", "createdAt"],
+    group: "Content",
+    description: "Messages sent from the website contact form.",
+  },
+  access: {
+    create: () => true, // public can submit
+    read: isStaff,
+    update: isStaff,
+    delete: isAdmin,
+  },
+  fields: [
+    { name: "name", type: "text", required: true },
+    { name: "email", type: "email", required: true },
+    { name: "phone", type: "text" },
+    { name: "subject", type: "text" },
+    { name: "message", type: "textarea", required: true },
+    { name: "handled", type: "checkbox", defaultValue: false, admin: { description: "Tick once dealt with" } },
+    // simple spam honeypot — real users leave this empty
+    { name: "company", type: "text", admin: { hidden: true } },
+  ],
+  hooks: {
+    beforeValidate: [
+      ({ data }) => {
+        if (data?.company) throw new Error("Spam detected.");
+        return data;
+      },
+    ],
+  },
+};

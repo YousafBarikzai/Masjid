@@ -1,4 +1,5 @@
 import Link from "next/link";
+import MosqueSkyline from "@/components/decor/MosqueSkyline";
 
 export default function PageHero({
   title,
@@ -11,6 +12,7 @@ export default function PageHero({
 }) {
   return (
     <section className="page-hero">
+      <MosqueSkyline className="page-hero-skyline" />
       <div className="wrap">
         <div className="breadcrumb">
           <Link href="/">Home</Link>

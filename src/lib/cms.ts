@@ -108,7 +108,7 @@ export const getEvents = cache(async (): Promise<CardItem[]> => {
       tag: e.category ?? "Event",
       title: e.title,
       body: val(e.summary, val(e.location ? `At ${e.location}` : "", "Details to follow.")),
-      href: "/events",
+      href: e.slug ? `/events/${e.slug}` : "/events",
     }));
   } catch {
     return seed.events;
@@ -162,6 +162,7 @@ export interface NewsItem {
   date: string;
   title: string;
   body: string;
+  slug?: string;
 }
 export const getPosts = cache(async (): Promise<NewsItem[]> => {
   try {
@@ -174,9 +175,36 @@ export const getPosts = cache(async (): Promise<NewsItem[]> => {
         : "News",
       title: d.title,
       body: val(d.excerpt, ""),
+      slug: d.slug,
     }));
   } catch {
     return [];
+  }
+});
+
+/* ----------------------- Event / post detail lookups ---------------------- */
+export const getEventBySlug = cache(async (slug: string): Promise<Record<string, any> | null> => {
+  try {
+    const p = await getPayloadClient();
+    const res = await p.find({ collection: "events", where: { slug: { equals: slug } }, limit: 1, depth: 2 });
+    return (res.docs[0] as Record<string, any>) ?? null;
+  } catch {
+    return null;
+  }
+});
+
+export const getPostBySlug = cache(async (slug: string): Promise<Record<string, any> | null> => {
+  try {
+    const p = await getPayloadClient();
+    const res = await p.find({
+      collection: "posts",
+      where: { and: [{ slug: { equals: slug } }, { _status: { equals: "published" } }] },
+      limit: 1,
+      depth: 2,
+    });
+    return (res.docs[0] as Record<string, any>) ?? null;
+  } catch {
+    return null;
   }
 });
 
