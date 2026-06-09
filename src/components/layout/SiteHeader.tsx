@@ -3,6 +3,7 @@ import { nav } from "@/lib/content";
 import { getSite, getAnnouncement } from "@/lib/cms";
 import Brand from "./Brand";
 import MobileMenu from "./MobileMenu";
+import ThemeToggle from "./ThemeToggle";
 
 export default async function SiteHeader() {
   const [site, alert] = await Promise.all([getSite(), getAnnouncement()]);
@@ -44,6 +45,7 @@ export default async function SiteHeader() {
             ))}
           </nav>
           <div className="header-cta">
+            <ThemeToggle />
             <Link className="btn btn-gold desktop-only" href="/donate">
               Donate
             </Link>

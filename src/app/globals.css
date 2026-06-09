@@ -14,6 +14,32 @@
   --radius: 16px;
 }
 
+/* dark theme */
+[data-theme="dark"] {
+  --cream: #0f1613;
+  --cream-2: #161f1a;
+  --white: #1a2520;
+  --ink: #e9e7df;
+  --muted: #a6b1a6;
+  --line: #29342d;
+  --shadow: 0 14px 40px rgba(0, 0, 0, .5);
+}
+[data-theme="dark"] header.site { background: rgba(15, 22, 19, .9); }
+[data-theme="dark"] .brand b { color: var(--gold-soft); }
+[data-theme="dark"] nav.main a { color: var(--ink); }
+[data-theme="dark"] .section-head h2 { color: #f1e7cf; }
+[data-theme="dark"] .card h3, [data-theme="dark"] .prose h2 { color: var(--gold-soft); }
+[data-theme="dark"] .prose h3 { color: #cfe3d9; }
+[data-theme="dark"] .prose p { color: var(--ink); }
+[data-theme="dark"] .tt tbody tr:nth-child(even) td { background: rgba(255, 255, 255, .03); }
+[data-theme="dark"] .tt td, [data-theme="dark"] .tt caption { color: var(--ink); }
+[data-theme="dark"] .note-box { background: #241f10; color: #e8d59a; }
+[data-theme="dark"] .tag { color: #7fd3ad; background: rgba(21, 127, 84, .18); }
+[data-theme="dark"] .contact-form label { color: var(--gold-soft); }
+[data-theme="dark"] .map { background: var(--cream-2); color: var(--muted); }
+.theme-toggle { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line); background: var(--white); color: var(--ink); cursor: pointer; font-size: 1.1rem; display: grid; place-items: center; flex: none; transition: .2s; }
+.theme-toggle:hover { border-color: var(--gold); transform: translateY(-1px); }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {

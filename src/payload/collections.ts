@@ -403,5 +403,24 @@ export const ContactSubmissions: CollectionConfig = {
         return data;
       },
     ],
+    afterChange: [
+      async ({ doc, operation, req }) => {
+        if (operation !== "create" || !process.env.SMTP_HOST) return doc;
+        const d = doc as Record<string, any>;
+        try {
+          await req.payload.sendEmail({
+            to: process.env.CONTACT_TO || process.env.SMTP_FROM || "info@kingstonmosque.org",
+            replyTo: d.email,
+            subject: `Website enquiry: ${d.subject || d.name}`,
+            text:
+              `New message from the Kingston Mosque website contact form:\n\n` +
+              `Name: ${d.name}\nEmail: ${d.email}\nPhone: ${d.phone || "-"}\nSubject: ${d.subject || "-"}\n\n${d.message}\n`,
+          });
+        } catch (err) {
+          req.payload.logger.error("Contact email failed: " + (err as Error).message);
+        }
+        return doc;
+      },
+    ],
   },
 };

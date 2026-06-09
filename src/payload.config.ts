@@ -5,6 +5,7 @@ import { sqliteAdapter } from "@payloadcms/db-sqlite";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { s3Storage } from "@payloadcms/storage-s3";
+import { nodemailerAdapter } from "@payloadcms/email-nodemailer";
 import sharp from "sharp";
 
 import {
@@ -81,6 +82,22 @@ export default buildConfig({
   globals: [SiteSettings, JummahSettings, DonationSettings, SpecialSchedule],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "dev-secret-change-me",
+  // Email is optional: set SMTP_* env vars to enable real delivery (e.g. contact
+  // form notifications). Without them, messages are still saved in the admin.
+  email: process.env.SMTP_HOST
+    ? nodemailerAdapter({
+        defaultFromAddress: process.env.SMTP_FROM || "no-reply@kingstonmosque.org",
+        defaultFromName: "Kingston Mosque",
+        transportOptions: {
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT || 587),
+          secure: process.env.SMTP_PORT === "465",
+          auth: process.env.SMTP_USER
+            ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+            : undefined,
+        },
+      })
+    : undefined,
   db,
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   sharp,
