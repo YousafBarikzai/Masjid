@@ -30,3 +30,11 @@ next-env.d.ts
 
 # playwright (browsers are installed system-wide)
 /test-results
+
+# payload runtime artifacts
+/media
+/kma.db
+/kma.db-*
+*.db
+*.db-journal
+src/payload-types.ts

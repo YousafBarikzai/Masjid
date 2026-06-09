@@ -12,9 +12,15 @@
     "preview:home": "node scripts/build-home-preview.mjs"
   },
   "dependencies": {
-    "next": "^15.3.0",
+    "@payloadcms/db-sqlite": "^3.85.0",
+    "@payloadcms/next": "^3.85.0",
+    "@payloadcms/richtext-lexical": "^3.85.0",
+    "graphql": "^16.14.2",
+    "next": "~15.4.11",
+    "payload": "^3.85.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
