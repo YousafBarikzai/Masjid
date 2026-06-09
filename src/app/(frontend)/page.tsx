@@ -9,6 +9,7 @@ import SpecialSection from "@/components/sections/SpecialSection";
 import DonateSection from "@/components/sections/DonateSection";
 import ContactSection from "@/components/sections/ContactSection";
 import CardGrid from "@/components/sections/CardGrid";
+import MosqueSkyline from "@/components/decor/MosqueSkyline";
 
 // Render per-request so "today" is always correct in Europe/London.
 export const dynamic = "force-dynamic";
@@ -25,6 +26,7 @@ export default async function Home() {
   return (
     <>
       <section className="hero">
+        <MosqueSkyline className="hero-skyline" />
         <div className="wrap">
           <div>
             <NextPrayerChip rows={rows} tomorrowFajr={tomorrowFajr} />

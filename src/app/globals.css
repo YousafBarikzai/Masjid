@@ -69,7 +69,9 @@ nav.main a:hover { color: var(--green-3); }
 /* hero */
 .hero { position: relative; background: linear-gradient(150deg, #0a352a 0%, #0b3d2e 55%, #0f5132 100%); color: #eaf4ee; overflow: hidden; }
 .hero::before { content: ""; position: absolute; inset: 0; opacity: .5; background-image: radial-gradient(circle at 14px 14px, rgba(201, 162, 39, .16) 2px, transparent 0); background-size: 28px 28px; }
-.hero .wrap { position: relative; display: grid; grid-template-columns: 1.15fr .85fr; gap: 48px; align-items: center; padding: 84px 20px; }
+.hero::before { z-index: 0; }
+.hero-skyline { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: auto; color: #04150f; opacity: .92; z-index: 1; pointer-events: none; }
+.hero .wrap { position: relative; z-index: 2; display: grid; grid-template-columns: 1.15fr .85fr; gap: 48px; align-items: center; padding: 84px 20px; }
 .hero h1 { font-size: 3.5rem; line-height: 1.05; color: #fff; font-weight: 700; }
 .hero h1 span { color: var(--gold-soft); }
 .hero p.lead { margin: 18px 0 28px; font-size: 1.12rem; color: #cfe3d9; max-width: 30em; }
