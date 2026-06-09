@@ -1,0 +1,14 @@
+# Never upload local secrets, the local dev database, or local uploads.
+.env
+.env.*
+!.env.example
+kma.db
+kma.db-*
+*.db
+*.db-journal
+/media
+node_modules
+.next
+# large local-only artifacts
+docs/*.png
+docs/*.html
