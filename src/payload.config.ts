@@ -2,6 +2,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { buildConfig } from "payload";
 import { sqliteAdapter } from "@payloadcms/db-sqlite";
+import { postgresAdapter } from "@payloadcms/db-postgres";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import sharp from "sharp";
 
@@ -19,6 +20,13 @@ import {
 import { SiteSettings, JummahSettings, DonationSettings } from "./payload/globals";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const dbUri = process.env.DATABASE_URI || process.env.POSTGRES_URL || "file:./kma.db";
+// Use Postgres in production (Vercel/Neon), SQLite for local development.
+// `push: true` keeps the schema in sync automatically — simplest for this site.
+const db = dbUri.startsWith("postgres")
+  ? postgresAdapter({ pool: { connectionString: dbUri }, push: true })
+  : sqliteAdapter({ client: { url: dbUri }, push: true });
 
 export default buildConfig({
   admin: {
@@ -42,9 +50,7 @@ export default buildConfig({
   globals: [SiteSettings, JummahSettings, DonationSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "dev-secret-change-me",
-  db: sqliteAdapter({
-    client: { url: process.env.DATABASE_URI || "file:./kma.db" },
-  }),
+  db,
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   sharp,
 });
