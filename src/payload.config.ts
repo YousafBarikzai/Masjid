@@ -4,6 +4,7 @@ import { buildConfig } from "payload";
 import { sqliteAdapter } from "@payloadcms/db-sqlite";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
+import { vercelBlobStorage } from "@payloadcms/storage-vercel-blob";
 import sharp from "sharp";
 
 import {
@@ -53,4 +54,13 @@ export default buildConfig({
   db,
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   sharp,
+  plugins: [
+    // On Vercel, set BLOB_READ_WRITE_TOKEN to store uploaded images/PDFs in
+    // Vercel Blob. Locally (no token) Payload uses the local /media folder.
+    vercelBlobStorage({
+      enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+      collections: { media: true },
+      token: process.env.BLOB_READ_WRITE_TOKEN || "",
+    }),
+  ],
 });

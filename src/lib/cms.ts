@@ -180,6 +180,22 @@ export const getPosts = cache(async (): Promise<NewsItem[]> => {
   }
 });
 
+/* ------------------------------ CMS Pages -------------------------------- */
+export const getPageBySlug = cache(async (slug: string): Promise<Record<string, any> | null> => {
+  try {
+    const p = await getPayloadClient();
+    const res = await p.find({
+      collection: "pages",
+      where: { and: [{ slug: { equals: slug } }, { _status: { equals: "published" } }] },
+      limit: 1,
+      depth: 2,
+    });
+    return (res.docs[0] as Record<string, any>) ?? null;
+  } catch {
+    return null;
+  }
+});
+
 /* --------------------- Prayer override for a given day -------------------- */
 export const getPrayerOverride = cache(async (dateISO: string): Promise<PrayerDay | null> => {
   try {

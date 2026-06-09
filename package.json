@@ -9,13 +9,16 @@
     "start": "next start",
     "lint": "next lint",
     "generate:prayer": "node scripts/generate-prayer-data.mjs data/prayer-timetable-2026.csv data/prayer-times-2026.json 2026",
-    "preview:home": "node scripts/build-home-preview.mjs"
+    "preview:home": "node scripts/build-home-preview.mjs",
+    "seed:cms": "node scripts/seed-cms.mjs",
+    "import:prayer": "node scripts/import-prayer-times.mjs"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.85.0",
     "@payloadcms/db-sqlite": "^3.85.0",
     "@payloadcms/next": "^3.85.0",
     "@payloadcms/richtext-lexical": "^3.85.0",
+    "@payloadcms/storage-vercel-blob": "^3.85.0",
     "graphql": "^16.14.2",
     "next": "~15.4.11",
     "payload": "^3.85.0",
