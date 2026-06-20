@@ -21,8 +21,16 @@ import {
   TimetableUploads,
   ContactSubmissions,
   DeviceTokens,
+  Subscribers,
+  Broadcasts,
 } from "./payload/collections";
-import { SiteSettings, JummahSettings, DonationSettings, SpecialSchedule } from "./payload/globals";
+import {
+  SiteSettings,
+  JummahSettings,
+  DonationSettings,
+  SpecialSchedule,
+  BroadcastSettings,
+} from "./payload/globals";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -84,10 +92,12 @@ export default buildConfig({
     TimetableUploads,
     ContactSubmissions,
     DeviceTokens,
+    Subscribers,
+    Broadcasts,
     Media,
     Users,
   ],
-  globals: [SiteSettings, JummahSettings, DonationSettings, SpecialSchedule],
+  globals: [SiteSettings, JummahSettings, DonationSettings, SpecialSchedule, BroadcastSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "dev-secret-change-me",
   // Email is optional: set SMTP_* env vars to enable real delivery (e.g. contact

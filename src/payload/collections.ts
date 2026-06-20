@@ -506,3 +506,127 @@ export const DeviceTokens: CollectionConfig = {
     { name: "enabled", type: "checkbox", defaultValue: true },
   ],
 };
+
+/* ------------------------------- Subscribers ------------------------------ */
+// Opt-in contacts for the Broadcast Center (email + WhatsApp). The public can
+// self-subscribe via a form; staff manage the list in the admin.
+export const Subscribers: CollectionConfig = {
+  slug: "subscribers",
+  labels: { singular: "Subscriber", plural: "Subscribers (Broadcast)" },
+  admin: {
+    useAsTitle: "email",
+    defaultColumns: ["name", "email", "whatsapp", "emailOptIn", "whatsappOptIn", "unsubscribed"],
+    group: "Broadcast",
+    description: "People who opted in to email / WhatsApp updates.",
+  },
+  access: { create: () => true, read: isStaff, update: isStaff, delete: isAdmin },
+  fields: [
+    { name: "name", type: "text" },
+    { name: "email", type: "email" },
+    { name: "whatsapp", type: "text", admin: { description: "International format, e.g. 447700900000" } },
+    { name: "emailOptIn", type: "checkbox", defaultValue: true, label: "Wants email updates" },
+    { name: "whatsappOptIn", type: "checkbox", defaultValue: false, label: "Wants WhatsApp updates" },
+    { name: "unsubscribed", type: "checkbox", defaultValue: false },
+    { name: "source", type: "text", admin: { description: "How they joined (e.g. website form, QR)" } },
+  ],
+};
+
+/* ------------------------------- Broadcasts ------------------------------- */
+// Compose once, send to chosen channels. Env-gated adapters fan out via the
+// afterChange hook; the per-channel result is written back to the report.
+export const Broadcasts: CollectionConfig = {
+  slug: "broadcasts",
+  labels: { singular: "Broadcast", plural: "Broadcasts" },
+  admin: {
+    useAsTitle: "title",
+    defaultColumns: ["title", "status", "sentAt", "createdAt"],
+    group: "Broadcast",
+    description: "Write a notice, pick channels, tick 'Send now' and save. It sends once; the report appears below.",
+  },
+  access: { read: isEditor, create: isEditor, update: isEditor, delete: isAdmin },
+  fields: [
+    { name: "title", type: "text", required: true },
+    { name: "body", type: "textarea", required: true },
+    {
+      name: "image",
+      type: "upload",
+      relationTo: "media",
+      admin: { description: "Optional. Required for Instagram; used by Facebook/Telegram/WhatsApp if set." },
+    },
+    {
+      name: "channels",
+      type: "select",
+      hasMany: true,
+      admin: { description: "Where to send this." },
+      options: [
+        { label: "Email", value: "email" },
+        { label: "Telegram", value: "telegram" },
+        { label: "WhatsApp", value: "whatsapp" },
+        { label: "Facebook", value: "facebook" },
+        { label: "Instagram", value: "instagram" },
+      ],
+    },
+    {
+      name: "send",
+      type: "checkbox",
+      defaultValue: false,
+      label: "Send now",
+      admin: { description: "Tick and save to dispatch. Sends once." },
+    },
+    {
+      name: "status",
+      type: "select",
+      defaultValue: "draft",
+      admin: { readOnly: true },
+      options: [
+        { label: "Draft", value: "draft" },
+        { label: "Sent", value: "sent" },
+      ],
+    },
+    { name: "report", type: "textarea", admin: { readOnly: true, description: "Per-channel result, filled after sending." } },
+    { name: "sentAt", type: "date", admin: { readOnly: true } },
+  ],
+  hooks: {
+    afterChange: [
+      async ({ doc, req, context }) => {
+        if ((context as Record<string, unknown>)?.broadcastDone) return doc;
+        const d = doc as Record<string, any>;
+        if (!d.send || d.status === "sent") return doc;
+
+        // Resolve a public image URL if an image is attached.
+        let imageUrl: string | null = null;
+        if (d.image) {
+          const media =
+            typeof d.image === "object"
+              ? d.image
+              : await req.payload.findByID({ collection: "media", id: d.image, depth: 0 }).catch(() => null);
+          const url = (media as Record<string, any> | null)?.url as string | undefined;
+          if (url) {
+            const base = (process.env.SERVER_URL || process.env.NEXT_PUBLIC_SERVER_URL || "").replace(/\/$/, "");
+            imageUrl = url.startsWith("http") ? url : `${base}${url}`;
+          }
+        }
+
+        const channels = Array.isArray(d.channels) ? d.channels : [];
+        let report: string;
+        try {
+          const { runBroadcast } = await import("../lib/broadcast");
+          const results = await runBroadcast(req.payload, { title: d.title, body: d.body, imageUrl }, channels);
+          report = results.length
+            ? results.map((r) => `${r.channel}: ${r.status}${r.detail ? ` — ${r.detail}` : ""}`).join("\n")
+            : "No channels selected.";
+        } catch (err) {
+          report = "Send failed: " + (err as Error).message;
+        }
+
+        await req.payload.update({
+          collection: "broadcasts",
+          id: d.id,
+          data: { status: "sent", send: false, report, sentAt: new Date().toISOString() },
+          context: { broadcastDone: true },
+        });
+        return doc;
+      },
+    ],
+  },
+};
