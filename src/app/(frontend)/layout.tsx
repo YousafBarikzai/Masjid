@@ -1,7 +1,8 @@
 import "../globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
+import PwaRegister from "@/components/pwa/PwaRegister";
 import { site, siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -11,6 +12,19 @@ export const metadata: Metadata = {
     template: `%s · ${site.name}`,
   },
   description: site.intro,
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: site.name,
+  },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/icons/apple-touch-icon.png",
+  },
   openGraph: {
     title: `${site.name} — ${site.org}`,
     description: site.intro,
@@ -18,6 +32,10 @@ export const metadata: Metadata = {
     locale: "en_GB",
     url: siteUrl,
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0b3d2e",
 };
 
 // The header/footer read live data from the CMS, so render at request time.
@@ -65,6 +83,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SiteHeader />
         <main id="main">{children}</main>
         <SiteFooter />
+        <PwaRegister />
       </body>
     </html>
   );
