@@ -1,6 +1,26 @@
 import type { GlobalConfig } from "payload";
 import { anyone, isAdmin, isPrayerManager } from "./access";
 
+export const BroadcastSettings: GlobalConfig = {
+  slug: "broadcast-settings",
+  label: "Broadcast",
+  admin: { group: "Broadcast" },
+  access: { read: anyone, update: isAdmin },
+  fields: [
+    {
+      name: "signature",
+      type: "textarea",
+      admin: { description: "Optional sign-off appended to broadcasts, e.g. “— Kingston Mosque”." },
+    },
+    {
+      name: "whatsappJoinUrl",
+      type: "text",
+      admin: { description: "Public “join our WhatsApp updates” link/QR target shown to the community." },
+    },
+    { name: "telegramJoinUrl", type: "text", admin: { description: "Public Telegram channel/group link." } },
+  ],
+};
+
 export const SiteSettings: GlobalConfig = {
   slug: "site-settings",
   label: "Site Settings",
