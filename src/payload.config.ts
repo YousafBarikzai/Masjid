@@ -20,6 +20,7 @@ import {
   PrayerDays,
   TimetableUploads,
   ContactSubmissions,
+  DeviceTokens,
 } from "./payload/collections";
 import { SiteSettings, JummahSettings, DonationSettings, SpecialSchedule } from "./payload/globals";
 
@@ -59,6 +60,12 @@ const plugins =
     : [];
 
 export default buildConfig({
+  // Public URL of the deployed site (used in emails, previews, API links).
+  serverURL: process.env.SERVER_URL || process.env.NEXT_PUBLIC_SERVER_URL || undefined,
+  // Allow the mobile apps, PWA and mosque screens to call the API from other
+  // origins. Defaults to open ("*") since all app-facing data is public read;
+  // set CORS_ORIGINS (comma-separated) to lock it down to known origins.
+  cors: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(",").map((s) => s.trim()) : "*",
   admin: {
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
@@ -76,6 +83,7 @@ export default buildConfig({
     PrayerDays,
     TimetableUploads,
     ContactSubmissions,
+    DeviceTokens,
     Media,
     Users,
   ],

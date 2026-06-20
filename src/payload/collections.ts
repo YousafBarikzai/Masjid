@@ -215,7 +215,48 @@ export const Announcements: CollectionConfig = {
     { name: "enabled", type: "checkbox", defaultValue: true },
     { name: "startDate", type: "date" },
     { name: "endDate", type: "date" },
+    {
+      name: "sendPush",
+      type: "checkbox",
+      defaultValue: false,
+      label: "Send push notification to the apps",
+      admin: { description: "Tick to alert everyone with the mobile app. Sends once." },
+    },
+    {
+      name: "pushSent",
+      type: "checkbox",
+      defaultValue: false,
+      admin: { readOnly: true, description: "Set automatically once the push has been sent." },
+    },
   ],
+  hooks: {
+    afterChange: [
+      async ({ doc, req, context }) => {
+        // Fire a single push when an enabled announcement is flagged to notify.
+        // The `pushSent` guard + skipPush context make this idempotent (no loops).
+        if ((context as Record<string, unknown>)?.skipPush) return doc;
+        const d = doc as Record<string, any>;
+        if (!d.enabled || !d.sendPush || d.pushSent) return doc;
+        try {
+          const { sendPushToAll } = await import("../lib/push");
+          await sendPushToAll(
+            req.payload,
+            { title: d.label || "Kingston Mosque", body: d.message, data: { type: "announcement", id: d.id } },
+            "news",
+          );
+          await req.payload.update({
+            collection: "announcements",
+            id: d.id,
+            data: { pushSent: true },
+            context: { skipPush: true },
+          });
+        } catch (err) {
+          req.payload.logger.error("Announcement push failed: " + (err as Error).message);
+        }
+        return doc;
+      },
+    ],
+  },
 };
 
 /* ------------------------- Prayer days (overrides) ------------------------ */
@@ -423,4 +464,45 @@ export const ContactSubmissions: CollectionConfig = {
       },
     ],
   },
+};
+
+/* ------------------------------ Device tokens ----------------------------- */
+// Push tokens registered by the mobile apps. Write access is locked to staff in
+// the admin UI; the apps self-register through the /app-api/register-device
+// route, which upserts with overrideAccess so this stays clean and tamper-proof.
+export const DeviceTokens: CollectionConfig = {
+  slug: "device-tokens",
+  labels: { singular: "App device", plural: "App Devices (Push)" },
+  admin: {
+    useAsTitle: "token",
+    defaultColumns: ["platform", "token", "enabled", "createdAt"],
+    group: "Administration",
+    description: "Push tokens registered automatically by the mobile apps.",
+  },
+  access: { create: isStaff, read: isStaff, update: isStaff, delete: isStaff },
+  fields: [
+    { name: "token", type: "text", required: true, unique: true, index: true },
+    {
+      name: "platform",
+      type: "select",
+      defaultValue: "ios",
+      options: [
+        { label: "iOS", value: "ios" },
+        { label: "Android", value: "android" },
+        { label: "Web", value: "web" },
+      ],
+    },
+    {
+      name: "topics",
+      type: "select",
+      hasMany: true,
+      defaultValue: ["news", "events"],
+      options: [
+        { label: "News & announcements", value: "news" },
+        { label: "Events", value: "events" },
+        { label: "Prayer reminders", value: "prayer" },
+      ],
+    },
+    { name: "enabled", type: "checkbox", defaultValue: true },
+  ],
 };
