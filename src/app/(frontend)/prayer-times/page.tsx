@@ -1,0 +1,39 @@
+import type { Metadata } from "next";
+import PageHero from "@/components/layout/PageHero";
+import PrayerCard from "@/components/home/PrayerCard";
+import MonthlyTimetable from "@/components/prayer/MonthlyTimetable";
+import { getToday, getNextDay, dayRows, formatGregorian, formatHijri, timetableYear } from "@/lib/prayer";
+import { getPrayerOverride } from "@/lib/cms";
+
+export const metadata: Metadata = { title: "Prayer Times" };
+export const dynamic = "force-dynamic";
+
+export default async function PrayerTimesPage() {
+  const base = getToday();
+  const today = (await getPrayerOverride(base.date)) ?? base;
+  const rows = dayRows(today);
+  const tomorrowFajr = getNextDay(base.date).fajr.jamaah;
+
+  return (
+    <>
+      <PageHero
+        title="Prayer Times"
+        crumb="Prayer Times"
+        intro={`Daily salah and jamā‘ah times for Kingston Mosque. Full ${timetableYear} timetable below.`}
+      />
+      <section>
+        <div className="wrap">
+          <div style={{ maxWidth: 520, margin: "0 auto" }}>
+            <PrayerCard
+              gregorian={formatGregorian(today.date)}
+              hijri={formatHijri(today.date)}
+              rows={rows}
+              tomorrowFajr={tomorrowFajr}
+            />
+          </div>
+          <MonthlyTimetable />
+        </div>
+      </section>
+    </>
+  );
+}

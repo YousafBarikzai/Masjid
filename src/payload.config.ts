@@ -1,0 +1,120 @@
+import path from "path";
+import { fileURLToPath } from "url";
+import { buildConfig } from "payload";
+import { sqliteAdapter } from "@payloadcms/db-sqlite";
+import { postgresAdapter } from "@payloadcms/db-postgres";
+import { lexicalEditor } from "@payloadcms/richtext-lexical";
+import { s3Storage } from "@payloadcms/storage-s3";
+import { nodemailerAdapter } from "@payloadcms/email-nodemailer";
+import sharp from "sharp";
+
+import {
+  Users,
+  Media,
+  Pages,
+  Posts,
+  Events,
+  Classes,
+  Services,
+  Announcements,
+  PrayerDays,
+  TimetableUploads,
+  ContactSubmissions,
+} from "./payload/collections";
+import { SiteSettings, JummahSettings, DonationSettings, SpecialSchedule } from "./payload/globals";
+
+const dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const dbUri =
+  process.env.DATABASE_URI ||
+  process.env.POSTGRES_URL ||
+  process.env.DATABASE_URL ||
+  "file:./kma.db";
+// Use Postgres in production (Vercel/Neon), SQLite for local development.
+// `push: true` keeps the schema in sync automatically — simplest for this site.
+const db = dbUri.startsWith("postgres")
+  ? postgresAdapter({ pool: { connectionString: dbUri }, push: true })
+  : sqliteAdapter({ client: { url: dbUri }, push: true });
+
+// Persistent media storage (S3 / Cloudflare R2 / any S3-compatible). Activates
+// only when S3_BUCKET is set, so it never blocks a deploy. Uses server-side
+// uploads (no client component) to keep the admin bundle clean.
+const plugins =
+  process.env.S3_BUCKET
+    ? [
+        s3Storage({
+          collections: { media: true },
+          bucket: process.env.S3_BUCKET,
+          config: {
+            region: process.env.S3_REGION,
+            endpoint: process.env.S3_ENDPOINT || undefined,
+            forcePathStyle: Boolean(process.env.S3_ENDPOINT),
+            credentials: {
+              accessKeyId: process.env.S3_ACCESS_KEY_ID || "",
+              secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "",
+            },
+          },
+        }),
+      ]
+    : [];
+
+export default buildConfig({
+  admin: {
+    user: Users.slug,
+    importMap: { baseDir: path.resolve(dirname) },
+    meta: {
+      titleSuffix: " · Kingston Mosque Admin",
+    },
+  },
+  collections: [
+    Pages,
+    Posts,
+    Events,
+    Classes,
+    Services,
+    Announcements,
+    PrayerDays,
+    TimetableUploads,
+    ContactSubmissions,
+    Media,
+    Users,
+  ],
+  globals: [SiteSettings, JummahSettings, DonationSettings, SpecialSchedule],
+  editor: lexicalEditor(),
+  secret: process.env.PAYLOAD_SECRET || "dev-secret-change-me",
+  // Email is optional: set SMTP_* env vars to enable real delivery (e.g. contact
+  // form notifications). Without them, messages are still saved in the admin.
+  email: process.env.SMTP_HOST
+    ? nodemailerAdapter({
+        defaultFromAddress: process.env.SMTP_FROM || "no-reply@kingstonmosque.org",
+        defaultFromName: "Kingston Mosque",
+        transportOptions: {
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT || 587),
+          secure: process.env.SMTP_PORT === "465",
+          auth: process.env.SMTP_USER
+            ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+            : undefined,
+        },
+      })
+    : undefined,
+  db,
+  typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
+  sharp,
+  plugins,
+  // Payload's adapters only auto-create the schema in development. Production
+  // (e.g. `next start` on Railway) expects migrations, which can't be generated
+  // in this environment — so we sync the schema on first boot instead. This is
+  // idempotent (applies only diffs) and keeps the managed DB in step with the code.
+  onInit: async (payload) => {
+    if (process.env.NODE_ENV === "production" && process.env.PAYLOAD_MIGRATING !== "true") {
+      try {
+        const { pushDevSchema } = await import("@payloadcms/drizzle");
+        await pushDevSchema(payload.db as never);
+        payload.logger.info("✓ Database schema synced on boot.");
+      } catch (err) {
+        payload.logger.error("Schema sync on boot failed: " + (err as Error).message);
+      }
+    }
+  },
+});
