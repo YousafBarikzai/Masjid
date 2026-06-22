@@ -32,14 +32,45 @@ export const site = {
 /** Public base URL (set SITE_URL in the host to your real domain). */
 export const siteUrl = (process.env.SITE_URL || "https://masjid-production.up.railway.app").replace(/\/$/, "");
 
-export const nav = [
-  { label: "Prayer Times", href: "/prayer-times" },
-  { label: "Jummah", href: "/jummah" },
-  { label: "Education", href: "/education" },
-  { label: "Services", href: "/services" },
+export interface NavItem {
+  label: string;
+  href: string;
+  children?: { label: string; href: string }[];
+  cta?: boolean;
+}
+
+export const nav: NavItem[] = [
+  { label: "Home", href: "/" },
+  { label: "About Us", href: "/about", children: [{ label: "Overview", href: "/about" }] },
+  {
+    label: "Services",
+    href: "/services",
+    children: [
+      { label: "Congregational Prayers", href: "/services/congregational-prayers" },
+      { label: "Madrasah", href: "/services/madrasah" },
+      { label: "Sisters’ Circles", href: "/services/sisters-circles" },
+      { label: "Marriage Services", href: "/services/marriage" },
+      { label: "School Visits", href: "/services/school-visits" },
+      { label: "Funeral Services", href: "/services/funeral" },
+      { label: "Youth Programs", href: "/services/youth-programs" },
+    ],
+  },
+  {
+    label: "Resources",
+    href: "/resources",
+    children: [
+      { label: "Membership Form", href: "/resources/membership-form" },
+      { label: "Data Policy", href: "/resources/data-policy" },
+      { label: "Right of Access Request", href: "/resources/right-of-access-request" },
+      { label: "AGM Meeting Minutes", href: "/resources/agm-minutes" },
+      { label: "Financial Accounts", href: "/resources/financial-accounts" },
+    ],
+  },
   { label: "Events", href: "/events" },
-  { label: "About", href: "/about" },
+  { label: "News", href: "/news" },
+  { label: "Media", href: "/media" },
   { label: "Contact", href: "/contact" },
+  { label: "Donate", href: "/donate", cta: true },
 ];
 
 /** Site-wide alert banner (managed by Announcements in the CMS). */

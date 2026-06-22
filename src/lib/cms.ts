@@ -75,28 +75,38 @@ export const getDonation = cache(async (): Promise<typeof seed.donation> => {
 });
 
 /* ------------------------------ Announcement ------------------------------ */
-export const getAnnouncement = cache(async (): Promise<typeof seed.alert> => {
-  try {
-    const p = await getPayloadClient();
-    const now = new Date().toISOString();
-    const res = await p.find({
-      collection: "announcements",
-      where: { enabled: { equals: true } },
-      sort: "-updatedAt",
-      limit: 10,
-      depth: 0,
-    });
-    const active = res.docs.find((d: any) => {
-      const startOk = !d.startDate || d.startDate <= now;
-      const endOk = !d.endDate || d.endDate >= now;
-      return startOk && endOk;
-    });
-    if (!active) return seed.alert;
-    return { enabled: true, label: val((active as any).label, "Notice"), message: (active as any).message };
-  } catch {
-    return seed.alert;
-  }
-});
+export const getAnnouncement = cache(
+  async (): Promise<{ enabled: boolean; label: string; message: string; href?: string }> => {
+    try {
+      const p = await getPayloadClient();
+      const now = new Date().toISOString();
+      const res = await p.find({
+        collection: "announcements",
+        where: { enabled: { equals: true } },
+        sort: "-updatedAt",
+        limit: 10,
+        depth: 1, // populate relatedPage so we can resolve its slug
+      });
+      const active = res.docs.find((d: any) => {
+        const startOk = !d.startDate || d.startDate <= now;
+        const endOk = !d.endDate || d.endDate >= now;
+        return startOk && endOk;
+      });
+      if (!active) return seed.alert;
+      const rel = (active as any).relatedPage;
+      const relSlug = rel && typeof rel === "object" ? rel.slug : undefined;
+      const href = relSlug ? `/${relSlug}` : val((active as any).link, "") || undefined;
+      return {
+        enabled: true,
+        label: val((active as any).label, "Notice"),
+        message: (active as any).message,
+        href,
+      };
+    } catch {
+      return seed.alert;
+    }
+  },
+);
 
 /* --------------------------------- Events --------------------------------- */
 export const getEvents = cache(async (): Promise<CardItem[]> => {

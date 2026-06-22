@@ -3,7 +3,8 @@ import { fileURLToPath } from "url";
 import { buildConfig } from "payload";
 import { sqliteAdapter } from "@payloadcms/db-sqlite";
 import { postgresAdapter } from "@payloadcms/db-postgres";
-import { lexicalEditor } from "@payloadcms/richtext-lexical";
+import { lexicalEditor, FixedToolbarFeature, TextStateFeature } from "@payloadcms/richtext-lexical";
+import { textStates } from "./payload/richtext";
 import { s3Storage } from "@payloadcms/storage-s3";
 import { nodemailerAdapter } from "@payloadcms/email-nodemailer";
 import sharp from "sharp";
@@ -98,7 +99,17 @@ export default buildConfig({
     Users,
   ],
   globals: [SiteSettings, JummahSettings, DonationSettings, SpecialSchedule, BroadcastSettings],
-  editor: lexicalEditor(),
+  // Rich editor for ALL richText fields: keeps every default feature (headings,
+  // lists, links, images, alignment…), shows an always-visible toolbar so the
+  // options are discoverable, and adds text/highlight colours. The same colour
+  // map is reused by the website renderer so colours show on the live site.
+  editor: lexicalEditor({
+    features: ({ defaultFeatures }) => [
+      ...defaultFeatures,
+      FixedToolbarFeature(),
+      TextStateFeature({ state: textStates }),
+    ],
+  }),
   secret: process.env.PAYLOAD_SECRET || "dev-secret-change-me",
   // Email is optional: set SMTP_* env vars to enable real delivery (e.g. contact
   // form notifications). Without them, messages are still saved in the admin.

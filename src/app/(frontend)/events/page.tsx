@@ -16,6 +16,11 @@ export default async function EventsPage() {
       />
       <section>
         <div className="wrap">
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 18 }}>
+            <a className="btn btn-green" href="/app-api/events.ics">
+              📅 Subscribe / add to calendar
+            </a>
+          </div>
           <CardGrid cols={3} items={events} />
         </div>
       </section>

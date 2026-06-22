@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { RichText } from "@payloadcms/richtext-lexical/react";
+import RichTextRenderer from "./RichTextRenderer";
 
 interface Block {
   blockType: string;
@@ -13,7 +13,7 @@ export default function RenderBlocks({ blocks }: { blocks?: Block[] }) {
       {blocks.map((b, i) => {
         switch (b.blockType) {
           case "content":
-            return b.richText ? <RichText key={i} data={b.richText as never} /> : null;
+            return b.richText ? <RichTextRenderer key={i} data={b.richText} /> : null;
 
           case "mediaBlock": {
             const img = b.image as { url?: string; alt?: string } | undefined;

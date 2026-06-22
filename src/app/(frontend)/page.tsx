@@ -9,7 +9,11 @@ import SpecialSection from "@/components/sections/SpecialSection";
 import DonateSection from "@/components/sections/DonateSection";
 import ContactSection from "@/components/sections/ContactSection";
 import CardGrid from "@/components/sections/CardGrid";
+import CTASection from "@/components/sections/CTASection";
+import Newsletter from "@/components/sections/Newsletter";
+import ImageSlot from "@/components/media/ImageSlot";
 import MosqueSkyline from "@/components/decor/MosqueSkyline";
+import { newsSeed, youtubeChannelUrl } from "@/lib/site-content";
 
 // Render per-request so "today" is always correct in Europe/London.
 export const dynamic = "force-dynamic";
@@ -73,6 +77,35 @@ export default async function Home() {
 
       <DonateSection />
 
+      <section className="app-cta">
+        <div className="wrap">
+          <div>
+            <div className="eyebrow">On the go</div>
+            <h2 style={{ color: "var(--green)", margin: ".2em 0" }}>Get the Kingston Mosque app</h2>
+            <p style={{ color: "var(--muted)", maxWidth: "32em" }}>
+              Prayer times, the next-jamāʿah countdown, news and announcements — in your pocket.
+              Coming soon for iPhone and Android.
+            </p>
+          </div>
+          <div className="app-badges">
+            <a className="app-badge" href="#" aria-label="Download on the App Store (coming soon)">
+              <span aria-hidden></span>
+              <span>
+                <small>Download on the</small>
+                <b>App Store</b>
+              </span>
+            </a>
+            <a className="app-badge" href="#" aria-label="Get it on Google Play (coming soon)">
+              <span aria-hidden>▶</span>
+              <span>
+                <small>Get it on</small>
+                <b>Google Play</b>
+              </span>
+            </a>
+          </div>
+        </div>
+      </section>
+
       <section id="education" style={{ background: "var(--cream-2)" }}>
         <div className="wrap">
           <div className="section-head">
@@ -92,6 +125,50 @@ export default async function Home() {
             <p>Supporting the community through every stage of life.</p>
           </div>
           <CardGrid cols={4} items={services} />
+        </div>
+      </section>
+
+      <section>
+        <div className="wrap">
+          <div className="section-head">
+            <div className="eyebrow">Latest</div>
+            <h2>News &amp; Announcements</h2>
+            <p>Updates from across the Kingston Mosque community.</p>
+          </div>
+          <div className="news-grid">
+            {newsSeed.slice(0, 3).map((n) => (
+              <Link key={n.slug} className="news-card" href="/news">
+                <ImageSlot slot={n.image} alt={n.title} ratio="16 / 9" rounded={false} />
+                <div className="body">
+                  <span className="tag">{n.category}</span>
+                  <span className="date">{n.date}</span>
+                  <h3>{n.title}</h3>
+                  <p>{n.excerpt}</p>
+                  <span className="more">Read more →</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+          <div style={{ textAlign: "center", marginTop: 28 }}>
+            <Link className="btn btn-green" href="/news">
+              All news
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <CTASection
+        heading="Watch our khutbahs & lectures"
+        body="Friday khutbahs, Qur’an recitation and lectures on the Kingston Mosque YouTube channel."
+        buttonLabel="Visit our YouTube"
+        buttonHref={youtubeChannelUrl}
+        secondaryLabel="Browse media"
+        secondaryHref="/media"
+      />
+
+      <section>
+        <div className="wrap">
+          <Newsletter />
         </div>
       </section>
 
