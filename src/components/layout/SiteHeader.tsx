@@ -57,8 +57,17 @@ export default async function SiteHeader() {
       {alert.enabled && alert.message && (
         <div className="alert">
           <div className="wrap">
-            <b>{alert.label}</b>
-            <span>{alert.message}</span>
+            {alert.href ? (
+              <Link href={alert.href} style={{ display: "contents" }}>
+                <b>{alert.label}</b>
+                <span>{alert.message}</span>
+              </Link>
+            ) : (
+              <>
+                <b>{alert.label}</b>
+                <span>{alert.message}</span>
+              </>
+            )}
           </div>
         </div>
       )}

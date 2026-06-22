@@ -101,11 +101,29 @@ export const Pages: CollectionConfig = {
       unique: true,
       admin: { description: "URL path, e.g. about-the-mosque" },
     },
-    { name: "intro", type: "textarea" },
+    {
+      name: "intro",
+      type: "textarea",
+      admin: { description: "Short summary shown under the page title." },
+    },
+    {
+      name: "content",
+      type: "richText",
+      label: "Page content",
+      admin: {
+        description:
+          "The main content. Use the toolbar for bold, headings, colours, lists, links and images.",
+      },
+    },
     {
       name: "layout",
       type: "blocks",
+      label: "Extra sections (optional)",
       labels: { singular: "Section", plural: "Sections" },
+      admin: {
+        description:
+          "Optional pre-built sections (image, button, download). Most pages only need the content above.",
+      },
       blocks: [RichTextBlock, MediaBlock, CallToActionBlock, DownloadBlock],
     },
     {
@@ -211,7 +229,17 @@ export const Announcements: CollectionConfig = {
         { label: "Urgent", value: "urgent" },
       ],
     },
-    { name: "link", type: "text" },
+    {
+      name: "relatedPage",
+      type: "relationship",
+      relationTo: "pages",
+      label: "Link to a page",
+      admin: {
+        description:
+          "Optional: pick a page this announcement should open. The banner becomes clickable. (Takes priority over the link below.)",
+      },
+    },
+    { name: "link", type: "text", admin: { description: "Or paste an external link (used only if no page is chosen above)." } },
     { name: "enabled", type: "checkbox", defaultValue: true },
     { name: "startDate", type: "date" },
     { name: "endDate", type: "date" },

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import PageHero from "@/components/layout/PageHero";
 import RenderBlocks from "@/components/cms/RenderBlocks";
+import RichTextRenderer from "@/components/cms/RichTextRenderer";
 import { getPageBySlug } from "@/lib/cms";
 
 type Args = { params: Promise<{ slug: string }> };
@@ -23,6 +24,7 @@ export default async function CmsPage({ params }: Args) {
       <PageHero title={page.title} intro={page.intro} crumb={page.title} />
       <section>
         <div className="wrap narrow prose">
+          <RichTextRenderer data={page.content} />
           <RenderBlocks blocks={page.layout} />
         </div>
       </section>
