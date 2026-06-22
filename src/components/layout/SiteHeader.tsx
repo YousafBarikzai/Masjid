@@ -38,11 +38,31 @@ export default async function SiteHeader() {
         <div className="wrap">
           <Brand />
           <nav className="main">
-            {nav.map((n) => (
-              <Link key={n.href} href={n.href}>
-                {n.label}
-              </Link>
-            ))}
+            {nav
+              .filter((n) => !n.cta)
+              .map((n) =>
+                n.children ? (
+                  <div className="nav-item has-children" key={n.href}>
+                    <Link href={n.href} className="nav-top">
+                      {n.label}
+                      <span className="caret" aria-hidden>
+                        ▾
+                      </span>
+                    </Link>
+                    <div className="dropdown">
+                      {n.children.map((c) => (
+                        <Link key={c.href} href={c.href}>
+                          {c.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <Link key={n.href} href={n.href} className="nav-top">
+                    {n.label}
+                  </Link>
+                ),
+              )}
           </nav>
           <div className="header-cta">
             <ThemeToggle />
