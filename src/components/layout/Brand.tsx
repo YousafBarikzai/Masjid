@@ -1,27 +1,43 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import { site } from "@/lib/content";
 
 /**
- * Kingston Muslim Association logo lockup — navy "IN" monogram + stacked
- * wordmark, matching the official logo. Used in the header (navy on light) and
- * footer (gold/cream on dark, via `light`).
- *
- * NOTE: this is a faithful vector recreation. To use the exact official asset,
- * drop the file in /public (e.g. public/kma-logo.svg) and swap this for
- * <img src="/kma-logo.svg" alt="Kingston Muslim Association" />.
+ * Site logo. Shows the official Kingston Muslim Association artwork from
+ * /public/kma-logo.png exactly as supplied (no modification). Until that file
+ * is uploaded it falls back to a vector stand-in so the header/footer never
+ * break. To use the official file: add it to /public as `kma-logo.png`.
  */
 export default function Brand({ light = false }: { light?: boolean }) {
+  const [imgOk, setImgOk] = useState(true);
   const primary = light ? "#e8d59a" : "#21407c";
   const sub = light ? "rgba(255,255,255,0.82)" : "#21407c";
+
+  if (imgOk) {
+    return (
+      <Link className="brand" href="/" aria-label={`${site.org} — home`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/kma-logo.png"
+          alt={site.org}
+          onError={() => setImgOk(false)}
+          style={
+            light
+              ? // On the dark footer, sit the logo on a small white panel so it stays visible.
+                { height: 38, width: "auto", display: "block", background: "#fff", padding: "7px 11px", borderRadius: 8 }
+              : { height: 46, width: "auto", display: "block" }
+          }
+        />
+      </Link>
+    );
+  }
+
+  // Fallback vector stand-in (used only until /public/kma-logo.png exists).
   return (
     <Link className="brand" href="/" aria-label={`${site.org} — home`} style={{ gap: 11 }}>
-      <svg
-        width="42"
-        height="36"
-        viewBox="0 0 64 54"
-        aria-hidden="true"
-        style={{ flex: "none" }}
-      >
+      <svg width="42" height="36" viewBox="0 0 64 54" aria-hidden="true" style={{ flex: "none" }}>
         <g fill={primary}>
           <rect x="0" y="5" width="13" height="44" rx="1" />
           <rect x="22" y="5" width="13" height="44" rx="1" />
