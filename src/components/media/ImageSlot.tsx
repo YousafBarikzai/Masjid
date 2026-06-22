@@ -2,11 +2,16 @@
 
 import { useState } from "react";
 
+// Try these extensions in order, so an editor can upload jpg/png/webp with the
+// slot name and it just works.
+const EXTS = ["jpg", "jpeg", "png", "webp"];
+
 /**
- * Renders an image from /public/images/<slot>.jpg. Until that file exists it
- * shows a clean, branded placeholder panel (a muted mosque emblem) so the live
- * site looks intentional — never dev text or a broken image. The exact filename
- * to upload is kept in the title attribute (and aria-label) for editors.
+ * Renders an image from /public/images/<slot>.<ext> (first format that exists).
+ * Until a file is uploaded it shows a clean, branded placeholder panel (a muted
+ * mosque emblem on a soft cream gradient) so the live site looks intentional —
+ * never dev text or a broken image. The filename to upload is kept in the
+ * title/aria-label for editors.
  */
 export default function ImageSlot({
   slot,
@@ -21,16 +26,16 @@ export default function ImageSlot({
   rounded?: boolean;
   className?: string;
 }) {
-  const [ok, setOk] = useState(true);
+  const [i, setI] = useState(0);
   const radius = rounded ? 14 : 0;
 
-  if (ok) {
+  if (i < EXTS.length) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={`/images/${slot}.jpg`}
+        src={`/images/${slot}.${EXTS[i]}`}
         alt={alt}
-        onError={() => setOk(false)}
+        onError={() => setI((n) => n + 1)}
         className={className}
         style={{ width: "100%", aspectRatio: ratio, objectFit: "cover", borderRadius: radius, display: "block" }}
       />
