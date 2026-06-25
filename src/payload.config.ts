@@ -79,6 +79,14 @@ export default buildConfig({
   admin: {
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
+    // Phase 2 admin UX: a personalised dashboard (greeting, next-prayer countdown,
+    // quick actions, recent edits, drafts, favourites) and a global ⌘K command
+    // palette. Both are additive — a missing importMap entry degrades to nothing
+    // rather than breaking the admin (see admin/importMap.js).
+    components: {
+      beforeDashboard: ["@/payload/components/DashboardGrid#DashboardGrid"],
+      providers: ["@/payload/components/CommandPaletteProvider#CommandPaletteProvider"],
+    },
     meta: {
       titleSuffix: " · Kingston Mosque Admin",
     },
