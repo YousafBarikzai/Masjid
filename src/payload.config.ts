@@ -8,6 +8,7 @@ import { textStates } from "./payload/richtext";
 import { s3Storage } from "@payloadcms/storage-s3";
 import { nodemailerAdapter } from "@payloadcms/email-nodemailer";
 import sharp from "sharp";
+import { formsPlugin } from "./payload/forms";
 
 import {
   Users,
@@ -50,8 +51,10 @@ const db = dbUri.startsWith("postgres")
 // Persistent media storage (S3 / Cloudflare R2 / any S3-compatible). Activates
 // only when S3_BUCKET is set, so it never blocks a deploy. Uses server-side
 // uploads (no client component) to keep the admin bundle clean.
-const plugins =
-  process.env.S3_BUCKET
+const plugins = [
+  // No-code form builder (forms + form-submissions collections).
+  formsPlugin,
+  ...(process.env.S3_BUCKET
     ? [
         s3Storage({
           collections: { media: true },
@@ -67,7 +70,8 @@ const plugins =
           },
         }),
       ]
-    : [];
+    : []),
+];
 
 export default buildConfig({
   // Public URL of the deployed site (used in emails, previews, API links).
