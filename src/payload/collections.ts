@@ -13,6 +13,8 @@ export const Users: CollectionConfig = {
     useAsTitle: "name",
     defaultColumns: ["name", "email", "roles"],
     group: "Administration",
+    description:
+      "Staff logins. To add a manager or editor: Create → enter their name, email and a password, then choose a role.",
   },
   access: {
     read: isStaff,
@@ -21,6 +23,20 @@ export const Users: CollectionConfig = {
     delete: isAdmin,
     admin: ({ req: { user } }) => !!user,
   },
+  hooks: {
+    beforeChange: [
+      async ({ data, req, operation }) => {
+        // The very first account ever created is made a Super Admin
+        // automatically — so whoever sets up the site can manage everything
+        // (and create other staff) without a role having to be assigned first.
+        if (operation === "create") {
+          const { totalDocs } = await req.payload.count({ collection: "users" });
+          if (totalDocs === 0) data.roles = ["super-admin"];
+        }
+        return data;
+      },
+    ],
+  },
   fields: [
     { name: "name", type: "text", required: true },
     {
@@ -28,12 +44,16 @@ export const Users: CollectionConfig = {
       type: "select",
       hasMany: true,
       required: true,
-      defaultValue: ["contributor"],
+      defaultValue: ["editor"],
       access: { update: isAdminFieldLevel },
+      admin: {
+        description:
+          "Super Admin / Admin: full access incl. managing users. Editor: manages content (pages, news, events, services). Prayer Times Manager: edits the prayer timetable. Contributor: can create drafts only. (The first account is made Super Admin automatically.)",
+      },
       options: [
         { label: "Super Admin", value: "super-admin" },
         { label: "Admin", value: "admin" },
-        { label: "Editor", value: "editor" },
+        { label: "Editor / Manager", value: "editor" },
         { label: "Prayer Times Manager", value: "prayer-times-manager" },
         { label: "Contributor (drafts only)", value: "contributor" },
       ],
