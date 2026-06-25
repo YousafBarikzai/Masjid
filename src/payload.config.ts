@@ -145,5 +145,34 @@ export default buildConfig({
         payload.logger.error("Schema sync on boot failed: " + (err as Error).message);
       }
     }
+
+    // Optional: provision a Super Admin login from env vars, so there's a
+    // guaranteed admin account without the first-time setup screen. Created once
+    // (only if that email doesn't already exist), never overwritten — so a
+    // password you later change in the admin is preserved.
+    if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+      try {
+        const existing = await payload.find({
+          collection: "users",
+          where: { email: { equals: process.env.ADMIN_EMAIL } },
+          limit: 1,
+          depth: 0,
+        });
+        if (existing.totalDocs === 0) {
+          await payload.create({
+            collection: "users",
+            data: {
+              name: process.env.ADMIN_NAME || "Administrator",
+              email: process.env.ADMIN_EMAIL,
+              password: process.env.ADMIN_PASSWORD,
+              roles: ["super-admin"],
+            },
+          });
+          payload.logger.info("✓ Super Admin provisioned from ADMIN_EMAIL.");
+        }
+      } catch (err) {
+        payload.logger.error("Admin bootstrap failed: " + (err as Error).message);
+      }
+    }
   },
 });
