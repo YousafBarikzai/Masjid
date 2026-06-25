@@ -203,8 +203,8 @@ A frank map of the full brief. ✅ = working today, 🟡 = partially in place, �
 | 3 | **Navigation builder** | ✅ Drag‑reorder mega‑style menu with nested children & visibility toggles (Phase 1) | ⬜ Footer & utility menus; per‑item icons; role‑gated links |
 | 4 | **Media library (DAM)** | ✅ Native **folders** (browse‑by‑folder), **tags** (searchable), **focal‑point + crop**, responsive image sizes (thumbnail/card/feature), **bulk upload**, library search, alt + caption, and a "Recent media" dashboard strip (Phase 3) | ⬜ S3/R2 in production; AI alt‑text suggestions |
 | 5 | **News / announcements** | ✅ `posts` + `announcements` collections; site alert bar; push to apps via `afterChange` | ⬜ Scheduling (publish/expire), categories, featured ordering |
-| 6 | **Social media centre** | 🟡 Broadcast model in place (`broadcasts`) | ⬜ Facebook/Instagram (Meta Graph API) + Telegram adapters, compose‑once‑post‑everywhere, per‑network preview |
-| 7 | **WhatsApp integration** | 🟡 `broadcasts` + `BroadcastSettings` (group/target IDs); gateway microservice built (Baileys) | ⬜ Deploy gateway + pair number (mosque action); compliant Cloud‑API opt‑in broadcast path |
+| 6 | **Social media centre** | ✅ Broadcast Centre: compose once → fan out to Email, Telegram, Facebook, Instagram (Meta Graph API), all env‑gated & fail‑tolerant with a per‑channel send report; dashboard readiness widget (Phase 6) | ⬜ Per‑network preview; scheduled send |
+| 7 | **WhatsApp integration** | ✅ Two adapters built: self‑hosted gateway (posts into real groups) + official Cloud‑API opt‑in broadcast; idempotent send + report | ⬜ Mosque action: deploy gateway + pair number / add Cloud‑API credentials |
 | 8 | **Forms builder** | ✅ Official Form Builder plugin: no‑code designer (text/email/textarea/select/checkbox/number/country/state), per‑form recipients, confirmation message/redirect, private submissions store, **honeypot spam guard**, and **staff‑only CSV export** (Phase 5) | ⬜ Public form renderer on pages; reCAPTCHA option |
 | 9 | **Users & permissions** | ✅ 5 roles (Super Admin, Admin, Editor/Manager, Prayer Times Manager, Contributor), field‑level access, first‑user auto‑admin, env‑provisioned admin | ⬜ Per‑section granular permissions; invite‑by‑email flow |
 | 10 | **Workflow & approvals** | ✅ Submit‑for‑review → approve → publish on Pages & Posts; Contributors author drafts but **cannot publish/unpublish or change live content**; reviewStatus + reviewNote; editors emailed on submission; dashboard review queue (Phase 4) | ⬜ Per‑field review comments; scheduled publish |
@@ -260,7 +260,7 @@ A frank map of the full brief. ✅ = working today, 🟡 = partially in place, �
 
 ## 7. Honest phased roadmap
 
-Phases 1–5 are done and verified. The rest is sequenced by **value to a non‑technical editor**:
+Phases 1–6 are done and verified. The rest is sequenced by **value to a non‑technical editor**:
 
 1. **✅ Phase 1 — Foundation:** premium admin theme, first‑class Arabic/Qur'anic
    typography in editor + site, CMS Navigation Builder.
@@ -275,8 +275,10 @@ Phases 1–5 are done and verified. The rest is sequenced by **value to a non‑
    dashboard review queue.
 5. **✅ Phase 5 — Forms builder:** Payload Form Builder plugin (no‑code designer, per‑form
    recipients, confirmation/redirect), honeypot spam guard, staff‑only CSV export.
-6. **Phase 6 — Social & WhatsApp centre:** compose‑once → Facebook/Instagram/Telegram +
-   compliant WhatsApp broadcast; deploy + pair the gateway (mosque action).
+6. **✅ Phase 6 — Social & WhatsApp centre:** Broadcast Centre fans out to Email/Telegram/
+   Facebook/Instagram/WhatsApp (env‑gated, fail‑tolerant, per‑channel report) with a dashboard
+   readiness widget. *Remaining is mosque‑side:* add channel credentials, deploy + pair the
+   WhatsApp gateway.
 7. **Phase 7 — Security hardening:** 2FA, audit log, rate‑limiting, CSP/HSTS.
 
 Each phase ships as its own reviewed PR, so the live admin is never at risk and value

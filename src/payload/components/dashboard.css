@@ -223,6 +223,31 @@
 }
 .kma-badge--draft { background: #fdeede; color: #9a5b16; }
 .kma-badge--review { background: color-mix(in srgb, var(--kma-gold) 30%, transparent); color: #7a5e00; }
+.kma-badge--sent { background: #d3f9d8; color: #14653a; }
+
+/* Broadcast channel readiness chips */
+.kma-channels { display: flex; flex-wrap: wrap; gap: 7px; }
+.kma-channel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--theme-elevation-50);
+  border: 1px solid var(--theme-elevation-100);
+  color: var(--theme-elevation-600);
+}
+.kma-channel__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--theme-elevation-300);
+  flex: none;
+}
+.kma-channel.is-ready { color: var(--theme-text); border-color: color-mix(in srgb, var(--kma-green) 40%, transparent); }
+.kma-channel.is-ready .kma-channel__dot { background: var(--kma-green); }
 .kma-empty {
   font-size: 0.82rem;
   color: var(--theme-elevation-500);

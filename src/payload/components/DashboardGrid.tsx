@@ -8,6 +8,7 @@ import { PendingDrafts } from "./widgets/PendingDrafts";
 import { RecentlyEdited } from "./widgets/RecentlyEdited";
 import { UnhandledMessages } from "./widgets/UnhandledMessages";
 import { RecentMedia } from "./widgets/RecentMedia";
+import { BroadcastStatus } from "./widgets/BroadcastStatus";
 import { Favourites } from "./widgets/Favourites";
 
 /* Registered at admin.components.beforeDashboard. A server component, so Payload passes
@@ -24,12 +25,13 @@ export async function DashboardGrid(props: {
 
   // Resolve the async server widgets in parallel; each already catches its own
   // errors and resolves to null, so Promise.all never rejects.
-  const [prayer, recent, drafts, messages, media] = await Promise.all([
+  const [prayer, recent, drafts, messages, media, broadcast] = await Promise.all([
     NextPrayerWidget(),
     RecentlyEdited({ payload }),
     PendingDrafts({ payload }),
     UnhandledMessages({ payload }),
     RecentMedia({ payload }),
+    BroadcastStatus({ payload }),
   ]);
 
   return (
@@ -41,6 +43,7 @@ export async function DashboardGrid(props: {
         {recent}
         {drafts}
         {messages}
+        {broadcast}
         {media}
         <Favourites />
       </div>
