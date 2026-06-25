@@ -65,7 +65,7 @@ reversible**: the admin keeps working even if a theme file is removed.
 
 ---
 
-## 3. What is built now — Phase 1
+## 3. What is built now — Phases 1 & 2
 
 Phase 1 is live on the `claude/mosque-platform-architecture-85epxh` branch and verified
 against a production build (the `/admin` route renders 200 with the theme applied).
@@ -136,6 +136,38 @@ The website header and mobile menu read it live via `getMainMenu()` (`src/lib/cm
 with a safe fallback to the built‑in default menu if the global is empty or unreachable —
 so the nav can never render blank. (`SiteHeader.tsx`, `MobileMenu.tsx`.)
 
+### 3.4 Personalised dashboard & ⌘K command palette (Phase 2)
+
+Two custom admin surfaces, registered through `admin.components` (`beforeDashboard` and
+`providers`) with matching `importMap` entries. Both are **additive and reversible**: a
+missing importMap entry degrades to nothing rather than breaking the admin, and reverting
+the single registration commit fully restores the stock admin.
+
+**The dashboard** (`DashboardGrid`, a server component — Payload passes it the `payload`
+and `user` instances directly) greets the editor and shows, in a responsive card grid:
+
+- a **next‑prayer hero** with a live `HH:MM:SS` countdown to the next jamāʿah (CMS override
+  wins over the static timetable; the clock ticks in a mount‑gated client leaf so SSR and
+  hydration match);
+- **role‑gated quick actions** (new post / event / page / announcement / broadcast / prayer
+  day) filtered to the signed‑in user's roles — each opens a blank create form, so no
+  `afterChange` side‑effects fire until the user saves;
+- **recently edited** (across collections, by `updatedAt`) and **pending drafts**
+  (pages + posts) with deep links;
+- an **unhandled‑messages** callout and a localStorage‑backed **favourites** widget with a
+  pin/unpin manager.
+
+Every server widget catches its own errors and renders `null`, so one failing query can
+never blank the dashboard.
+
+**The command palette** (`CommandPaletteProvider` → `CommandPalette`) brings a Linear/Raycast
+‑style **⌘K / Ctrl+K** launcher to every admin screen: quick actions, jump‑to navigation,
+recently‑opened, and **debounced, abortable content search** across collections via the REST
+API. It is fully keyboard‑driven (ARIA combobox/listbox, arrow‑key navigation, focus
+restore, reduced‑motion aware), yields to Lexical's insert‑link only when text is selected
+in an editor, and is wrapped in an error boundary so a palette fault can never break the
+admin. Zero new dependencies — pure React + a portal + one scoped stylesheet.
+
 ---
 
 ## 4. The 13 capability areas — current state & roadmap
@@ -154,7 +186,7 @@ A frank map of the full brief. ✅ = working today, 🟡 = partially in place, �
 | 8 | **Forms builder** | 🟡 `contact-submissions` with stored entries + email notify | ⬜ Drag‑drop form designer, custom fields, spam protection, CSV export, per‑form recipients |
 | 9 | **Users & permissions** | ✅ 5 roles (Super Admin, Admin, Editor/Manager, Prayer Times Manager, Contributor), field‑level access, first‑user auto‑admin, env‑provisioned admin | ⬜ Per‑section granular permissions; invite‑by‑email flow |
 | 10 | **Workflow & approvals** | 🟡 Drafts + autosave + versions built in | ⬜ Submit‑for‑review → approve/publish states; Contributor→Editor handoff; email on pending |
-| 11 | **CMS dashboard** | 🟡 Branded admin, grouped nav, dashboard cards | ⬜ Personalised widgets (next prayer, pending drafts, recent edits, quick actions), favourites, command‑palette search (⌘K) |
+| 11 | **CMS dashboard** | ✅ Personalised dashboard (greeting + Hijri date, **live next‑prayer countdown**, role‑gated quick actions, recently‑edited, pending drafts, unhandled messages, favourites) and a global **⌘K command palette** with content search (Phase 2) | ⬜ Drag‑to‑rearrange widgets; saved views; per‑user layout |
 | 12 | **Technical architecture** | ✅ Next.js 15 + Payload 3.85 + Postgres, typed API, ISR revalidation, S3 media, app/screen snapshot API | Ongoing — see §6 |
 | 13 | **Security** | ✅ Auth, RBAC, CSRF (Payload built‑in), access‑controlled APIs, env secrets | ⬜ 2FA/TOTP, audit log, login rate‑limiting, session policy — see §5 |
 
@@ -206,13 +238,13 @@ A frank map of the full brief. ✅ = working today, 🟡 = partially in place, �
 
 ## 7. Honest phased roadmap
 
-Phase 1 is done and verified. The rest is sequenced by **value to a non‑technical editor**:
+Phases 1 & 2 are done and verified. The rest is sequenced by **value to a non‑technical editor**:
 
-1. **✅ Phase 1 — Foundation (this PR):** premium admin theme, first‑class Arabic/Qur'anic
+1. **✅ Phase 1 — Foundation:** premium admin theme, first‑class Arabic/Qur'anic
    typography in editor + site, CMS Navigation Builder.
-2. **Phase 2 — Dashboard & search:** command‑palette (⌘K) search, personalised dashboard
-   widgets (next prayer, pending drafts, recent edits, quick actions), favourites,
-   recently‑edited.
+2. **✅ Phase 2 — Dashboard & search:** personalised dashboard (live next‑prayer countdown,
+   role‑gated quick actions, recently‑edited, pending drafts, unhandled messages,
+   favourites) and a global ⌘K command palette with content search.
 3. **Phase 3 — Media DAM:** folders, tags, focal‑point cropping, search, recently‑used,
    bulk upload.
 4. **Phase 4 — Editorial workflow:** submit‑for‑review → approve → publish, with email
@@ -242,3 +274,16 @@ lands continuously.
 | `src/payload/richtext.ts` | Arabic + Qur'an editor text styles |
 | `src/app/(frontend)/layout.tsx` | Load Amiri + Scheherazade New fonts |
 | `src/app/globals.css` | `.quran` / `.verse` / RTL rendering styles |
+
+## 9. Files added in Phase 2
+
+| File | Change |
+|---|---|
+| `src/payload.config.ts` | Register `admin.components.beforeDashboard` + `providers` |
+| `src/app/(payload)/admin/importMap.js` | Hand‑added the two component entries |
+| `src/payload/components/DashboardGrid.tsx` | **New** — server dashboard orchestrator |
+| `src/payload/components/widgets/*` | **New** — Greeting, NextPrayer(+Countdown), QuickActions, RecentlyEdited, PendingDrafts, UnhandledMessages, Favourites |
+| `src/payload/components/CommandPalette*.tsx` | **New** — palette, provider, error boundary |
+| `src/payload/components/destinations.ts` | **New** — shared admin‑destination registry |
+| `src/payload/components/icons.tsx`, `WidgetCard.tsx`, `hooks/useFavourites.ts` | **New** — shared building blocks |
+| `src/payload/components/dashboard.css`, `command-palette.css` | **New** — scoped `.kma-*` / `.cmdk-*` styles |
