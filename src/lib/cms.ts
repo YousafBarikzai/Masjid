@@ -4,6 +4,7 @@ import { getPayloadClient } from "./payloadClient";
 import * as seed from "./content";
 import type { CardItem } from "@/components/sections/CardGrid";
 import type { PrayerDay } from "./prayer";
+import type { NavItem } from "./content";
 
 const val = <T>(v: T | undefined | null, fallback: T): T =>
   v === undefined || v === null || v === "" ? fallback : v;
@@ -34,6 +35,29 @@ export const getSite = cache(async (): Promise<typeof seed.site> => {
     };
   } catch {
     return seed.site;
+  }
+});
+
+/* ------------------------------ Main menu --------------------------------- */
+export const getMainMenu = cache(async (): Promise<NavItem[]> => {
+  try {
+    const p = await getPayloadClient();
+    const g = (await p.findGlobal({ slug: "main-menu", depth: 0 })) as Record<string, any>;
+    const items = Array.isArray(g?.items)
+      ? g.items.filter((i: any) => i?.label && i.visible !== false)
+      : [];
+    if (!items.length) return seed.nav; // fall back to the built-in default menu
+    return items.map((i: any) => ({
+      label: i.label,
+      href: i.url || "#",
+      children: Array.isArray(i.children)
+        ? i.children
+            .filter((c: any) => c?.label && c.visible !== false)
+            .map((c: any) => ({ label: c.label, href: c.url || "#" }))
+        : undefined,
+    }));
+  } catch {
+    return seed.nav;
   }
 });
 

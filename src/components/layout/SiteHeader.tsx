@@ -1,12 +1,11 @@
 import Link from "next/link";
-import { nav } from "@/lib/content";
-import { getSite, getAnnouncement } from "@/lib/cms";
+import { getSite, getAnnouncement, getMainMenu } from "@/lib/cms";
 import Brand from "./Brand";
 import MobileMenu from "./MobileMenu";
 import ThemeToggle from "./ThemeToggle";
 
 export default async function SiteHeader() {
-  const [site, alert] = await Promise.all([getSite(), getAnnouncement()]);
+  const [site, alert, menu] = await Promise.all([getSite(), getAnnouncement(), getMainMenu()]);
 
   return (
     <>
@@ -38,7 +37,7 @@ export default async function SiteHeader() {
         <div className="wrap">
           <Brand />
           <nav className="main">
-            {nav
+            {menu
               .filter((n) => !n.cta)
               .map((n) =>
                 n.children ? (
@@ -69,7 +68,7 @@ export default async function SiteHeader() {
             <Link className="btn btn-gold desktop-only" href="/donate">
               Donate
             </Link>
-            <MobileMenu />
+            <MobileMenu items={menu} />
           </div>
         </div>
       </header>

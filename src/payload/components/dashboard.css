@@ -1,0 +1,343 @@
+/* ============================================================================
+   Kingston Mosque — admin dashboard widgets.
+   Scoped to .kma-* / [data-kma] so nothing here touches Payload's own chrome.
+   Uses Payload theme variables (--theme-elevation-*, --theme-text) so the cards
+   adapt to light/dark automatically, with brand colours layered on top.
+   ============================================================================ */
+
+[data-kma] {
+  --kma-green: #157f54;
+  --kma-green-dark: #0b3d2e;
+  --kma-gold: #c9a227;
+  --kma-radius: 14px;
+  --kma-gap: 18px;
+  margin-bottom: 8px;
+}
+
+/* Greeting header */
+.kma-hello {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 16px;
+  padding: 4px 2px 18px;
+}
+.kma-hello__salaam {
+  font-size: clamp(1.35rem, 1.1rem + 1.2vw, 1.9rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--theme-text);
+}
+.kma-hello__name { color: var(--kma-green); }
+.kma-hello__dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 0.86rem;
+  color: var(--theme-elevation-600);
+}
+.kma-hello__hijri::before {
+  content: "·";
+  margin-right: 14px;
+  color: var(--theme-elevation-400);
+}
+
+/* Responsive grid of cards */
+.kma-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--kma-gap);
+  align-items: start;
+}
+.kma-grid__wide { grid-column: 1 / -1; }
+@media (min-width: 1100px) {
+  .kma-grid__wide { grid-column: span 2; }
+}
+
+/* Card shell */
+.kma-card {
+  background: var(--theme-elevation-0);
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: var(--kma-radius);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.kma-card:hover {
+  border-color: var(--theme-elevation-200);
+  box-shadow: 0 6px 22px -14px rgba(11, 61, 46, 0.45);
+}
+.kma-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.kma-card__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--theme-elevation-600);
+}
+.kma-card__title svg { color: var(--kma-green); }
+.kma-card__action {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--kma-green);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.kma-card__action:hover { text-decoration: underline; }
+.kma-card__body { display: flex; flex-direction: column; gap: 8px; }
+
+/* Next-prayer hero card */
+.kma-card--prayer {
+  background: linear-gradient(150deg, var(--kma-green), var(--kma-green-dark));
+  border-color: transparent;
+  color: #fff;
+}
+.kma-card--prayer .kma-card__title,
+.kma-card--prayer .kma-card__title svg { color: rgba(255, 255, 255, 0.85); }
+.kma-prayer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+}
+.kma-prayer__name {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.kma-prayer__ar {
+  font-family: "Amiri", serif;
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin-inline-start: 8px;
+}
+.kma-prayer__time {
+  font-size: 0.9rem;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+.kma-prayer__count {
+  font-variant-numeric: tabular-nums;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.kma-prayer__count small {
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.75;
+}
+.kma-prayer__rows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.kma-prayer__chip {
+  font-size: 0.72rem;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+}
+.kma-prayer__chip.is-next {
+  background: var(--kma-gold);
+  color: #2a2200;
+  font-weight: 700;
+}
+
+/* Quick-action buttons */
+.kma-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 8px;
+}
+.kma-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-elevation-50);
+  color: var(--theme-text);
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+.kma-action:hover {
+  background: color-mix(in srgb, var(--kma-green) 12%, var(--theme-elevation-50));
+  border-color: color-mix(in srgb, var(--kma-green) 45%, transparent);
+  transform: translateY(-1px);
+}
+.kma-action svg { color: var(--kma-green); flex: none; }
+
+/* List rows (drafts / recent / favourites) */
+.kma-list { display: flex; flex-direction: column; gap: 2px; }
+.kma-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 9px;
+  text-decoration: none;
+  color: var(--theme-text);
+  transition: background 0.12s ease;
+}
+.kma-row:hover { background: var(--theme-elevation-50); }
+.kma-row__icon { color: var(--theme-elevation-500); flex: none; display: inline-flex; }
+.kma-row__main { min-width: 0; flex: 1; }
+.kma-row__title {
+  font-size: 0.88rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.kma-row__meta { font-size: 0.72rem; color: var(--theme-elevation-500); }
+.kma-badge {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--theme-elevation-100);
+  color: var(--theme-elevation-600);
+  flex: none;
+}
+.kma-badge--draft { background: #fdeede; color: #9a5b16; }
+.kma-badge--review { background: color-mix(in srgb, var(--kma-gold) 30%, transparent); color: #7a5e00; }
+.kma-badge--sent { background: #d3f9d8; color: #14653a; }
+
+/* Broadcast channel readiness chips */
+.kma-channels { display: flex; flex-wrap: wrap; gap: 7px; }
+.kma-channel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--theme-elevation-50);
+  border: 1px solid var(--theme-elevation-100);
+  color: var(--theme-elevation-600);
+}
+.kma-channel__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--theme-elevation-300);
+  flex: none;
+}
+.kma-channel.is-ready { color: var(--theme-text); border-color: color-mix(in srgb, var(--kma-green) 40%, transparent); }
+.kma-channel.is-ready .kma-channel__dot { background: var(--kma-green); }
+.kma-empty {
+  font-size: 0.82rem;
+  color: var(--theme-elevation-500);
+  padding: 6px 2px;
+}
+
+/* Favourites manage mode */
+.kma-fav__manage {
+  margin-inline-start: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--kma-green);
+  padding: 0;
+}
+.kma-fav__pick {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  text-align: start;
+  padding: 7px 8px;
+  border-radius: 9px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--theme-text);
+  font-size: 0.86rem;
+}
+.kma-fav__pick:hover { background: var(--theme-elevation-50); }
+.kma-fav__pick svg { flex: none; }
+.kma-fav__star { color: var(--theme-elevation-300); }
+.kma-fav__star.is-on { color: var(--kma-gold); }
+
+/* Recent media strip */
+.kma-media {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+}
+.kma-media__item {
+  display: block;
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--theme-elevation-100);
+  background: var(--theme-elevation-50);
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+.kma-media__item:hover {
+  border-color: color-mix(in srgb, var(--kma-green) 50%, transparent);
+  transform: translateY(-2px);
+}
+.kma-media__item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.kma-media__file {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--theme-elevation-500);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* Unhandled-messages callout */
+.kma-card--alert { border-color: color-mix(in srgb, var(--kma-gold) 55%, transparent); }
+.kma-alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.kma-alert__count {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--kma-green);
+  line-height: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kma-card, .kma-action, .kma-row { transition: none; }
+  .kma-action:hover { transform: none; }
+}

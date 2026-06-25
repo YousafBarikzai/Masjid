@@ -24,6 +24,23 @@ export const textStates = {
     pink: { label: "Pink highlight", css: { "background-color": "#ffd9e6" } },
     gold: { label: "Gold highlight", css: { "background-color": "#f7ecc9" } },
   },
+  // Arabic / Qur'anic typography. Marking text applies the right RTL font so
+  // diacritics (harakāt) and ligatures render beautifully.
+  script: {
+    arabic: {
+      label: "Arabic (Amiri)",
+      css: { "font-family": "'Amiri', serif", "font-size": "1.2em", "line-height": "2", direction: "rtl" },
+    },
+    quran: {
+      label: "Qur'an (Uthmanic)",
+      css: {
+        "font-family": "'Scheherazade New', 'Amiri', serif",
+        "font-size": "1.45em",
+        "line-height": "2.2",
+        direction: "rtl",
+      },
+    },
+  },
 } as const;
 
 /** Convert a hyphenated CSS object (e.g. { "background-color": … }) to a React

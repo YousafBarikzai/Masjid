@@ -8,6 +8,7 @@ import { textStates } from "./payload/richtext";
 import { s3Storage } from "@payloadcms/storage-s3";
 import { nodemailerAdapter } from "@payloadcms/email-nodemailer";
 import sharp from "sharp";
+import { formsPlugin } from "./payload/forms";
 
 import {
   Users,
@@ -31,7 +32,9 @@ import {
   DonationSettings,
   SpecialSchedule,
   BroadcastSettings,
+  MainMenu,
 } from "./payload/globals";
+import { AuditLog, withAudit } from "./payload/audit";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -49,8 +52,10 @@ const db = dbUri.startsWith("postgres")
 // Persistent media storage (S3 / Cloudflare R2 / any S3-compatible). Activates
 // only when S3_BUCKET is set, so it never blocks a deploy. Uses server-side
 // uploads (no client component) to keep the admin bundle clean.
-const plugins =
-  process.env.S3_BUCKET
+const plugins = [
+  // No-code form builder (forms + form-submissions collections).
+  formsPlugin,
+  ...(process.env.S3_BUCKET
     ? [
         s3Storage({
           collections: { media: true },
@@ -66,7 +71,8 @@ const plugins =
           },
         }),
       ]
-    : [];
+    : []),
+];
 
 export default buildConfig({
   // Public URL of the deployed site (used in emails, previews, API links).
@@ -78,27 +84,38 @@ export default buildConfig({
   admin: {
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
+    // Phase 2 admin UX: a personalised dashboard (greeting, next-prayer countdown,
+    // quick actions, recent edits, drafts, favourites) and a global ⌘K command
+    // palette. Both are additive — a missing importMap entry degrades to nothing
+    // rather than breaking the admin (see admin/importMap.js).
+    components: {
+      beforeDashboard: ["@/payload/components/DashboardGrid#DashboardGrid"],
+      providers: ["@/payload/components/CommandPaletteProvider#CommandPaletteProvider"],
+    },
     meta: {
       titleSuffix: " · Kingston Mosque Admin",
     },
   },
   collections: [
-    Pages,
-    Posts,
-    Events,
-    Classes,
-    Services,
-    Announcements,
+    // Content & security-relevant collections are wrapped with withAudit so
+    // every create/update/delete is recorded in the Audit Log.
+    withAudit(Pages),
+    withAudit(Posts),
+    withAudit(Events),
+    withAudit(Classes),
+    withAudit(Services),
+    withAudit(Announcements),
     PrayerDays,
     TimetableUploads,
     ContactSubmissions,
     DeviceTokens,
     Subscribers,
-    Broadcasts,
-    Media,
-    Users,
+    withAudit(Broadcasts),
+    withAudit(Media),
+    withAudit(Users),
+    AuditLog,
   ],
-  globals: [SiteSettings, JummahSettings, DonationSettings, SpecialSchedule, BroadcastSettings],
+  globals: [SiteSettings, JummahSettings, DonationSettings, SpecialSchedule, BroadcastSettings, MainMenu],
   // Rich editor for ALL richText fields: keeps every default feature (headings,
   // lists, links, images, alignment…), shows an always-visible toolbar so the
   // options are discoverable, and adds text/highlight colours. The same colour
