@@ -64,13 +64,56 @@ export const Users: CollectionConfig = {
 /* ---------------------------------- Media --------------------------------- */
 export const Media: CollectionConfig = {
   slug: "media",
-  admin: { group: "Content" },
+  admin: {
+    group: "Content",
+    useAsTitle: "filename",
+    defaultColumns: ["filename", "alt", "tags", "updatedAt"],
+    // Search the library by file name, alt text, caption or tag.
+    listSearchableFields: ["filename", "alt", "caption", "tags"],
+    description:
+      "Image & document library. Drag several files in at once to bulk-upload, organise them into folders, tag them, and crop/set a focal point so they always frame well.",
+  },
+  // Native folders: organise media into folders (and browse by folder).
+  folders: true,
   access: { read: anyone, create: isEditor, update: isEditor, delete: isEditor },
   upload: {
     staticDir: path.resolve(process.cwd(), "media"),
     mimeTypes: ["image/*", "application/pdf"],
+    // Drag-and-drop several files at once.
+    bulkUpload: true,
+    // Let editors crop and choose the focal point so images frame well at any size.
+    crop: true,
+    focalPoint: true,
+    // Small square preview used in the admin list & relationship pickers.
+    adminThumbnail: "thumbnail",
+    // Responsive variants generated on upload (originals are kept untouched).
+    imageSizes: [
+      { name: "thumbnail", width: 400, height: 300, position: "centre" },
+      { name: "card", width: 768, height: 512, position: "centre" },
+      { name: "feature", width: 1600, height: 900, position: "centre" },
+    ],
   },
-  fields: [{ name: "alt", type: "text", label: "Alt text" }],
+  fields: [
+    {
+      name: "alt",
+      type: "text",
+      label: "Alt text",
+      admin: { description: "Describe the image for screen readers and search engines." },
+    },
+    {
+      name: "caption",
+      type: "text",
+      admin: { description: "Optional caption that can be shown beneath the image." },
+    },
+    {
+      name: "tags",
+      type: "text",
+      hasMany: true,
+      admin: {
+        description: "Add tags (e.g. ramadan, eid, hero) so you can find this again by searching.",
+      },
+    },
+  ],
 };
 
 /* ------------------------------ Reusable blocks --------------------------- */
