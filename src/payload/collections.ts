@@ -17,7 +17,14 @@ const TIME_HINT = "Use 24-hour HH:MM, e.g. 13:30";
 /* ---------------------------------- Users --------------------------------- */
 export const Users: CollectionConfig = {
   slug: "users",
-  auth: true,
+  // Security hardening: lock an account for 10 minutes after 5 failed logins
+  // (blunts brute-force), expire sessions after 2 hours, and scope cookies.
+  auth: {
+    maxLoginAttempts: 5,
+    lockTime: 10 * 60 * 1000,
+    tokenExpiration: 2 * 60 * 60,
+    cookies: { sameSite: "Lax" },
+  },
   admin: {
     useAsTitle: "name",
     defaultColumns: ["name", "email", "roles"],

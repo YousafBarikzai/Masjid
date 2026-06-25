@@ -210,7 +210,7 @@ A frank map of the full brief. ✅ = working today, 🟡 = partially in place, �
 | 10 | **Workflow & approvals** | ✅ Submit‑for‑review → approve → publish on Pages & Posts; Contributors author drafts but **cannot publish/unpublish or change live content**; reviewStatus + reviewNote; editors emailed on submission; dashboard review queue (Phase 4) | ⬜ Per‑field review comments; scheduled publish |
 | 11 | **CMS dashboard** | ✅ Personalised dashboard (greeting + Hijri date, **live next‑prayer countdown**, role‑gated quick actions, recently‑edited, pending drafts, unhandled messages, favourites) and a global **⌘K command palette** with content search (Phase 2) | ⬜ Drag‑to‑rearrange widgets; saved views; per‑user layout |
 | 12 | **Technical architecture** | ✅ Next.js 15 + Payload 3.85 + Postgres, typed API, ISR revalidation, S3 media, app/screen snapshot API | Ongoing — see §6 |
-| 13 | **Security** | ✅ Auth, RBAC, CSRF (Payload built‑in), access‑controlled APIs, env secrets | ⬜ 2FA/TOTP, audit log, login rate‑limiting, session policy — see §5 |
+| 13 | **Security** | ✅ Auth, RBAC, CSRF, access‑controlled APIs, env secrets, **audit log**, **login lockout** (5 attempts → 10‑min lock), **2‑hour session expiry**, **security headers** (HSTS/nosniff/X‑Frame/Referrer/Permissions) (Phase 7) | ⬜ 2FA/TOTP (needs mosque enablement — see §5) |
 
 ---
 
@@ -224,13 +224,23 @@ A frank map of the full brief. ✅ = working today, 🟡 = partially in place, �
 - Secrets (DB, SMTP, S3, `PAYLOAD_SECRET`) live only in environment variables.
 - CORS configurable to a known origin allow‑list (`CORS_ORIGINS`).
 
-**Roadmap (to reach "enterprise"):**
-- **2FA (TOTP)** for staff logins, enforced for Admin roles.
-- **Audit log** — an append‑only `audit-log` collection written by a global `afterChange`
-  hook: who changed what, when, with before/after — invaluable for a multi‑volunteer team.
-- **Login rate‑limiting / lockout** to blunt brute‑force attempts.
-- **Session policy** — shorter admin session TTL, "log out everywhere", optional SSO.
-- **Content security headers** (CSP, HSTS) at the edge.
+**Added in Phase 7:**
+- **Audit log** — an append‑only, admin‑only `audit-log` collection. A reusable `withAudit()`
+  wrapper records every create/update/delete on Pages, Posts, Events, Classes, Services,
+  Announcements, Broadcasts, Media and Users: who, what, when. Best‑effort — never blocks a save.
+- **Login lockout** — Payload native `maxLoginAttempts: 5` + `lockTime: 10 min`: an account is
+  locked after five failed logins, blunting brute‑force (verified: the correct password is
+  refused while locked).
+- **Session policy** — `tokenExpiration: 2 hours` and `sameSite: Lax` cookies.
+- **Security headers** — HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`,
+  `Referrer-Policy`, and a `Permissions-Policy` on every response (`next.config.mjs`).
+
+**Still recommended (needs the mosque's hands‑on enablement):**
+- **2FA (TOTP)** — Payload 3.85 has no built‑in 2FA, so this means a custom auth strategy.
+  It's deliberately **not** auto‑enabled: a misconfigured rollout could lock admins out, so it
+  should be added with the mosque present to test and keep a recovery path. A strict
+  **Content‑Security‑Policy** is the other follow‑up (needs tuning against the admin's inline
+  styles/scripts).
 
 ---
 
@@ -260,7 +270,8 @@ A frank map of the full brief. ✅ = working today, 🟡 = partially in place, �
 
 ## 7. Honest phased roadmap
 
-Phases 1–6 are done and verified. The rest is sequenced by **value to a non‑technical editor**:
+All seven phases are done and verified. The CMS is built; the remaining items below are
+either mosque‑side configuration or deliberately‑deferred high‑risk work (2FA).
 
 1. **✅ Phase 1 — Foundation:** premium admin theme, first‑class Arabic/Qur'anic
    typography in editor + site, CMS Navigation Builder.
@@ -279,10 +290,18 @@ Phases 1–6 are done and verified. The rest is sequenced by **value to a non‑
    Facebook/Instagram/WhatsApp (env‑gated, fail‑tolerant, per‑channel report) with a dashboard
    readiness widget. *Remaining is mosque‑side:* add channel credentials, deploy + pair the
    WhatsApp gateway.
-7. **Phase 7 — Security hardening:** 2FA, audit log, rate‑limiting, CSP/HSTS.
+7. **✅ Phase 7 — Security hardening:** audit log, login lockout, 2‑hour session expiry, and
+   security headers (HSTS/nosniff/X‑Frame/Referrer/Permissions). 2FA + strict CSP deferred to a
+   supervised rollout (lockout risk).
 
-Each phase ships as its own reviewed PR, so the live admin is never at risk and value
-lands continuously.
+Each phase shipped additively, so the live admin was never at risk and value landed
+continuously.
+
+### Mosque‑side follow‑ups (not code)
+- Add channel credentials to enable Broadcast channels (Telegram/WhatsApp/Facebook/Instagram),
+  and deploy + pair the WhatsApp gateway.
+- Set `S3_BUCKET`/R2 for persistent media in production; set `SMTP_*` for real email delivery.
+- Schedule a supervised session to enable **2FA** and tune a strict **CSP**.
 
 ---
 

@@ -34,6 +34,7 @@ import {
   BroadcastSettings,
   MainMenu,
 } from "./payload/globals";
+import { AuditLog, withAudit } from "./payload/audit";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -96,20 +97,23 @@ export default buildConfig({
     },
   },
   collections: [
-    Pages,
-    Posts,
-    Events,
-    Classes,
-    Services,
-    Announcements,
+    // Content & security-relevant collections are wrapped with withAudit so
+    // every create/update/delete is recorded in the Audit Log.
+    withAudit(Pages),
+    withAudit(Posts),
+    withAudit(Events),
+    withAudit(Classes),
+    withAudit(Services),
+    withAudit(Announcements),
     PrayerDays,
     TimetableUploads,
     ContactSubmissions,
     DeviceTokens,
     Subscribers,
-    Broadcasts,
-    Media,
-    Users,
+    withAudit(Broadcasts),
+    withAudit(Media),
+    withAudit(Users),
+    AuditLog,
   ],
   globals: [SiteSettings, JummahSettings, DonationSettings, SpecialSchedule, BroadcastSettings, MainMenu],
   // Rich editor for ALL richText fields: keeps every default feature (headings,
