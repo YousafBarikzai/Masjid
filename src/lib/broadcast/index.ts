@@ -92,6 +92,37 @@ async function sendTelegram(input: BroadcastInput): Promise<ChannelResult> {
 // outside the 24h window only via an approved message template; plain text
 // works inside a session window. See docs/BROADCAST.md.
 async function sendWhatsApp(payload: Payload, input: BroadcastInput): Promise<ChannelResult> {
+  // Preferred: self-hosted gateway that posts into the actual WhatsApp group(s).
+  const gwUrl = process.env.WHATSAPP_GATEWAY_URL;
+  const gwSecret = process.env.WHATSAPP_GATEWAY_SECRET;
+  const groupIds = (process.env.WHATSAPP_GROUP_IDS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (gwUrl && gwSecret && groupIds.length) {
+    const text = `${input.title}\n\n${input.body}`;
+    let sent = 0;
+    for (const groupId of groupIds) {
+      try {
+        const r = await fetch(`${gwUrl.replace(/\/$/, "")}/send`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${gwSecret}` },
+          body: JSON.stringify({ groupId, text, imageUrl: input.imageUrl || undefined }),
+        });
+        if (r.ok) sent++;
+      } catch {
+        /* keep going */
+      }
+    }
+    return {
+      channel: "whatsapp",
+      status: sent ? "sent" : "failed",
+      detail: `${sent}/${groupIds.length} group(s) via gateway`,
+      count: sent,
+    };
+  }
+
+  // Fallback: official Cloud API broadcast to opted-in subscribers.
   const token = process.env.WHATSAPP_TOKEN;
   const phoneId = process.env.WHATSAPP_PHONE_ID;
   if (!token || !phoneId) return { channel: "whatsapp", status: "skipped", detail: "not configured" };
