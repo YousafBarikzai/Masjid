@@ -1,6 +1,54 @@
 import type { GlobalConfig } from "payload";
 import { anyone, isAdmin, isPrayerManager } from "./access";
 
+/* --------------------------- Navigation builder --------------------------- */
+// CMS-managed top navigation. Drag to reorder; each item can have a dropdown.
+// Leaving it empty makes the site fall back to the built-in default menu.
+export const MainMenu: GlobalConfig = {
+  slug: "main-menu",
+  label: "Navigation Menu",
+  admin: {
+    group: "Configuration",
+    description:
+      "The website's top navigation. Drag the ⠿ handles to reorder. Each item can hold a dropdown of links. Leave empty to use the built-in default menu.",
+  },
+  access: { read: anyone, update: isAdmin },
+  fields: [
+    {
+      name: "items",
+      type: "array",
+      labels: { singular: "Menu item", plural: "Menu items" },
+      admin: { description: "Top-level links shown in the header." },
+      fields: [
+        {
+          type: "row",
+          fields: [
+            { name: "label", type: "text", required: true, admin: { width: "55%" } },
+            { name: "url", type: "text", admin: { width: "35%", description: "/about or https://…" } },
+            { name: "visible", type: "checkbox", defaultValue: true, admin: { width: "10%" } },
+          ],
+        },
+        {
+          name: "children",
+          type: "array",
+          labels: { singular: "Dropdown link", plural: "Dropdown links" },
+          admin: { description: "Optional dropdown shown under this item." },
+          fields: [
+            {
+              type: "row",
+              fields: [
+                { name: "label", type: "text", required: true, admin: { width: "55%" } },
+                { name: "url", type: "text", required: true, admin: { width: "35%" } },
+                { name: "visible", type: "checkbox", defaultValue: true, admin: { width: "10%" } },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 export const BroadcastSettings: GlobalConfig = {
   slug: "broadcast-settings",
   label: "Broadcast",

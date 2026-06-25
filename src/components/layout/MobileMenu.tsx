@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { nav } from "@/lib/content";
+import type { NavItem } from "@/lib/content";
 
-export default function MobileMenu() {
+export default function MobileMenu({ items }: { items: NavItem[] }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="mobile-only">
@@ -18,7 +18,7 @@ export default function MobileMenu() {
       </button>
       {open && (
         <div className="mobile-nav" onClick={() => setOpen(false)}>
-          {nav
+          {items
             .filter((n) => !n.cta)
             .map((n) => (
               <div key={n.href} className="mobile-group">

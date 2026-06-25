@@ -31,6 +31,7 @@ import {
   DonationSettings,
   SpecialSchedule,
   BroadcastSettings,
+  MainMenu,
 } from "./payload/globals";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -98,7 +99,7 @@ export default buildConfig({
     Media,
     Users,
   ],
-  globals: [SiteSettings, JummahSettings, DonationSettings, SpecialSchedule, BroadcastSettings],
+  globals: [SiteSettings, JummahSettings, DonationSettings, SpecialSchedule, BroadcastSettings, MainMenu],
   // Rich editor for ALL richText fields: keeps every default feature (headings,
   // lists, links, images, alignment…), shows an always-visible toolbar so the
   // options are discoverable, and adds text/highlight colours. The same colour

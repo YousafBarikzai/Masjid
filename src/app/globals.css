@@ -383,3 +383,24 @@ nav.main { gap: 20px; }
 .block-bg-green-dark, .block-bg-green-dark p, .block-bg-green-dark li { color: #f2f7f4; }
 .block-bg-green-dark :is(h1, h2, h3, h4) { color: var(--gold-soft); }
 .block-bg-green-dark a { color: var(--gold-soft); text-decoration: underline; }
+
+/* --- Arabic / Qur'anic typography & RTL --- */
+.quran {
+  font-family: "Scheherazade New", "Amiri", serif;
+  font-size: 1.5em;
+  line-height: 2.2;
+  direction: rtl;
+  text-align: right;
+}
+.rtl, [dir="rtl"] { direction: rtl; text-align: right; }
+.prose [dir="rtl"], .prose [lang="ar"] { font-family: "Amiri", serif; line-height: 2; }
+/* Qur'anic verse block — centred, generous spacing for harakāt */
+.verse {
+  font-family: "Scheherazade New", "Amiri", serif;
+  direction: rtl;
+  text-align: center;
+  font-size: 1.8rem;
+  line-height: 2.4;
+  color: var(--green);
+  padding: 18px 0;
+}
