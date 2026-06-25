@@ -90,6 +90,28 @@ function authed(req, res) {
 
 app.get("/status", (_req, res) => res.json({ connected, hasQR: !!latestQR }));
 
+// Link by phone number instead of scanning the QR. Returns an 8-char pairing
+// code to type into WhatsApp → Linked devices → "Link with phone number".
+// Use a DEDICATED number — this method risks a WhatsApp ban.
+app.get("/pair", async (req, res) => {
+  if (!authed(req, res)) return;
+  const number = String(req.query.number || "").replace(/[^0-9]/g, ""); // e.g. 447951532529
+  if (!number) return res.status(400).json({ error: "number required, in full international form e.g. 447951532529" });
+  if (connected) return res.json({ status: "already_connected" });
+  if (!sock) return res.status(503).json({ error: "gateway starting — try again in a few seconds" });
+  if (sock.authState?.creds?.registered) return res.json({ status: "already_registered" });
+  try {
+    const code = await sock.requestPairingCode(number);
+    res.json({
+      pairingCode: code,
+      instructions:
+        "On the phone for this number: WhatsApp → Linked devices → Link a device → 'Link with phone number instead' → enter this code.",
+    });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
 // Pairing page.
 app.get("/", async (req, res) => {
   if (!authed(req, res)) return;
