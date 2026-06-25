@@ -10,13 +10,18 @@ export const textStates = {
     green: { label: "Mosque green", css: { color: "#0f5132" } },
     gold: { label: "Gold", css: { color: "#b8860b" } },
     blue: { label: "Blue", css: { color: "#1f5fae" } },
+    teal: { label: "Teal", css: { color: "#0d7a72" } },
     red: { label: "Red", css: { color: "#c0392b" } },
+    maroon: { label: "Maroon", css: { color: "#7a2e2e" } },
     purple: { label: "Purple", css: { color: "#6b3fa0" } },
     grey: { label: "Grey", css: { color: "#6c6557" } },
+    black: { label: "Black", css: { color: "#1a1a1a" } },
   },
   highlight: {
     yellow: { label: "Yellow highlight", css: { "background-color": "#fff3bf" } },
     green: { label: "Green highlight", css: { "background-color": "#d3f9d8" } },
+    blue: { label: "Blue highlight", css: { "background-color": "#d8ecff" } },
+    pink: { label: "Pink highlight", css: { "background-color": "#ffd9e6" } },
     gold: { label: "Gold highlight", css: { "background-color": "#f7ecc9" } },
   },
 } as const;

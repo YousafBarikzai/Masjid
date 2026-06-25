@@ -1,5 +1,5 @@
 import path from "path";
-import type { Block, CollectionConfig } from "payload";
+import type { Block, CollectionConfig, Field } from "payload";
 import { anyone, isAdmin, isAdminFieldLevel, isEditor, isPrayerManager, isStaff } from "./access";
 import { parseTimetableCsv } from "../lib/parseTimetable";
 
@@ -54,10 +54,49 @@ export const Media: CollectionConfig = {
 };
 
 /* ------------------------------ Reusable blocks --------------------------- */
+// Reusable "section background colour" control, used by several blocks.
+const backgroundField: Field = {
+  name: "background",
+  type: "select",
+  defaultValue: "none",
+  admin: { description: "Optional background colour for this section.", width: "50%" },
+  options: [
+    { label: "None", value: "none" },
+    { label: "Cream", value: "cream" },
+    { label: "Soft green", value: "green" },
+    { label: "Mosque green (dark)", value: "green-dark" },
+    { label: "Gold tint", value: "gold" },
+  ],
+};
+
 const RichTextBlock: Block = {
   slug: "content",
   labels: { singular: "Text", plural: "Text blocks" },
-  fields: [{ name: "richText", type: "richText" }],
+  fields: [
+    backgroundField,
+    { name: "richText", type: "richText" },
+  ],
+};
+const ColumnsBlock: Block = {
+  slug: "columns",
+  labels: { singular: "Columns", plural: "Column layouts" },
+  fields: [
+    backgroundField,
+    {
+      name: "columns",
+      type: "array",
+      minRows: 2,
+      maxRows: 4,
+      labels: { singular: "Column", plural: "Columns" },
+      admin: {
+        description: "Add 2–4 columns. Each has its own rich text (with the full toolbar) and an optional image. Columns stack on mobile.",
+      },
+      fields: [
+        { name: "image", type: "upload", relationTo: "media", admin: { description: "Optional image, shown above the text." } },
+        { name: "richText", type: "richText" },
+      ],
+    },
+  ],
 };
 const MediaBlock: Block = {
   slug: "mediaBlock",
@@ -71,6 +110,7 @@ const CallToActionBlock: Block = {
   slug: "cta",
   labels: { singular: "Button / Call to action", plural: "Buttons / CTAs" },
   fields: [
+    backgroundField,
     { name: "heading", type: "text" },
     { name: "text", type: "textarea" },
     { name: "buttonLabel", type: "text" },
@@ -85,6 +125,9 @@ const DownloadBlock: Block = {
     { name: "file", type: "upload", relationTo: "media" },
   ],
 };
+
+// The full set of layout blocks shared by Pages and News posts.
+const layoutBlocks = [RichTextBlock, ColumnsBlock, MediaBlock, CallToActionBlock, DownloadBlock];
 
 /* ---------------------------------- Pages --------------------------------- */
 export const Pages: CollectionConfig = {
@@ -118,13 +161,13 @@ export const Pages: CollectionConfig = {
     {
       name: "layout",
       type: "blocks",
-      label: "Extra sections (optional)",
+      label: "Page sections (text, columns, images, buttons)",
       labels: { singular: "Section", plural: "Sections" },
       admin: {
         description:
-          "Optional pre-built sections (image, button, download). Most pages only need the content above.",
+          "Build the page from sections: a Text block (full formatting toolbar), a Columns layout (2–4 columns), images, buttons or downloads — each with an optional background colour.",
       },
-      blocks: [RichTextBlock, MediaBlock, CallToActionBlock, DownloadBlock],
+      blocks: layoutBlocks,
     },
     {
       name: "meta",
@@ -146,9 +189,23 @@ export const Posts: CollectionConfig = {
     { name: "title", type: "text", required: true },
     { name: "slug", type: "text", unique: true },
     { name: "publishedDate", type: "date" },
-    { name: "image", type: "upload", relationTo: "media" },
-    { name: "excerpt", type: "textarea" },
-    { name: "content", type: "richText" },
+    { name: "image", type: "upload", relationTo: "media", admin: { description: "Lead image shown on the card and at the top of the article." } },
+    { name: "excerpt", type: "textarea", admin: { description: "Short summary shown on the news card." } },
+    {
+      name: "content",
+      type: "richText",
+      admin: { description: "The article body. Use the toolbar for bold, headings, colours, lists, links and images." },
+    },
+    {
+      name: "layout",
+      type: "blocks",
+      label: "Extra sections (optional)",
+      labels: { singular: "Section", plural: "Sections" },
+      admin: {
+        description: "Optional richer layout below the article — columns, images, buttons or downloads, each with an optional background colour.",
+      },
+      blocks: layoutBlocks,
+    },
   ],
 };
 

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { RichText } from "@payloadcms/richtext-lexical/react";
 import PageHero from "@/components/layout/PageHero";
+import RichTextRenderer from "@/components/cms/RichTextRenderer";
+import RenderBlocks from "@/components/cms/RenderBlocks";
 import { getPostBySlug } from "@/lib/cms";
 
 type Args = { params: Promise<{ slug: string }> };
@@ -37,10 +38,11 @@ export default async function PostDetail({ params }: Args) {
             <img src={img} alt={post.title as string} style={{ borderRadius: 14, marginBottom: 20 }} />
           )}
           {post.content ? (
-            <RichText data={post.content as never} />
+            <RichTextRenderer data={post.content} />
           ) : post.excerpt ? (
             <p>{post.excerpt as string}</p>
           ) : null}
+          <RenderBlocks blocks={post.layout as never} />
           <p>
             <Link href="/news">← All news</Link>
           </p>
