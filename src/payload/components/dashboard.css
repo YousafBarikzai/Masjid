@@ -222,6 +222,7 @@
   flex: none;
 }
 .kma-badge--draft { background: #fdeede; color: #9a5b16; }
+.kma-badge--review { background: color-mix(in srgb, var(--kma-gold) 30%, transparent); color: #7a5e00; }
 .kma-empty {
   font-size: 0.82rem;
   color: var(--theme-elevation-500);

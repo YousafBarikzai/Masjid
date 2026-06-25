@@ -1,6 +1,15 @@
 import path from "path";
 import type { Block, CollectionConfig, Field } from "payload";
-import { anyone, isAdmin, isAdminFieldLevel, isEditor, isPrayerManager, isStaff } from "./access";
+import {
+  anyone,
+  isAdmin,
+  isAdminFieldLevel,
+  isContributor,
+  isEditor,
+  isPrayerManager,
+  isStaff,
+} from "./access";
+import { editorialFields, notifyReviewers, restrictPublish } from "./editorial";
 import { parseTimetableCsv } from "../lib/parseTimetable";
 
 const TIME_HINT = "Use 24-hour HH:MM, e.g. 13:30";
@@ -195,9 +204,14 @@ const layoutBlocks = [RichTextBlock, ColumnsBlock, MediaBlock, CallToActionBlock
 /* ---------------------------------- Pages --------------------------------- */
 export const Pages: CollectionConfig = {
   slug: "pages",
-  admin: { useAsTitle: "title", defaultColumns: ["title", "slug", "_status"], group: "Content" },
-  access: { read: anyone, create: isEditor, update: isEditor, delete: isAdmin },
+  admin: {
+    useAsTitle: "title",
+    defaultColumns: ["title", "slug", "reviewStatus", "_status"],
+    group: "Content",
+  },
+  access: { read: anyone, create: isContributor, update: isContributor, delete: isAdmin },
   versions: { drafts: { autosave: false }, maxPerDoc: 20 },
+  hooks: { beforeChange: [restrictPublish], afterChange: [notifyReviewers] },
   fields: [
     { name: "title", type: "text", required: true },
     {
@@ -238,6 +252,7 @@ export const Pages: CollectionConfig = {
       label: "SEO",
       fields: [{ name: "description", type: "textarea" }],
     },
+    ...editorialFields,
   ],
 };
 
@@ -245,9 +260,14 @@ export const Pages: CollectionConfig = {
 export const Posts: CollectionConfig = {
   slug: "posts",
   labels: { singular: "News post", plural: "News & Announcements" },
-  admin: { useAsTitle: "title", defaultColumns: ["title", "publishedDate", "_status"], group: "Content" },
-  access: { read: anyone, create: isEditor, update: isEditor, delete: isAdmin },
+  admin: {
+    useAsTitle: "title",
+    defaultColumns: ["title", "publishedDate", "reviewStatus", "_status"],
+    group: "Content",
+  },
+  access: { read: anyone, create: isContributor, update: isContributor, delete: isAdmin },
   versions: { drafts: { autosave: false }, maxPerDoc: 20 },
+  hooks: { beforeChange: [restrictPublish], afterChange: [notifyReviewers] },
   fields: [
     { name: "title", type: "text", required: true },
     { name: "slug", type: "text", unique: true },
@@ -269,6 +289,7 @@ export const Posts: CollectionConfig = {
       },
       blocks: layoutBlocks,
     },
+    ...editorialFields,
   ],
 };
 
