@@ -29,10 +29,21 @@ logged in as the mosque number, sends the message into the configured group(s).
 
 ## Pair the mosque WhatsApp (one time)
 
+Use a **dedicated number** — this method can get the number **banned**.
+
+**Option A — scan a QR:**
 1. Open `https://<gateway-domain>/?key=YOUR_GATEWAY_SECRET` in a browser.
-2. A QR appears. On the **mosque phone**: WhatsApp → **Linked devices** →
-   **Link a device** → scan it.
-3. The page shows “✅ WhatsApp connected.” (The volume keeps it connected.)
+2. On the **mosque phone**: WhatsApp → **Linked devices** → **Link a device** → scan it.
+
+**Option B — link by phone number (no scanning):**
+1. Open `https://<gateway-domain>/pair?number=447951532529&key=YOUR_GATEWAY_SECRET`
+   (use the number in full international form, digits only — UK `07…` becomes `447…`).
+2. It returns an 8-character `pairingCode`.
+3. On the phone: WhatsApp → **Linked devices** → **Link a device** →
+   **“Link with phone number instead”** → enter the code.
+
+Either way, `https://<gateway-domain>/status` then shows `"connected": true`.
+(The `/data` volume keeps it linked across restarts.)
 
 ## Find your group id
 
