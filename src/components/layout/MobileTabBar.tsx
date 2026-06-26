@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { NavItem } from "@/lib/content";
 import PushOptIn from "@/components/pwa/PushOptIn";
+import AppSettings from "@/components/pwa/AppSettings";
+import { useI18n } from "@/lib/i18n";
 
 /* App-style bottom navigation for phones (and the installed PWA).
    Five targets — Home · Prayer · Donate (raised) · Events · More — with a
@@ -75,6 +77,7 @@ function tap() {
 
 export default function MobileTabBar({ menu, phone, phoneHref, email }: TabBarProps) {
   const pathname = usePathname() || "/";
+  const { t } = useI18n();
   const [sheet, setSheet] = useState(false);
 
   // Lock body scroll while the sheet is open.
@@ -102,7 +105,7 @@ export default function MobileTabBar({ menu, phone, phoneHref, email }: TabBarPr
           <span className="tabbar__icon">
             <HomeIcon />
           </span>
-          <span className="tabbar__label">Home</span>
+          <span className="tabbar__label">{t("nav.home")}</span>
         </Link>
 
         <Link
@@ -113,14 +116,14 @@ export default function MobileTabBar({ menu, phone, phoneHref, email }: TabBarPr
           <span className="tabbar__icon">
             <PrayerIcon />
           </span>
-          <span className="tabbar__label">Prayer</span>
+          <span className="tabbar__label">{t("nav.prayer")}</span>
         </Link>
 
         <Link href="/donate" onClick={tap} className="tabbar__fab" aria-label="Donate">
           <span className="tabbar__fab-ring">
             <HeartIcon />
           </span>
-          <span className="tabbar__fab-label">Donate</span>
+          <span className="tabbar__fab-label">{t("nav.donate")}</span>
         </Link>
 
         <Link
@@ -131,7 +134,7 @@ export default function MobileTabBar({ menu, phone, phoneHref, email }: TabBarPr
           <span className="tabbar__icon">
             <EventsIcon />
           </span>
-          <span className="tabbar__label">Events</span>
+          <span className="tabbar__label">{t("nav.events")}</span>
         </Link>
 
         <button
@@ -147,7 +150,7 @@ export default function MobileTabBar({ menu, phone, phoneHref, email }: TabBarPr
           <span className="tabbar__icon">
             <MoreIcon />
           </span>
-          <span className="tabbar__label">More</span>
+          <span className="tabbar__label">{t("nav.more")}</span>
         </button>
       </nav>
 
@@ -162,7 +165,7 @@ export default function MobileTabBar({ menu, phone, phoneHref, email }: TabBarPr
           <div className="sheet__panel" onClick={(e) => e.stopPropagation()}>
             <div className="sheet__grabber" />
             <div className="sheet__head">
-              <span className="sheet__title">Explore</span>
+              <span className="sheet__title">{t("sheet.explore")}</span>
               <button
                 type="button"
                 className="sheet__close"
@@ -188,22 +191,25 @@ export default function MobileTabBar({ menu, phone, phoneHref, email }: TabBarPr
                 ))}
             </div>
 
+            <div className="sheet__section-label">{t("sheet.tools")}</div>
             <div className="sheet__tools">
               <Link href="/prayer-times" className="sheet__tool">
                 <span className="sheet__tool-ic" aria-hidden>🕌</span>
-                Prayer Times
+                {t("tools.prayerTimes")}
               </Link>
               <Link href="/qibla" className="sheet__tool">
                 <span className="sheet__tool-ic" aria-hidden>🧭</span>
-                Qibla
+                {t("tools.qibla")}
               </Link>
               <Link href="/tasbih" className="sheet__tool">
                 <span className="sheet__tool-ic" aria-hidden>📿</span>
-                Tasbīḥ
+                {t("tools.tasbih")}
               </Link>
             </div>
 
             <PushOptIn />
+
+            <AppSettings />
 
             <div className="sheet__contact">
               <a href={phoneHref} className="sheet__contact-btn">
@@ -212,7 +218,7 @@ export default function MobileTabBar({ menu, phone, phoneHref, email }: TabBarPr
               </a>
               <a href={`mailto:${email}`} className="sheet__contact-btn">
                 <MailIcon />
-                <span>Email us</span>
+                <span>{t("contact.email")}</span>
               </a>
             </div>
           </div>

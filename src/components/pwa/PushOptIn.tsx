@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n } from "@/lib/i18n";
 
 /* "Enable notifications" control for the More sheet. Subscribes the browser /
    installed PWA to Web Push and registers it with the server. Renders nothing
@@ -25,6 +26,7 @@ const PRAYER_KEY = "kma-prayer-reminders";
 const PRAYER_OFFSET = 15; // minutes before jamāʿah (v1 default)
 
 export default function PushOptIn() {
+  const { t } = useI18n();
   const [state, setState] = useState<State>("loading");
   const [prayerOn, setPrayerOn] = useState(false);
 
@@ -145,20 +147,20 @@ export default function PushOptIn() {
         </svg>
       </span>
       <span className="pushrow__text">
-        <b>Prayer &amp; event alerts</b>
+        <b>{t("push.title")}</b>
         <small>
           {state === "on"
-            ? "You're subscribed to mosque notifications"
+            ? t("push.subscribed")
             : state === "denied"
               ? "Blocked — enable notifications in your browser settings"
               : state === "error"
                 ? "Couldn't enable — please try again"
-                : "Get notified about announcements and events"}
+                : t("push.get")}
         </small>
       </span>
       {state === "on" ? (
         <button type="button" className="pushrow__btn is-on" onClick={disable}>
-          On
+          {t("push.on")}
         </button>
       ) : state === "denied" ? (
         <span className="pushrow__btn is-off" aria-disabled>
@@ -166,7 +168,7 @@ export default function PushOptIn() {
         </span>
       ) : (
         <button type="button" className="pushrow__btn" onClick={enable} disabled={state === "subscribing"}>
-          {state === "subscribing" ? "…" : "Enable"}
+          {state === "subscribing" ? "…" : t("push.enable")}
         </button>
       )}
     </div>
@@ -185,7 +187,7 @@ export default function PushOptIn() {
           </svg>
         </span>
         <span className="prayerrow__text">
-          <b>Prayer time reminders</b>
+          <b>{t("push.prayerTitle")}</b>
           <small>A nudge {PRAYER_OFFSET} minutes before each jamāʿah</small>
         </span>
         <span className={`prayerrow__switch${prayerOn ? " is-on" : ""}`} aria-hidden>
