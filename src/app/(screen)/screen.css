@@ -104,6 +104,24 @@ body {
 .sunrise { text-align: center; margin-top: 1.4vh; font-size: 1.2vw; color: rgba(250, 247, 240, 0.7); }
 .sunrise b { color: var(--s-gold-soft); font-weight: 600; }
 
+/* Friday Jumu‘ah strip — replaces the sunrise line on Fridays */
+.jummah-board {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1.6vw;
+  margin-top: 1.4vh;
+  padding: 1vh 1.4vw;
+  border-radius: 1vw;
+  background: rgba(201, 162, 39, 0.12);
+  border: 1px solid rgba(201, 162, 39, 0.35);
+}
+.jb-title { font-size: 1.7vw; color: var(--s-gold-soft); font-weight: 600; }
+.jb-item { font-size: 1.3vw; color: rgba(250, 247, 240, 0.92); }
+.jb-item b { color: #fff; font-weight: 600; }
+.jb-time { color: var(--s-gold-soft); font-weight: 700; margin-left: 0.4vw; }
+
 .ticker {
   margin-top: 1.8vh;
   border-top: 0.12vw solid rgba(232, 213, 154, 0.25);

@@ -9,6 +9,7 @@ import {
   type PrayerDay,
 } from "./prayer";
 import { findNext, londonSecondsNow } from "./nextPrayer";
+import { isFriday } from "./prayer";
 import {
   getPrayerOverride,
   getAnnouncement,
@@ -17,6 +18,7 @@ import {
   getClasses,
   getPosts,
   getSite,
+  getJummah,
 } from "./cms";
 
 /**
@@ -40,13 +42,14 @@ export async function buildSnapshot(now: Date = new Date()) {
   const tomorrow = getNextDay(today.date);
   const nextPrayer = findNext(rows, tomorrow.fajr.jamaah, londonSecondsNow(now));
 
-  const [announcement, events, services, classes, news, site] = await Promise.all([
+  const [announcement, events, services, classes, news, site, jummah] = await Promise.all([
     getAnnouncement(),
     getEvents(),
     getServices(),
     getClasses(),
     getPosts(),
     getSite(),
+    getJummah(),
   ]);
 
   return {
@@ -58,6 +61,8 @@ export async function buildSnapshot(now: Date = new Date()) {
     },
     prayers: rows,
     nextPrayer,
+    isFriday: isFriday(todayISO),
+    jummah: jummah.congregations,
     announcement: announcement.enabled ? announcement : null,
     news,
     events,

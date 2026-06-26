@@ -1,4 +1,4 @@
-export type ChannelId = "email" | "telegram" | "whatsapp" | "facebook" | "instagram";
+export type ChannelId = "push" | "email" | "telegram" | "whatsapp" | "facebook" | "instagram";
 
 export interface BroadcastInput {
   title: string;
