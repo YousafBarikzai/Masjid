@@ -188,6 +188,21 @@ export default function MobileTabBar({ menu, phone, phoneHref, email }: TabBarPr
                 ))}
             </div>
 
+            <div className="sheet__tools">
+              <Link href="/prayer-times" className="sheet__tool">
+                <span className="sheet__tool-ic" aria-hidden>🕌</span>
+                Prayer Times
+              </Link>
+              <Link href="/qibla" className="sheet__tool">
+                <span className="sheet__tool-ic" aria-hidden>🧭</span>
+                Qibla
+              </Link>
+              <Link href="/tasbih" className="sheet__tool">
+                <span className="sheet__tool-ic" aria-hidden>📿</span>
+                Tasbīḥ
+              </Link>
+            </div>
+
             <PushOptIn />
 
             <div className="sheet__contact">
