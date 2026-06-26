@@ -683,6 +683,9 @@ export const DeviceTokens: CollectionConfig = {
     // encryption keys here. Native (Expo) devices leave these blank.
     { name: "p256dh", type: "text", admin: { readOnly: true, condition: (d) => d?.platform === "web" } },
     { name: "auth", type: "text", admin: { readOnly: true, condition: (d) => d?.platform === "web" } },
+    // Minutes before jamāʿah to send a prayer reminder (only used when the
+    // "prayer" topic is selected). Default 15.
+    { name: "reminderOffset", type: "number", defaultValue: 15, admin: { description: "Minutes before jamāʿah for prayer reminders." } },
     { name: "enabled", type: "checkbox", defaultValue: true },
   ],
 };

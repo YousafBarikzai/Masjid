@@ -11,6 +11,19 @@ export function webPushConfigured(): boolean {
   return !!(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY);
 }
 
+/** Load the web-push module with VAPID details set, or null if not configured. */
+export async function loadWebPush() {
+  if (!webPushConfigured()) return null;
+  const mod = await import("web-push");
+  const webpush = ((mod as unknown as { default?: typeof mod }).default ?? mod) as typeof mod;
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT || "mailto:info@kingstonmosque.org",
+    process.env.VAPID_PUBLIC_KEY as string,
+    process.env.VAPID_PRIVATE_KEY as string,
+  );
+  return webpush;
+}
+
 type WebSub = {
   id: string | number;
   token?: string; // endpoint

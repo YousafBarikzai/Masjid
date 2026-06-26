@@ -22,7 +22,7 @@ type SubscriptionJSON = {
 };
 
 export async function POST(req: Request) {
-  let body: { subscription?: SubscriptionJSON; topics?: unknown };
+  let body: { subscription?: SubscriptionJSON; topics?: unknown; reminderOffset?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -41,6 +41,9 @@ export async function POST(req: Request) {
     ? body.topics.filter((t): t is string => typeof t === "string" && VALID_TOPICS.has(t))
     : ["news", "events"];
 
+  const rawOffset = Number(body.reminderOffset);
+  const reminderOffset = [10, 15, 20, 30].includes(rawOffset) ? rawOffset : 15;
+
   try {
     const p = await getPayloadClient();
     const existing = await p.find({
@@ -55,6 +58,7 @@ export async function POST(req: Request) {
       p256dh,
       auth,
       topics: topics.length ? topics : ["news", "events"],
+      reminderOffset,
       enabled: true,
     } as never;
     if (existing.docs[0]) {
