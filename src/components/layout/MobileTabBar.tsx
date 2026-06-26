@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { NavItem } from "@/lib/content";
+import PushOptIn from "@/components/pwa/PushOptIn";
 
 /* App-style bottom navigation for phones (and the installed PWA).
    Five targets — Home · Prayer · Donate (raised) · Events · More — with a
@@ -186,6 +187,8 @@ export default function MobileTabBar({ menu, phone, phoneHref, email }: TabBarPr
                   </Link>
                 ))}
             </div>
+
+            <PushOptIn />
 
             <div className="sheet__contact">
               <a href={phoneHref} className="sheet__contact-btn">

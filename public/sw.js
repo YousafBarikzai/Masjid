@@ -1,7 +1,7 @@
 /* Service worker for the public site (PWA). Makes the site installable and
    keeps prayer times / pages available offline. Never touches the admin, the
    Payload API or the app feed — those always need live data. */
-const CACHE = "kma-site-v1";
+const CACHE = "kma-site-v2";
 const PRECACHE = ["/", "/prayer-times", "/offline.html"];
 
 self.addEventListener("install", (event) => {
@@ -83,4 +83,48 @@ self.addEventListener("fetch", (event) => {
       })(),
     );
   }
+});
+
+/* ── Web Push ────────────────────────────────────────────────────────────────
+   Show a notification when the server pushes one, and focus/open the relevant
+   page when it's tapped. Payload: { title, body, data: { url?, type?, id? } }. */
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = { title: "Kingston Mosque", body: event.data ? event.data.text() : "" };
+  }
+  const title = payload.title || "Kingston Mosque";
+  const data = payload.data || {};
+  const options = {
+    body: payload.body || "",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
+    tag: data.type ? `kma-${data.type}` : "kma",
+    renotify: true,
+    data,
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const data = event.notification.data || {};
+  let target = "/";
+  if (data.url) target = data.url;
+  else if (data.type === "announcement") target = "/";
+  else if (data.type === "event") target = "/events";
+  event.waitUntil(
+    (async () => {
+      const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      for (const client of all) {
+        if ("focus" in client) {
+          client.navigate?.(target);
+          return client.focus();
+        }
+      }
+      return self.clients.openWindow(target);
+    })(),
+  );
 });
