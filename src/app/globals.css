@@ -1448,3 +1448,58 @@ nav.main { gap: 20px; }
   .ramcd__time { font-size: 2.4rem; }
   .ramcd__pill-v { font-size: 1.2rem; }
 }
+
+/* ── Donation campaigns / appeals ───────────────────────────────────────────── */
+.camp-section { padding-top: 24px; }
+.camp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.camp-card {
+  display: block;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(16, 61, 41, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+a.camp-card:hover { transform: translateY(-5px); box-shadow: 0 24px 50px -30px rgba(16, 61, 41, 0.4); }
+.camp-img { width: 100%; height: 170px; object-fit: cover; display: block; }
+.camp-img--ph { background: linear-gradient(150deg, #1c5a3a, #0e3d29); }
+.camp-body { padding: 22px; }
+.camp-body h3 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.5rem;
+  color: var(--green);
+  margin: 0 0 14px;
+}
+[data-theme="dark"] .camp-body h3 { color: var(--gold-soft); }
+.camp-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--cream-2);
+  overflow: hidden;
+}
+.camp-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1c5a3a, #c9a227);
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.camp-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+.camp-raised { font-size: 1.2rem; font-weight: 800; color: var(--green); }
+[data-theme="dark"] .camp-raised { color: var(--gold-soft); }
+.camp-pct { margin-left: auto; font-weight: 800; color: var(--gold); }
+.camp-cta { display: inline-block; margin-top: 14px; font-weight: 700; color: var(--green-3); font-size: 0.92rem; }
+@media (max-width: 860px) { .camp-grid { grid-template-columns: 1fr; } }
