@@ -4,6 +4,8 @@ import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
 import PwaRegister from "@/components/pwa/PwaRegister";
 import PwaInstallPrompt from "@/components/pwa/PwaInstallPrompt";
+import PullToRefresh from "@/components/pwa/PullToRefresh";
+import Reveal from "@/components/pwa/Reveal";
 import MobileNav from "@/components/layout/MobileNav";
 import { site, siteUrl } from "@/lib/content";
 
@@ -89,6 +91,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="main">{children}</main>
         <SiteFooter />
         <MobileNav />
+        <PullToRefresh />
+        <Reveal />
         <PwaRegister />
         <PwaInstallPrompt />
       </body>
