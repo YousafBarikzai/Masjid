@@ -1,0 +1,1235 @@
+/* =========================================================================
+   Kingston Mosque — Home page design system
+   Faithful recreation of the supplied design. Scoped under .hx-* classes.
+   Desktop-first; mobile stacking via media queries at the bottom.
+   ========================================================================= */
+
+.hx {
+  --hx-green: #0e3d29;
+  --hx-green-2: #16492f;
+  --hx-green-deep: #0c3322;
+  --hx-green-deeper: #0a2c1d;
+  --hx-accent: #1c5a3a;
+  --hx-cream: #fbf7ec;
+  --hx-page: #f8f4ea;
+  --hx-page-2: #ece6d5;
+  --hx-gold: #c4951c;
+  --hx-gold-soft: #e6c879;
+  --hx-gold-ink: #a8791a;
+  --hx-ink: #2c3a30;
+  --hx-muted: #5c6a60;
+  --hx-muted-2: #94917f;
+  --hx-line: #eae1cc;
+  --hx-line-2: #e5dcc6;
+}
+
+.hx,
+.hx * {
+  box-sizing: border-box;
+}
+
+.hx-wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.hx-tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Buttons --------------------------------------------------------------- */
+.hx-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border: none;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+.hx-btn-gold {
+  background: var(--hx-gold);
+  color: #0c3322;
+  padding: 15px 26px;
+  box-shadow: 0 14px 34px -14px rgba(230, 200, 121, 0.9);
+}
+.hx-btn-gold:hover {
+  transform: translateY(-2px);
+}
+.hx-btn-outline {
+  background: transparent;
+  color: var(--hx-cream);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  padding: 15px 26px;
+  font-weight: 600;
+}
+.hx-btn-outline:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+.hx-btn-green {
+  background: var(--hx-green);
+  color: #fff;
+  padding: 14px 30px;
+  font-size: 14.5px;
+}
+.hx-btn-green:hover {
+  background: var(--hx-green-2);
+}
+
+/* Section eyebrow ------------------------------------------------------- */
+.hx-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.hx-eyebrow span.line {
+  width: 34px;
+  height: 1px;
+}
+.hx-eyebrow span.line.l {
+  background: linear-gradient(90deg, transparent, #cba94f);
+}
+.hx-eyebrow span.line.r {
+  background: linear-gradient(90deg, #cba94f, transparent);
+}
+.hx-eyebrow b {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: var(--hx-gold-ink);
+}
+.hx-section-head {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 50px;
+}
+.hx-section-head h2 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 48px;
+  font-weight: 600;
+  color: var(--hx-green-2-text, #103d29);
+  margin: 0;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+}
+.hx-section-head p {
+  font-size: 16.5px;
+  color: var(--hx-muted);
+  margin: 15px 0 0;
+}
+
+/* ====================== NOTICE TICKER ================================== */
+.hx-ticker {
+  background: linear-gradient(90deg, #b07f12, #c4951c);
+  color: #fff7e2;
+}
+.hx-ticker .hx-wrap {
+  padding: 11px 32px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 14px;
+}
+.hx-ticker .tag {
+  background: rgba(12, 51, 34, 0.22);
+  color: #fff7e2;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 3px 10px;
+  border-radius: 5px;
+  flex: none;
+}
+.hx-ticker .msg {
+  font-weight: 500;
+}
+.hx-ticker .msg b {
+  font-weight: 700;
+}
+
+/* ====================== HERO ========================================== */
+.hx-hero {
+  position: relative;
+  background: radial-gradient(120% 100% at 75% 0%, #16492f 0%, #0e3d29 45%, #0a3120 100%);
+  overflow: hidden;
+  color: var(--hx-cream);
+}
+.hx-hero-deco {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.hx-hero-glow-gold {
+  position: absolute;
+  right: 1%;
+  top: 10%;
+  width: 580px;
+  height: 580px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(230, 200, 121, 0.17), transparent 66%);
+  pointer-events: none;
+}
+.hx-hero-glow-green {
+  position: absolute;
+  left: -9%;
+  bottom: -14%;
+  width: 540px;
+  height: 540px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(62, 139, 95, 0.32), transparent 70%);
+  pointer-events: none;
+}
+.hx-hero-skyline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 230px;
+}
+.hx-hero .hx-wrap {
+  position: relative;
+  z-index: 2;
+  padding: 88px 32px 150px;
+  display: grid;
+  grid-template-columns: 1.04fr 0.96fr;
+  gap: 56px;
+  align-items: center;
+}
+.hx-hero h1 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 600;
+  font-size: 72px;
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  color: var(--hx-cream);
+  margin: 0;
+}
+.hx-hero h1 .gold {
+  color: var(--hx-gold-soft);
+  font-style: italic;
+}
+.hx-hero p.lead {
+  font-size: 17.5px;
+  line-height: 1.65;
+  color: #bccdc0;
+  max-width: 480px;
+  margin: 26px 0 0;
+}
+.hx-hero-cta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 36px;
+  flex-wrap: wrap;
+}
+.hx-hero-stats {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  margin-top: 42px;
+  padding-top: 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-wrap: wrap;
+}
+.hx-hero-stats .n {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--hx-gold-soft);
+}
+.hx-hero-stats .l {
+  font-size: 12.5px;
+  color: #9db1a2;
+  letter-spacing: 0.02em;
+}
+.hx-hero-stats .divider {
+  width: 1px;
+  height: 34px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Next-prayer chip ------------------------------------------------------ */
+.hx-nextchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(230, 200, 121, 0.25);
+  border-radius: 30px;
+  padding: 7px 7px 7px 14px;
+  font-size: 13.5px;
+  color: #d7e3d9;
+  margin-bottom: 30px;
+}
+.hx-nextchip .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--hx-gold-soft);
+  flex: none;
+  animation: hx-livedot 2s ease-in-out infinite;
+}
+.hx-nextchip b.name {
+  color: #fff;
+  font-weight: 600;
+}
+.hx-nextchip b.time {
+  color: var(--hx-gold-soft);
+  font-weight: 700;
+}
+.hx-nextchip .pill {
+  background: rgba(230, 200, 121, 0.16);
+  color: var(--hx-gold-soft);
+  border-radius: 20px;
+  padding: 3px 11px;
+  font-weight: 600;
+}
+@keyframes hx-livedot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* Prayer card ----------------------------------------------------------- */
+.hx-prayer-card {
+  background: #fcfaf2;
+  border-radius: 22px;
+  box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(230, 200, 121, 0.4);
+  overflow: hidden;
+}
+.hx-prayer-card .pc-head {
+  background: linear-gradient(160deg, #16492f, #0e3d29);
+  padding: 24px 26px;
+  text-align: center;
+  position: relative;
+}
+.hx-prayer-card .pc-head .dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(230, 200, 121, 0.1) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+.hx-prayer-card .pc-head .inner {
+  position: relative;
+}
+.hx-prayer-card .pc-eyebrow {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--hx-gold-soft);
+}
+.hx-prayer-card .pc-greg {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 27px;
+  font-weight: 600;
+  color: var(--hx-cream);
+  margin-top: 8px;
+}
+.hx-prayer-card .pc-hijri {
+  font-size: 13px;
+  color: #9db1a2;
+  margin-top: 2px;
+}
+.hx-prayer-card .pc-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  background: rgba(12, 51, 34, 0.5);
+  border: 1px solid rgba(230, 200, 121, 0.3);
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 18px;
+  font-size: 14px;
+  color: #e4ebe5;
+}
+.hx-prayer-card .pc-count b {
+  color: #fff;
+}
+.hx-prayer-card .pc-count b.timer {
+  color: var(--hx-gold-soft);
+}
+.hx-prayer-card .pc-body {
+  padding: 6px 26px 4px;
+}
+.hx-prow-head {
+  display: grid;
+  grid-template-columns: 1fr 62px 62px;
+  gap: 8px;
+  padding: 13px 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #a89b7c;
+  border-bottom: 1px solid #ece3cc;
+}
+.hx-prow-head span:nth-child(2),
+.hx-prow-head span:nth-child(3) {
+  text-align: right;
+}
+.hx-prow {
+  display: grid;
+  grid-template-columns: 1fr 62px 62px;
+  gap: 8px;
+  align-items: center;
+  padding: 13px 2px;
+  border-bottom: 1px solid #f1ead6;
+}
+.hx-prow:last-child {
+  border-bottom: none;
+}
+.hx-prow .pname {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hx-prow .en {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--hx-ink);
+}
+.hx-prow .ar {
+  font-family: "Amiri", serif;
+  font-size: 15px;
+  color: #9c916f;
+}
+.hx-prow .begins {
+  text-align: right;
+  font-size: 15px;
+  color: var(--hx-ink);
+}
+.hx-prow .jamaah {
+  text-align: right;
+  font-size: 15px;
+  color: #5c6a60;
+}
+/* info row (sunrise) — muted */
+.hx-prow.info .en {
+  color: #9aa593;
+}
+.hx-prow.info .ar {
+  color: #b9ae92;
+}
+.hx-prow.info .begins {
+  color: #9aa593;
+}
+.hx-prow.info .jamaah {
+  color: #c2b7a0;
+}
+/* highlighted "next" row */
+.hx-prow.next {
+  padding: 13px 12px;
+  margin: 2px -12px;
+  background: linear-gradient(90deg, #fbf1d6, #fcf6e3);
+  border: 1px solid #ead9a6;
+  border-radius: 12px;
+  grid-template-columns: 1fr 54px 54px;
+}
+.hx-prow.next .en {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #0f3d29;
+}
+.hx-prow.next .ar {
+  color: #8c7a3f;
+}
+.hx-prow.next .begins {
+  font-weight: 600;
+  color: #3c4a40;
+}
+.hx-prow.next .jamaah {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f3d29;
+}
+.hx-prow.next .badge {
+  background: var(--hx-gold);
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 5px;
+}
+.hx-prayer-card .pc-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 26px;
+  border-top: 1px solid #ece3cc;
+  background: #f7f1e0;
+}
+.hx-prayer-card .pc-foot .loc {
+  font-size: 12.5px;
+  color: #8a8367;
+}
+.hx-prayer-card .pc-foot a {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--hx-accent);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+}
+
+/* ====================== JUMMAH ======================================== */
+.hx-jummah {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0e3d29, #0c3322);
+  padding: 88px 32px;
+}
+.hx-jummah .hx-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.hx-jummah .hx-section-head {
+  margin-bottom: 48px;
+  max-width: none;
+}
+.hx-jummah .hx-eyebrow b {
+  color: var(--hx-gold-soft);
+}
+.hx-jummah .hx-eyebrow span.line.l {
+  background: linear-gradient(90deg, transparent, rgba(230, 200, 121, 0.6));
+}
+.hx-jummah .hx-eyebrow span.line.r {
+  background: linear-gradient(90deg, rgba(230, 200, 121, 0.6), transparent);
+}
+.hx-jummah .hx-section-head h2 {
+  font-size: 50px;
+  color: var(--hx-cream);
+}
+.hx-jummah .hx-section-head p {
+  font-size: 16.5px;
+  color: #a8bbad;
+}
+.hx-jummah-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 26px;
+}
+.hx-jummah-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(230, 200, 121, 0.22);
+  border-radius: 20px;
+  padding: 38px;
+  text-align: center;
+  transition: border-color 0.2s ease;
+}
+.hx-jummah-card:hover {
+  border-color: rgba(230, 200, 121, 0.5);
+}
+.hx-jummah-card .lbl {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--hx-gold-soft);
+}
+.hx-jummah-card .big {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 60px;
+  font-weight: 600;
+  color: var(--hx-cream);
+  margin: 14px 0 6px;
+  line-height: 1;
+}
+.hx-jummah-card .big span {
+  font-size: 34px;
+  font-style: italic;
+  color: #cbd8cd;
+}
+.hx-jummah-card .sub {
+  font-size: 13.5px;
+  color: #9db1a2;
+}
+
+/* ====================== EVENTS / NEWS shared cards ==================== */
+.hx-events {
+  background: var(--hx-page);
+  padding: 90px 32px;
+}
+.hx-events .hx-inner,
+.hx-classes .hx-inner,
+.hx-services .hx-inner,
+.hx-news .hx-inner,
+.hx-contact .hx-inner {
+  max-width: 1160px;
+  margin: 0 auto;
+}
+.hx-events-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.hx-event-card {
+  background: #fff;
+  border: 1px solid var(--hx-line);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(16, 61, 41, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: block;
+  text-decoration: none;
+}
+.hx-event-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 24px 50px -30px rgba(16, 61, 41, 0.4);
+}
+.hx-event-card .topbar {
+  height: 7px;
+  background: linear-gradient(90deg, #c4951c, #e6c879);
+}
+.hx-event-card:nth-child(2) .topbar {
+  background: linear-gradient(90deg, #1c5a3a, #3e8b5f);
+}
+.hx-event-card .pad {
+  padding: 26px;
+}
+.hx-event-card .row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.hx-event-card .cat {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--hx-accent);
+  background: #e7f0e9;
+  padding: 5px 11px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+.hx-event-card .meta {
+  font-size: 13px;
+  color: var(--hx-muted-2);
+}
+.hx-event-card h3 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 25px;
+  font-weight: 600;
+  color: #103d29;
+  margin: 0 0 10px;
+}
+.hx-event-card p {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--hx-muted);
+  margin: 0 0 18px;
+}
+.hx-link-more {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--hx-accent);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ====================== DONATION ===================================== */
+.hx-donate {
+  background: var(--hx-page);
+  padding: 0 32px 90px;
+}
+.hx-donate .hx-inner {
+  max-width: 1160px;
+  margin: 0 auto;
+}
+.hx-donate-box {
+  position: relative;
+  background: linear-gradient(150deg, #16492f, #0c3322);
+  border-radius: 24px;
+  overflow: hidden;
+  padding: 54px;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 48px;
+  align-items: center;
+}
+.hx-donate-box .deco {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.hx-donate-box .copy {
+  position: relative;
+}
+.hx-donate-box .eyebrow {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--hx-gold-soft);
+  margin-bottom: 16px;
+}
+.hx-donate-box h2 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 42px;
+  font-weight: 600;
+  color: var(--hx-cream);
+  margin: 0;
+  line-height: 1.08;
+}
+.hx-donate-box .body {
+  font-size: 16px;
+  line-height: 1.65;
+  color: #b6c8bb;
+  margin: 20px 0 28px;
+  max-width: 440px;
+}
+.hx-donate-box .actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.hx-donate-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(230, 200, 121, 0.28);
+  border-radius: 18px;
+  padding: 26px 28px;
+}
+.hx-donate-card .line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px dashed rgba(230, 200, 121, 0.25);
+}
+.hx-donate-card .line:last-child {
+  border-bottom: none;
+  padding-bottom: 2px;
+}
+.hx-donate-card .k {
+  font-size: 13.5px;
+  color: #a8bbad;
+  flex: none;
+}
+.hx-donate-card .v {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--hx-cream);
+  text-align: right;
+}
+.hx-donate-card .line:first-child .v {
+  color: var(--hx-gold-soft);
+}
+
+/* ====================== CLASSES / SERVICES =========================== */
+.hx-classes {
+  background: var(--hx-page-2);
+  padding: 90px 32px;
+}
+.hx-services {
+  background: var(--hx-page);
+  padding: 90px 32px;
+}
+.hx-icard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+}
+.hx-icard {
+  background: #fff;
+  border: 1px solid var(--hx-line-2);
+  border-radius: 18px;
+  padding: 28px 24px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: block;
+  text-decoration: none;
+}
+.hx-services .hx-icard {
+  border-color: var(--hx-line);
+}
+.hx-icard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 24px 50px -30px rgba(16, 61, 41, 0.4);
+}
+.hx-icard .ic {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+.hx-classes .hx-icard .ic {
+  background: #e7f0e9;
+}
+.hx-services .hx-icard .ic {
+  background: #fbf1d6;
+}
+.hx-icard h3 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 23px;
+  font-weight: 600;
+  color: #103d29;
+  margin: 0 0 9px;
+}
+.hx-icard p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--hx-muted);
+  margin: 0;
+}
+
+/* ====================== APP CTA ====================================== */
+.hx-appcta {
+  background: var(--hx-page-2);
+  padding: 50px 32px;
+}
+.hx-appcta .hx-inner {
+  max-width: 1160px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+.hx-appcta .left {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.hx-appcta .logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: linear-gradient(150deg, #16492f, #0c3322);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.hx-appcta .eyebrow {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--hx-gold-ink);
+  margin-bottom: 6px;
+}
+.hx-appcta h3 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #103d29;
+  margin: 0 0 5px;
+}
+.hx-appcta p {
+  font-size: 14.5px;
+  color: var(--hx-muted);
+  margin: 0;
+  max-width: 430px;
+}
+.hx-appcta .badges {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.hx-app-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #0c3322;
+  color: #fff;
+  border-radius: 12px;
+  padding: 11px 18px;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+.hx-app-badge:hover {
+  transform: translateY(-2px);
+}
+.hx-app-badge .small {
+  font-size: 9px;
+  color: #a8bbad;
+}
+.hx-app-badge .big {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+/* ====================== NEWS ========================================= */
+.hx-news {
+  background: var(--hx-page);
+  padding: 90px 32px;
+}
+.hx-news-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.hx-news-card {
+  background: #fff;
+  border: 1px solid var(--hx-line);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: block;
+  text-decoration: none;
+}
+.hx-news-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 24px 50px -30px rgba(16, 61, 41, 0.4);
+}
+.hx-news-card .thumb {
+  height: 170px;
+  background: linear-gradient(150deg, #1c5a3a, #0e3d29);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hx-news-card:nth-child(2) .thumb {
+  background: linear-gradient(150deg, #2a6b47, #14492f);
+}
+.hx-news-card .thumb .dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(230, 200, 121, 0.12) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+.hx-news-card .thumb .tag {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #0c3322;
+  background: var(--hx-gold-soft);
+  padding: 4px 11px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+.hx-news-card .pad {
+  padding: 24px;
+}
+.hx-news-card .date {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--hx-gold-ink);
+  margin-bottom: 8px;
+}
+.hx-news-card h3 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 23px;
+  font-weight: 600;
+  color: #103d29;
+  margin: 0 0 10px;
+}
+.hx-news-card p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--hx-muted);
+  margin: 0 0 16px;
+}
+.hx-news-all {
+  text-align: center;
+  margin-top: 42px;
+}
+
+/* ====================== MEDIA band =================================== */
+.hx-media {
+  background: linear-gradient(120deg, #0e3d29, #0c3322);
+  padding: 56px 32px;
+}
+.hx-media .hx-inner {
+  max-width: 1160px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+.hx-media .copy {
+  max-width: 520px;
+}
+.hx-media h3 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--hx-gold-soft);
+  margin: 0 0 10px;
+}
+.hx-media p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #b6c8bb;
+  margin: 0;
+}
+.hx-media .actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.hx-media .hx-btn-gold {
+  padding: 14px 24px;
+  font-size: 14.5px;
+  box-shadow: none;
+}
+.hx-media .hx-btn-outline {
+  border-color: rgba(255, 255, 255, 0.3);
+  padding: 14px 24px;
+  font-size: 14.5px;
+}
+
+/* ====================== NEWSLETTER ================================== */
+.hx-newsletter {
+  background: var(--hx-page);
+  padding: 70px 32px;
+}
+.hx-newsletter .hx-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid var(--hx-line);
+  border-radius: 20px;
+  padding: 38px 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 36px;
+  flex-wrap: wrap;
+  box-shadow: 0 20px 50px -36px rgba(16, 61, 41, 0.5);
+}
+.hx-newsletter h3 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #103d29;
+  margin: 0 0 7px;
+}
+.hx-newsletter p {
+  font-size: 15px;
+  color: var(--hx-muted);
+  margin: 0;
+}
+.hx-newsletter form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.hx-newsletter input {
+  border: 1px solid #ddd3bd;
+  border-radius: 30px;
+  padding: 13px 20px;
+  font-size: 14.5px;
+  font-family: inherit;
+  width: 240px;
+  background: #fcfaf2;
+  color: #1a2a20;
+}
+.hx-newsletter .hx-btn-gold {
+  padding: 13px 26px;
+  font-size: 14.5px;
+  box-shadow: none;
+}
+
+/* ====================== FACILITIES band ============================= */
+.hx-facilities {
+  background: linear-gradient(180deg, #0c3322, #0a2c1d);
+  padding: 60px 32px;
+}
+.hx-facilities .hx-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+.hx-facility {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.hx-facility .ic {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: rgba(230, 200, 121, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.hx-facility .t {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--hx-cream);
+}
+.hx-facility .s {
+  font-size: 13px;
+  color: #9db1a2;
+}
+
+/* ====================== CONTACT ===================================== */
+.hx-contact {
+  background: var(--hx-page-2);
+  padding: 90px 32px;
+}
+.hx-contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  align-items: stretch;
+}
+.hx-contact-map {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid #ddd3bd;
+  min-height: 340px;
+  background: linear-gradient(135deg, #e8efe6, #dce7db);
+  display: block;
+}
+.hx-contact-map .card {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: 0 8px 20px -10px rgba(0, 0, 0, 0.3);
+  max-width: 230px;
+}
+.hx-contact-map .card .name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #103d29;
+}
+.hx-contact-map .card .addr {
+  font-size: 12px;
+  color: #7c8a7e;
+  margin-top: 2px;
+}
+.hx-contact-map .pin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -100%);
+}
+.hx-contact-map .open {
+  position: absolute;
+  bottom: 18px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--hx-green);
+  color: #fff;
+  border-radius: 24px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.hx-contact-info {
+  background: #fff;
+  border: 1px solid var(--hx-line-2);
+  border-radius: 18px;
+  padding: 8px 34px;
+}
+.hx-contact-info .line {
+  display: flex;
+  gap: 18px;
+  padding: 22px 0;
+  border-bottom: 1px solid #f1ead6;
+}
+.hx-contact-info .line:last-child {
+  border-bottom: none;
+}
+.hx-contact-info .k {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--hx-gold-ink);
+  width: 80px;
+  padding-top: 2px;
+  flex: none;
+}
+.hx-contact-info .v {
+  font-size: 15px;
+  color: var(--hx-ink);
+}
+.hx-contact-info .v a {
+  color: var(--hx-ink);
+  text-decoration: none;
+}
+
+/* ====================== RESPONSIVE ================================== */
+@media (max-width: 1024px) {
+  .hx-hero h1 { font-size: 56px; }
+  .hx-jummah .hx-section-head h2 { font-size: 42px; }
+  .hx-icard-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 900px) {
+  .hx-hero .hx-wrap {
+    grid-template-columns: 1fr;
+    padding: 64px 24px 110px;
+    gap: 40px;
+  }
+  .hx-hero h1 { font-size: 46px; }
+  .hx-donate-box {
+    grid-template-columns: 1fr;
+    padding: 36px;
+    gap: 32px;
+  }
+  .hx-events-grid,
+  .hx-news-grid {
+    grid-template-columns: 1fr;
+  }
+  .hx-jummah-grid { grid-template-columns: 1fr; }
+  .hx-contact-grid { grid-template-columns: 1fr; }
+  .hx-facilities .hx-inner { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .hx-wrap,
+  .hx-hero .hx-wrap,
+  .hx-jummah,
+  .hx-events,
+  .hx-donate,
+  .hx-classes,
+  .hx-services,
+  .hx-appcta,
+  .hx-news,
+  .hx-media,
+  .hx-newsletter,
+  .hx-facilities,
+  .hx-contact {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+  .hx-hero h1 { font-size: 38px; }
+  .hx-section-head h2,
+  .hx-jummah .hx-section-head h2 { font-size: 34px; }
+  .hx-icard-grid { grid-template-columns: 1fr; }
+  .hx-facilities .hx-inner { grid-template-columns: 1fr; }
+  .hx-hero-stats { gap: 16px; }
+  .hx-donate-box { padding: 26px; }
+  .hx-jummah-card .big { font-size: 48px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hx-nextchip .dot { animation: none; }
+}
