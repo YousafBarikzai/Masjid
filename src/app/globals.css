@@ -1037,3 +1037,194 @@ nav.main { gap: 20px; }
 @media (prefers-reduced-motion: reduce) {
   .prayerrow__switch .knob { transition: none; }
 }
+
+/* ── Event "Add to calendar" ────────────────────────────────────────────────── */
+.event-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 26px 0 10px; }
+.atc { position: relative; display: inline-block; }
+.atc__btn { border: 0; }
+.atc__menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 210px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px -18px rgba(16, 61, 41, 0.5);
+  overflow: hidden;
+}
+.atc__item {
+  display: block;
+  padding: 12px 16px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+.atc__item:last-child { border-bottom: 0; }
+.atc__item:hover { background: var(--cream-2); color: var(--green); }
+
+/* ── Sheet "Tools" row (Prayer / Qibla / Tasbīḥ) ───────────────────────────── */
+.sheet__tools { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 12px; }
+.sheet__tool {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 6px;
+  border-radius: 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #f4efe2;
+  text-decoration: none;
+  background: rgba(244, 239, 226, 0.06);
+  border: 1px solid rgba(244, 239, 226, 0.1);
+}
+.sheet__tool:active { background: rgba(244, 239, 226, 0.12); }
+.sheet__tool-ic { font-size: 1.5rem; line-height: 1; }
+
+/* ── Qibla compass ──────────────────────────────────────────────────────────── */
+.qibla { text-align: center; padding: 18px 0 8px; }
+.qibla__hint { color: var(--muted); margin: 16px 0; }
+.qibla__dial {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  max-width: 80vw;
+  margin: 20px auto 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, #14492f, #0c3322);
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.6), inset 0 0 0 2px rgba(201, 162, 39, 0.3);
+  border: 1px solid rgba(201, 162, 39, 0.35);
+  transition: box-shadow 0.3s ease;
+}
+.qibla__dial.is-aligned {
+  box-shadow: 0 0 0 4px rgba(46, 160, 90, 0.5), 0 24px 60px -26px rgba(46, 160, 90, 0.6);
+}
+.qibla__rose { position: absolute; inset: 0; transition: transform 0.18s linear; }
+.qibla__card {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: rgba(230, 200, 121, 0.85);
+}
+.qibla__card.n { top: 12px; color: #e8c965; }
+.qibla__card.s { bottom: 12px; }
+.qibla__card.e { right: 12px; left: auto; top: 50%; transform: translateY(-50%); }
+.qibla__card.w { left: 12px; top: 50%; transform: translateY(-50%); }
+.qibla__needle {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: start center;
+  padding-top: 16px;
+  transition: transform 0.18s linear;
+}
+.qibla__kaaba {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.3rem;
+}
+.qibla__facing {
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 12px solid #fff;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+}
+.qibla__status { font-weight: 700; color: var(--green); margin-top: 8px; }
+.qibla__status.is-aligned { color: #1c7a4a; }
+.qibla__meta { color: var(--muted); font-size: 0.92rem; margin-top: 4px; }
+.qibla__meta b { color: var(--green); }
+.qibla__note { color: var(--muted); font-size: 0.86rem; margin-top: 26px; text-align: center; }
+[data-theme="dark"] .qibla__status { color: var(--gold-soft); }
+[data-theme="dark"] .qibla__meta b { color: var(--gold-soft); }
+
+/* ── Tasbīḥ counter ─────────────────────────────────────────────────────────── */
+.tasbih { text-align: center; padding: 20px 0; }
+.tasbih__dhikr { margin-bottom: 18px; }
+.tasbih__ar {
+  display: block;
+  font-family: "Amiri", serif;
+  font-size: 2.2rem;
+  color: var(--green);
+  line-height: 1.6;
+}
+.tasbih__tr { display: block; color: var(--muted); font-size: 0.95rem; margin-top: 2px; }
+[data-theme="dark"] .tasbih__ar { color: var(--gold-soft); }
+.tasbih__bead {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  max-width: 78vw;
+  margin: 6px auto;
+  border-radius: 50%;
+  border: 0;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 38%, #16492f, #0c3322);
+  box-shadow: 0 22px 50px -26px rgba(0, 0, 0, 0.55);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.08s ease;
+}
+.tasbih__bead:active { transform: scale(0.97); }
+.tasbih__ring { position: absolute; inset: 0; width: 100%; height: 100%; }
+.tasbih__count {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 4.2rem;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1;
+}
+.tasbih__target { color: rgba(244, 239, 226, 0.6); font-size: 1rem; margin-top: 2px; }
+.tasbih__meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.tasbih__meta b { color: var(--green); }
+[data-theme="dark"] .tasbih__meta b { color: var(--gold-soft); }
+.tasbih__reset {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tasbih__picker { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 22px; }
+.tasbih__chip {
+  appearance: none;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  transition: 0.15s;
+}
+.tasbih__chip.is-active { background: var(--green); color: #fff; border-color: var(--green); }
+@media (prefers-reduced-motion: reduce) {
+  .qibla__rose, .qibla__needle, .tasbih__bead { transition: none; }
+}

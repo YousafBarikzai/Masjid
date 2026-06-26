@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { RichText } from "@payloadcms/richtext-lexical/react";
 import PageHero from "@/components/layout/PageHero";
+import AddToCalendar from "@/components/events/AddToCalendar";
 import { getEventBySlug } from "@/lib/cms";
 
 type Args = { params: Promise<{ slug: string }> };
@@ -50,13 +51,22 @@ export default async function EventDetail({ params }: Args) {
           ) : (
             <p>Further details will be announced soon, inshā&apos;Allah.</p>
           )}
-          {e.registrationUrl ? (
-            <p>
+          <div className="event-actions">
+            {e.registrationUrl ? (
               <a className="btn btn-green" href={e.registrationUrl as string} target="_blank" rel="noopener noreferrer">
                 Register / more info
               </a>
-            </p>
-          ) : null}
+            ) : null}
+            {e.start ? (
+              <AddToCalendar
+                title={e.title as string}
+                start={e.start as string}
+                end={e.end as string | undefined}
+                location={e.location as string | undefined}
+                details={e.summary as string | undefined}
+              />
+            ) : null}
+          </div>
           <p>
             <Link href="/events">← All events</Link>
           </p>
