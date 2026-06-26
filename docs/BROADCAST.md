@@ -11,6 +11,11 @@ secrets never sit in the database. A channel only activates when its vars are se
 
 ## Channels
 
+### App notification (push)  ✅ recommended, free
+Sends a push notification to everyone who installed the app / website and turned
+on notifications — the same audience as a published announcement. Works as soon
+as **Web Push is set up** (see `docs/PUSH.md`); needs no per-channel keys here.
+
 ### Email  ✅ recommended, easiest
 Reuses the site's existing SMTP settings (`SMTP_*`). Sends to everyone in
 **Subscribers** with *Wants email updates* on (and not unsubscribed), one message

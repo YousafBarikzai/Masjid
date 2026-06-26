@@ -742,6 +742,7 @@ export const Broadcasts: CollectionConfig = {
       hasMany: true,
       admin: { description: "Where to send this." },
       options: [
+        { label: "App notification (push)", value: "push" },
         { label: "Email", value: "email" },
         { label: "Telegram", value: "telegram" },
         { label: "WhatsApp", value: "whatsapp" },
