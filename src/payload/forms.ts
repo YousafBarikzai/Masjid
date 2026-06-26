@@ -1,6 +1,7 @@
 import { APIError } from "payload";
 import { formBuilderPlugin } from "@payloadcms/plugin-form-builder";
 import { anyone, isAdmin, isEditor, isStaff } from "./access";
+import { HELP_REF } from "./help";
 
 // Honeypot field names the public form renderer should include as a hidden input.
 // Real users leave them empty; bots fill them in — those submissions are rejected.
@@ -40,13 +41,18 @@ export const formsPlugin = formBuilderPlugin({
       group: "Forms",
       description:
         "Build custom forms (membership, enquiries, bookings…). Add the fields you need, choose who receives submissions by email, and set a thank-you message or a page to redirect to.",
+      // In-CMS help panel (forms is plugin-injected, so wire it here directly).
+      components: { Description: HELP_REF },
     },
     // Public read so forms can be rendered on the website; editors build them.
     access: { read: anyone, create: isEditor, update: isEditor, delete: isAdmin },
   },
   formSubmissionOverrides: {
     slug: "form-submissions",
-    admin: { group: "Forms" },
+    admin: {
+      group: "Forms",
+      components: { Description: HELP_REF },
+    },
     // Anyone can submit; only staff can read; only admins can edit/delete.
     access: { read: isStaff, create: anyone, update: isAdmin, delete: isAdmin },
     hooks: {
