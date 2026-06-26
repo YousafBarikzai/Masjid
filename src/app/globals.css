@@ -976,3 +976,64 @@ nav.main { gap: 20px; }
   color: rgba(244, 239, 226, 0.6);
   background: rgba(244, 239, 226, 0.06);
 }
+
+/* ── Prayer-reminder toggle row (inside the More sheet) ─────────────────────── */
+.prayerrow {
+  width: 100%;
+  appearance: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  text-align: left;
+  background: rgba(244, 239, 226, 0.05);
+  border: 1px solid rgba(244, 239, 226, 0.1);
+  color: #f4efe2;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.prayerrow.is-on {
+  background: rgba(201, 162, 39, 0.1);
+  border-color: rgba(201, 162, 39, 0.3);
+}
+.prayerrow__icon {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: #cbd8cd;
+  background: rgba(244, 239, 226, 0.06);
+}
+.prayerrow.is-on .prayerrow__icon { color: #efce75; background: rgba(201, 162, 39, 0.16); }
+.prayerrow__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.prayerrow__text b { font-size: 0.9rem; font-weight: 700; }
+.prayerrow__text small { font-size: 0.72rem; color: rgba(244, 239, 226, 0.62); }
+.prayerrow__switch {
+  flex: none;
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(244, 239, 226, 0.18);
+  position: relative;
+  transition: background 0.2s ease;
+}
+.prayerrow__switch.is-on { background: linear-gradient(180deg, #e8c965, #c9a227); }
+.prayerrow__switch .knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.prayerrow__switch.is-on .knob { transform: translateX(18px); }
+@media (prefers-reduced-motion: reduce) {
+  .prayerrow__switch .knob { transition: none; }
+}

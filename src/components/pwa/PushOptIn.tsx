@@ -21,8 +21,20 @@ function urlBase64ToUint8Array(base64: string): Uint8Array {
 
 type State = "loading" | "unsupported" | "idle" | "subscribing" | "on" | "denied" | "error";
 
+const PRAYER_KEY = "kma-prayer-reminders";
+const PRAYER_OFFSET = 15; // minutes before jamāʿah (v1 default)
+
 export default function PushOptIn() {
   const [state, setState] = useState<State>("loading");
+  const [prayerOn, setPrayerOn] = useState(false);
+
+  useEffect(() => {
+    try {
+      setPrayerOn(localStorage.getItem(PRAYER_KEY) === "on");
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   useEffect(() => {
     if (!PUBLIC_KEY) {
@@ -65,15 +77,40 @@ export default function PushOptIn() {
           applicationServerKey: urlBase64ToUint8Array(PUBLIC_KEY) as BufferSource,
         });
       }
-      const res = await fetch("/app-api/push-subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subscription: sub.toJSON(), topics: ["news", "events"] }),
-      });
-      if (!res.ok) throw new Error("register failed");
+      await register(sub, prayerOn);
       setState("on");
     } catch {
       setState("error");
+    }
+  }
+
+  // Upsert the subscription with the current topic selection.
+  async function register(sub: PushSubscription, prayer: boolean) {
+    const topics = prayer ? ["news", "events", "prayer"] : ["news", "events"];
+    const res = await fetch("/app-api/push-subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subscription: sub.toJSON(), topics, reminderOffset: PRAYER_OFFSET }),
+    });
+    if (!res.ok) throw new Error("register failed");
+  }
+
+  // Toggle prayer-time reminders on the existing subscription.
+  async function togglePrayer() {
+    const next = !prayerOn;
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (!sub) return;
+      await register(sub, next);
+      setPrayerOn(next);
+      try {
+        localStorage.setItem(PRAYER_KEY, next ? "on" : "off");
+      } catch {
+        /* ignore */
+      }
+    } catch {
+      /* ignore */
     }
   }
 
@@ -99,6 +136,7 @@ export default function PushOptIn() {
   if (state === "loading" || state === "unsupported") return null;
 
   return (
+    <>
     <div className="pushrow">
       <span className="pushrow__icon" aria-hidden>
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -132,5 +170,29 @@ export default function PushOptIn() {
         </button>
       )}
     </div>
+
+    {state === "on" && (
+      <button
+        type="button"
+        className={`prayerrow${prayerOn ? " is-on" : ""}`}
+        onClick={togglePrayer}
+        aria-pressed={prayerOn}
+      >
+        <span className="prayerrow__icon" aria-hidden>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3 2" />
+          </svg>
+        </span>
+        <span className="prayerrow__text">
+          <b>Prayer time reminders</b>
+          <small>A nudge {PRAYER_OFFSET} minutes before each jamāʿah</small>
+        </span>
+        <span className={`prayerrow__switch${prayerOn ? " is-on" : ""}`} aria-hidden>
+          <span className="knob" />
+        </span>
+      </button>
+    )}
+    </>
   );
 }

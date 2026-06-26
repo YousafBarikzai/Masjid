@@ -44,6 +44,22 @@ After the redeploy, open the site on a phone → **More** → **Enable** under
    - For an urgent **janāzah** alert, set severity to **Urgent** and send the
      same way.
 
+## Prayer-time reminders (optional)
+People who enable notifications can also turn on **"Prayer time reminders"** in
+the More menu — a push **15 minutes before each jamāʿah**. This needs a tiny
+scheduler to ping the site every minute:
+
+1. Add a secret to Railway: `CRON_SECRET` = any long random text.
+2. Point a free every-minute scheduler at:
+   `https://YOUR-SITE/app-api/cron/prayer-reminders?key=YOUR_CRON_SECRET`
+   - **cron-job.org** (free): create a cron job, interval **every 1 minute**,
+     paste the URL above.
+   - **Railway cron**: add a cron service that `curl`s that URL each minute.
+   - **GitHub Actions**: a scheduled workflow (every 5 min is the GH minimum)
+     that curls the URL — coarser, but zero extra services.
+3. That's it. The endpoint only sends when a prayer is exactly the chosen number
+   of minutes away, and is a no-op until `CRON_SECRET` + the VAPID keys are set.
+
 ## Notes & limits
 - **iOS** delivers Web Push **only to the installed app** (iOS 16.4+). On iPhone
   people must "Add to Home Screen" first — the install prompt already nudges this.
