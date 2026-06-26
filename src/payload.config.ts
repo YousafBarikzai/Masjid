@@ -44,7 +44,16 @@ const dbUri =
   process.env.POSTGRES_URL ||
   process.env.DATABASE_URL ||
   "file:./kma.db";
-// Use Postgres in production (Vercel/Neon), SQLite for local development.
+// Whether a database has actually been configured via env. Without one we fall
+// back to a LOCAL SQLite file, which on most hosts (Railway/Vercel) lives on an
+// EPHEMERAL disk that is wiped on every redeploy — taking the users and all
+// content with it (that's why the admin keeps asking to "create the first user").
+const dbConfigured = !!(
+  process.env.DATABASE_URI ||
+  process.env.POSTGRES_URL ||
+  process.env.DATABASE_URL
+);
+// Use Postgres in production (Vercel/Neon/Railway), SQLite for local development.
 // `push: true` keeps the schema in sync automatically — simplest for this site.
 const db = dbUri.startsWith("postgres")
   ? postgresAdapter({ pool: { connectionString: dbUri }, push: true })
@@ -161,6 +170,17 @@ export default buildConfig({
   // in this environment — so we sync the schema on first boot instead. This is
   // idempotent (applies only diffs) and keeps the managed DB in step with the code.
   onInit: async (payload) => {
+    // Loudly flag the #1 deployment foot-gun: running in production with no
+    // persistent database, so every redeploy wipes users + content.
+    if (process.env.NODE_ENV === "production" && !dbConfigured) {
+      payload.logger.warn(
+        "⚠ NO PERSISTENT DATABASE CONFIGURED — using a temporary SQLite file on the " +
+          "container's disk. It is wiped on every redeploy, which is why the admin keeps " +
+          "asking to create the first user and content does not persist. FIX: set a " +
+          "DATABASE_URI (or POSTGRES_URL) pointing at a persistent Postgres database, and " +
+          "set ADMIN_EMAIL + ADMIN_PASSWORD so your login is provisioned automatically.",
+      );
+    }
     if (process.env.NODE_ENV === "production" && process.env.PAYLOAD_MIGRATING !== "true") {
       try {
         const { pushDevSchema } = await import("@payloadcms/drizzle");

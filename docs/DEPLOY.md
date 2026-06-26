@@ -1,5 +1,35 @@
 # Putting Kingston Mosque online (getting your URL)
 
+> ## ⚠️ "It keeps asking me to create the first user / my content disappears after a deploy"
+>
+> This means **your database is not being saved between deploys.** The admin only
+> shows the "create your first user" screen when the database is **empty** — so if it
+> appears every time, the whole database (your login *and* all your content) is being
+> wiped on each redeploy.
+>
+> **Why:** with no database configured, the app falls back to a temporary SQLite file
+> on the server's disk. On Railway and Vercel that disk is **erased on every deploy**.
+>
+> **The fix (do this once — ~5 minutes):**
+> 1. **Add a persistent Postgres database** and connect it to the app:
+>    - **Railway:** in your project click **New → Database → Add PostgreSQL**. Open your
+>      web service → **Variables** → add `DATABASE_URI` and set it to the Postgres
+>      service's connection string (the `DATABASE_URL` Railway shows on the DB →
+>      reference it as `${{Postgres.DATABASE_URL}}`).
+>    - **Vercel:** Storage → Create Database → **Neon** → Connect (this auto-adds
+>      `POSTGRES_URL`). See Step 2 below.
+> 2. **Provision your admin login automatically** so you never see the setup screen
+>    again: add two variables to the app — `ADMIN_EMAIL` (your email) and
+>    `ADMIN_PASSWORD` (a strong password). On every boot the app creates that Super
+>    Admin if it doesn't already exist.
+> 3. **Redeploy.** Now log in at `/admin` with `ADMIN_EMAIL` / `ADMIN_PASSWORD`. Your
+>    login and all content will persist from now on.
+>
+> After this, the server log prints `✓ Super Admin provisioned` and no longer prints
+> the "NO PERSISTENT DATABASE CONFIGURED" warning.
+
+---
+
 This guide takes about **10 minutes** and gives you a public web address such as
 `https://kingston-mosque.vercel.app`. No coding required — just clicking through
 a few screens. You can later connect your real domain (kingstonmosque.org).
