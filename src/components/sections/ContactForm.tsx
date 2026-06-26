@@ -1,9 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { queueContact, flushOutbox, registerBackgroundSync } from "@/lib/outbox";
 
 export default function ContactForm() {
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "queued" | "error">("idle");
+
+  // Flush any messages queued offline when we load and whenever we come back online.
+  useEffect(() => {
+    flushOutbox();
+    const onOnline = () => flushOutbox();
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, []);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -11,6 +20,9 @@ export default function ContactForm() {
     const data = Object.fromEntries(new FormData(form).entries());
     setStatus("sending");
     try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new Error("offline");
+      }
       const res = await fetch("/api/contact-submissions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -20,7 +32,15 @@ export default function ContactForm() {
       setStatus("sent");
       form.reset();
     } catch {
-      setStatus("error");
+      // Couldn't reach the server — queue it and replay when back online.
+      try {
+        await queueContact(data);
+        await registerBackgroundSync();
+        setStatus("queued");
+        form.reset();
+      } catch {
+        setStatus("error");
+      }
     }
   }
 
@@ -28,6 +48,15 @@ export default function ContactForm() {
     return (
       <div className="note-box" role="status">
         🤲 Thank you — your message has been received. We&apos;ll be in touch soon, inshā&apos;Allah.
+      </div>
+    );
+  }
+
+  if (status === "queued") {
+    return (
+      <div className="note-box" role="status">
+        📨 You&apos;re offline, so we&apos;ve saved your message — it will send automatically as soon
+        as you&apos;re back online. You can close the app safely.
       </div>
     );
   }

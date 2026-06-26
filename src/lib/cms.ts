@@ -81,17 +81,28 @@ export const getJummah = cache(async (): Promise<typeof seed.jummah> => {
 });
 
 /* -------------------------------- Donation -------------------------------- */
-export const getDonation = cache(async (): Promise<typeof seed.donation> => {
+type DonationData = typeof seed.donation &
+  Partial<{ donateUrl: string; presets: number[]; giftAid: boolean; monthly: boolean }>;
+
+export const getDonation = cache(async (): Promise<DonationData> => {
   try {
     const p = await getPayloadClient();
     const g = (await p.findGlobal({ slug: "donation-settings", depth: 0 })) as Record<string, any>;
     const bank = Array.isArray(g?.bankDetails) && g.bankDetails.length
       ? g.bankDetails.map((b: any) => ({ label: val(b.label, ""), value: val(b.value, "") }))
       : seed.donation.bank;
+    const presets = String(g?.presetAmounts ?? "5, 10, 25, 50, 100")
+      .split(",")
+      .map((s) => parseInt(s.trim(), 10))
+      .filter((n) => Number.isFinite(n) && n > 0);
     return {
       heading: val(g?.heading, seed.donation.heading),
       body: val(g?.body, seed.donation.body),
       bank,
+      donateUrl: typeof g?.donateUrl === "string" ? g.donateUrl.trim() : "",
+      presets: presets.length ? presets : [5, 10, 25, 50, 100],
+      giftAid: g?.enableGiftAid !== false,
+      monthly: g?.enableMonthly !== false,
     };
   } catch {
     return seed.donation;
