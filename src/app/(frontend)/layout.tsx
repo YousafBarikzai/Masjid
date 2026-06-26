@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
 import PwaRegister from "@/components/pwa/PwaRegister";
+import PwaInstallPrompt from "@/components/pwa/PwaInstallPrompt";
 import { site, siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -36,6 +37,9 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#0b3d2e",
+  // Let the page draw under the iOS notch/home-indicator so the standalone PWA
+  // feels full-screen; components opt back in with env(safe-area-inset-*).
+  viewportFit: "cover",
 };
 
 // The header/footer read live data from the CMS, so render at request time.
@@ -84,6 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="main">{children}</main>
         <SiteFooter />
         <PwaRegister />
+        <PwaInstallPrompt />
       </body>
     </html>
   );
