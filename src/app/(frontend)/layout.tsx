@@ -4,6 +4,7 @@ import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
 import PwaRegister from "@/components/pwa/PwaRegister";
 import PwaInstallPrompt from "@/components/pwa/PwaInstallPrompt";
+import MobileNav from "@/components/layout/MobileNav";
 import { site, siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -87,6 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SiteHeader />
         <main id="main">{children}</main>
         <SiteFooter />
+        <MobileNav />
         <PwaRegister />
         <PwaInstallPrompt />
       </body>
