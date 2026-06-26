@@ -56,7 +56,16 @@ const dbConfigured = !!(
 // Use Postgres in production (Vercel/Neon/Railway), SQLite for local development.
 // `push: true` keeps the schema in sync automatically — simplest for this site.
 const db = dbUri.startsWith("postgres")
-  ? postgresAdapter({ pool: { connectionString: dbUri }, push: true })
+  ? postgresAdapter({
+      pool: {
+        connectionString: dbUri,
+        // Fail fast if the database is unreachable or misconfigured (e.g. the
+        // connection string points at the wrong service), so the site degrades to
+        // built-in content instead of hanging and throwing a server-side exception.
+        connectionTimeoutMillis: 10000,
+      },
+      push: true,
+    })
   : sqliteAdapter({ client: { url: dbUri }, push: true });
 
 // Persistent media storage (S3 / Cloudflare R2 / any S3-compatible). Activates
