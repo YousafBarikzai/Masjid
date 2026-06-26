@@ -164,3 +164,57 @@ textarea,
 
 /* A subtle gold accent on focus rings to match the brand. */
 :focus-visible { outline-color: #c9a227; }
+
+/* ============================================================================
+   "Command centre" chrome — grey backdrop, dark-green inset sidebar, and the
+   custom dashboard replacing Payload's default collection-group cards.
+   ============================================================================ */
+
+:root { --kma-green: #157f54; --kma-green-dark: #0b3d2e; --kma-gold: #c9a227; }
+
+/* Grey app backdrop so the content + sidebar read as cards on it (light mode). */
+[data-theme="light"] body { background: #eceae4; }
+
+/* ---- Dark-green sidebar ---------------------------------------------------- */
+.nav {
+  background: var(--kma-green-dark);
+  border-right: none;
+}
+.nav__scroll { scrollbar-color: rgba(255, 255, 255, 0.25) transparent; }
+.nav .nav__link,
+.nav__link {
+  color: rgba(255, 255, 255, 0.82);
+  border-radius: 9px;
+  padding: 6px 10px;
+}
+.nav a.nav__link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  text-decoration: none;
+}
+.nav .nav__link.active,
+.nav__link--active {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff !important;
+  font-weight: 600;
+}
+.nav__link-indicator { background: var(--kma-gold) !important; }
+.nav__label,
+.nav-group__label,
+.nav-group__toggle {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+.nav-group__toggle svg { color: rgba(255, 255, 255, 0.45); }
+/* Account / brand / controls in the sidebar → light text. */
+.nav__controls,
+.nav__controls *,
+.nav__header,
+.nav__header * { color: rgba(255, 255, 255, 0.85); }
+.nav__controls .btn,
+.nav__controls button { color: rgba(255, 255, 255, 0.85); }
+
+/* ---- Hide Payload's default dashboard groups (custom dashboard replaces them) */
+.collections__wrap { display: none !important; }
+
+/* Keep the custom dashboard flush to the top. */
+.dashboard .kma-dash { margin-top: 4px; }

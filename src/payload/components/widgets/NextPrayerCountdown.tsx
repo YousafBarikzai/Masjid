@@ -4,9 +4,9 @@ import React, { useEffect, useState } from "react";
 import { findNext, londonSecondsNow, formatCountdown, type NextPrayer } from "@/lib/nextPrayer";
 import type { SimplePrayer } from "@/lib/prayer";
 
-/* Client leaf: live HH:MM:SS countdown to the next jamāʿah. The server passes the
-   day's rows + tomorrow's Fajr (plain serializable data); the live clock runs only
-   on the client behind a `mounted` gate, so SSR and first client render match. */
+/* Client leaf: the live next-prayer panel inside the green hero card. The server
+   passes the day's rows + tomorrow's Fajr; the clock runs only on the client behind
+   a `mounted` gate so SSR and first client render agree. */
 
 export function NextPrayerCountdown({
   rows,
@@ -40,29 +40,26 @@ export function NextPrayerCountdown({
   const jamaahRows = rows.filter((r) => r.jamaah && !r.isInfo);
 
   return (
-    <div className="kma-prayer">
-      <div>
-        <div className="kma-prayer__name">
-          {name}
-          {ar && <span className="kma-prayer__ar">{ar}</span>}
-        </div>
-        <div className="kma-prayer__time">
-          {time ? `Jamāʿah ${time}${np?.tomorrow ? " (tomorrow)" : ""}` : "Prayer times"}
-        </div>
-        <div className="kma-prayer__rows">
-          {jamaahRows.map((r) => (
-            <span
-              key={r.key}
-              className={`kma-prayer__chip${mounted && np && r.en === np.name && !np.tomorrow ? " is-next" : ""}`}
-            >
-              {r.en} {r.jamaah}
-            </span>
-          ))}
-        </div>
+    <div className="kma-np">
+      <div className="kma-np__name">
+        {name}
+        {ar && <span className="kma-np__ar">{ar}</span>}
       </div>
-      <div className="kma-prayer__count">
-        {mounted && np ? formatCountdown(np.diffSeconds) : "—:—:—"}
-        <small>until jamāʿah</small>
+      <div className="kma-np__jamaah">{time ? `Jamāʿah at ${time}` : "Prayer times"}</div>
+
+      <div className="kma-np__countlabel">Until jamāʿah</div>
+      <div className="kma-np__count">{mounted && np ? formatCountdown(np.diffSeconds) : "—:—:—"}</div>
+
+      <div className="kma-np__chips">
+        {jamaahRows.map((r) => (
+          <span
+            key={r.key}
+            className={`kma-np__chip${mounted && np && r.en === np.name && !np.tomorrow ? " is-next" : ""}`}
+          >
+            <span className="kma-np__chip-name">{r.en}</span>
+            <span className="kma-np__chip-time">{r.jamaah}</span>
+          </span>
+        ))}
       </div>
     </div>
   );

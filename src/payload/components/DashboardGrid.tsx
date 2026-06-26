@@ -1,20 +1,17 @@
 import React from "react";
 import "../components/dashboard.css";
 import type { Payload } from "payload";
-import { Greeting } from "./widgets/Greeting";
+import { londonTodayISO, formatGregorian, formatHijri } from "@/lib/prayer";
 import { NextPrayerWidget } from "./widgets/NextPrayerWidget";
-import { QuickActions } from "./widgets/QuickActions";
-import { PendingDrafts } from "./widgets/PendingDrafts";
-import { RecentlyEdited } from "./widgets/RecentlyEdited";
-import { UnhandledMessages } from "./widgets/UnhandledMessages";
-import { RecentMedia } from "./widgets/RecentMedia";
+import { QuickCreate } from "./widgets/QuickCreate";
+import { RecentContent } from "./widgets/RecentContent";
+import { AttentionCards } from "./widgets/AttentionCards";
 import { BroadcastStatus } from "./widgets/BroadcastStatus";
-import { Favourites } from "./widgets/Favourites";
+import { DashboardHeaderActions } from "./widgets/DashboardHeaderActions";
 
-/* Registered at admin.components.beforeDashboard. A server component, so Payload passes
-   { payload, user, ... } directly (only RSCs receive serverProps). Each child widget is
-   independently fail-safe (catches its own errors → renders null), so one failing query
-   can never blank the dashboard. */
+/* Registered at admin.components.beforeDashboard. A server component (Payload passes
+   { payload, user }). Renders the full "command centre" dashboard; the default Payload
+   dashboard groups below it are hidden via CSS. Each widget is fail-safe. */
 
 export async function DashboardGrid(props: {
   payload: Payload;
@@ -22,30 +19,63 @@ export async function DashboardGrid(props: {
 }) {
   const { payload, user } = props;
   const roles = Array.isArray(user?.roles) ? (user!.roles as string[]) : [];
+  const first = (user?.name || "").trim().split(/\s+/)[0] || "";
 
-  // Resolve the async server widgets in parallel; each already catches its own
-  // errors and resolves to null, so Promise.all never rejects.
-  const [prayer, recent, drafts, messages, media, broadcast] = await Promise.all([
+  let gregorian = "";
+  let hijri = "";
+  try {
+    const iso = londonTodayISO();
+    gregorian = formatGregorian(iso);
+    hijri = formatHijri(iso);
+  } catch {
+    /* best-effort */
+  }
+
+  let unread = 0;
+  try {
+    const r = await payload.count({
+      collection: "contact-submissions",
+      where: { handled: { equals: false } },
+      overrideAccess: true,
+    });
+    unread = r.totalDocs;
+  } catch {
+    /* ignore */
+  }
+
+  const [attention, prayer, recent, broadcast] = await Promise.all([
+    AttentionCards({ payload }),
     NextPrayerWidget(),
-    RecentlyEdited({ payload }),
-    PendingDrafts({ payload }),
-    UnhandledMessages({ payload }),
-    RecentMedia({ payload }),
+    RecentContent({ payload }),
     BroadcastStatus({ payload }),
   ]);
 
   return (
     <div className="kma-dash" data-kma>
-      <Greeting name={user?.name} />
-      <div className="kma-grid">
-        {prayer}
-        <QuickActions roles={roles} />
-        {recent}
-        {drafts}
-        {messages}
-        {broadcast}
-        {media}
-        <Favourites />
+      <header className="kma-top">
+        <div>
+          <div className="kma-top__date">
+            {gregorian}
+            {hijri ? ` · ${hijri}` : ""}
+          </div>
+          <h2 className="kma-top__hello">
+            As-salāmu ʿalaykum{first ? <span className="kma-top__name">, {first}</span> : ""}
+          </h2>
+        </div>
+        <DashboardHeaderActions unread={unread} />
+      </header>
+
+      {attention}
+
+      <div className="kma-cols">
+        <div className="kma-col kma-col--main">
+          <QuickCreate roles={roles} />
+          {recent}
+        </div>
+        <div className="kma-col kma-col--side">
+          {prayer}
+          {broadcast}
+        </div>
       </div>
     </div>
   );
