@@ -1350,3 +1350,101 @@ nav.main { gap: 20px; }
 @media (max-width: 460px) {
   .qd__amounts { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ── Accessibility text size (zoom on main content) ─────────────────────────── */
+#main { zoom: var(--read-zoom, 1); }
+
+/* ── Right-to-left safety ────────────────────────────────────────────────────
+   The UI shell (header, prayer bar, tab bar, sheet, footer) mirrors for Arabic /
+   Urdu; authored English content stays left-to-right so it remains readable. */
+[dir="rtl"] #main { direction: ltr; }
+[dir="rtl"] .praybar, [dir="rtl"] .sheet__panel { text-align: right; }
+
+/* ── More-sheet settings + section labels ───────────────────────────────────── */
+.sheet__section-label {
+  margin: 18px 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 226, 0.5);
+}
+.appset { margin-top: 14px; }
+.appset__title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 226, 0.5);
+  margin: 0 2px 10px;
+}
+.appset__group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 4px;
+}
+.appset__label { font-size: 0.9rem; font-weight: 600; color: #f4efe2; }
+.appset__opts { display: flex; gap: 6px; }
+.appset__opt {
+  appearance: none;
+  cursor: pointer;
+  min-width: 44px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #f4efe2;
+  background: rgba(244, 239, 226, 0.07);
+  border: 1px solid rgba(244, 239, 226, 0.12);
+  transition: 0.15s;
+}
+.appset__opt.is-active {
+  color: #0c3322;
+  background: linear-gradient(180deg, #e8c965, #c9a227);
+  border-color: transparent;
+}
+.appset__opts--size .appset__opt { line-height: 1; display: grid; place-items: center; }
+
+/* ── Ramadan Suhūr / Iftar countdown ────────────────────────────────────────── */
+.ramcd {
+  background: linear-gradient(150deg, #16492f, #0c3322);
+  border: 1px solid rgba(201, 162, 39, 0.32);
+  border-radius: 22px;
+  padding: 22px;
+  color: #f4efe2;
+  box-shadow: var(--shadow);
+  margin: 8px 0 28px;
+}
+.ramcd__row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ramcd__pill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: 0.2s;
+}
+.ramcd__pill.is-on { border-color: rgba(232, 201, 101, 0.6); background: rgba(201, 162, 39, 0.14); }
+.ramcd__pill-ic { font-size: 1.5rem; }
+.ramcd__pill-k { display: block; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: #9db1a2; }
+.ramcd__pill-v { display: block; font-size: 1.4rem; font-weight: 700; font-family: "Cormorant Garamond", serif; color: #fff; }
+.ramcd__count { text-align: center; margin-top: 18px; }
+.ramcd__label { display: block; font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold-soft); font-weight: 700; }
+.ramcd__time {
+  display: block;
+  font-size: 3rem;
+  font-weight: 700;
+  font-family: "Cormorant Garamond", serif;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.ramcd__at { font-size: 0.86rem; color: #9db1a2; }
+@media (max-width: 460px) {
+  .ramcd__time { font-size: 2.4rem; }
+  .ramcd__pill-v { font-size: 1.2rem; }
+}
