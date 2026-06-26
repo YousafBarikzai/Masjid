@@ -39,23 +39,22 @@ import { withHelp, withHelpGlobal } from "./payload/help";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const dbUri =
-  process.env.DATABASE_URI ||
-  process.env.POSTGRES_URL ||
-  process.env.DATABASE_URL ||
-  "file:./kma.db";
-// Whether a database has actually been configured via env. Without one we fall
-// back to a LOCAL SQLite file, which on most hosts (Railway/Vercel) lives on an
-// EPHEMERAL disk that is wiped on every redeploy — taking the users and all
-// content with it (that's why the admin keeps asking to "create the first user").
-const dbConfigured = !!(
-  process.env.DATABASE_URI ||
-  process.env.POSTGRES_URL ||
-  process.env.DATABASE_URL
-);
+const rawDbUri =
+  process.env.DATABASE_URI || process.env.POSTGRES_URL || process.env.DATABASE_URL || "";
+// A value with no "://" (e.g. the literal "Postgres.DATABASE_URL") is an
+// UNRESOLVED variable reference — on Railway the value must be ${{Postgres.DATABASE_URL}}
+// (with the $ and double braces) so it expands to the real connection string.
+const dbLooksValid = rawDbUri.includes("://");
+const dbUri = dbLooksValid ? rawDbUri : "file:./kma.db";
+// Whether a real database is configured. Without one we fall back to a LOCAL
+// SQLite file, which on most hosts (Railway/Vercel) lives on an EPHEMERAL disk
+// that is wiped on every redeploy — taking the users and all content with it
+// (that's why the admin keeps asking to "create the first user").
+const dbConfigured = dbLooksValid;
+const dbReferenceUnresolved = !!rawDbUri && !dbLooksValid;
 // Use Postgres in production (Vercel/Neon/Railway), SQLite for local development.
 // `push: true` keeps the schema in sync automatically — simplest for this site.
-const db = dbUri.startsWith("postgres")
+const db = /^postgres(ql)?:\/\//i.test(dbUri)
   ? postgresAdapter({
       pool: {
         connectionString: dbUri,
@@ -181,7 +180,14 @@ export default buildConfig({
   onInit: async (payload) => {
     // Loudly flag the #1 deployment foot-gun: running in production with no
     // persistent database, so every redeploy wipes users + content.
-    if (process.env.NODE_ENV === "production" && !dbConfigured) {
+    if (dbReferenceUnresolved) {
+      payload.logger.error(
+        `⚠ DATABASE_URI is set to "${rawDbUri}", which is not a valid connection string — ` +
+          "it looks like an UNRESOLVED variable reference. On Railway the value must be " +
+          "${{Postgres.DATABASE_URL}} (with the $ and double curly braces) so it expands to " +
+          "the real Postgres URL. Until then the app falls back to a temporary SQLite file.",
+      );
+    } else if (process.env.NODE_ENV === "production" && !dbConfigured) {
       payload.logger.warn(
         "⚠ NO PERSISTENT DATABASE CONFIGURED — using a temporary SQLite file on the " +
           "container's disk. It is wiped on every redeploy, which is why the admin keeps " +
