@@ -1,47 +1,158 @@
 /* ============================================================================
    Kingston Mosque — premium admin theme.
-   Imported AFTER @payloadcms/next/css so these rules win. Intentionally limited
-   to fonts, brand colours, radii and RTL/Arabic handling — it can restyle the
-   admin but cannot break its functionality.
+   Imported AFTER @payloadcms/next/css so these rules win. Restyles the admin to
+   feel like a polished commercial product (typography, brand colour, nav, tables,
+   forms, save bar, login) while deliberately NOT touching the Lexical editor,
+   react-select geometry, or any layout/stacking — so it can't break functionality.
    ============================================================================ */
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap");
 
+/* ---- Shared variables (safe across light + dark) -------------------------- */
 :root,
 [data-theme="light"],
 [data-theme="dark"] {
-  /* A cleaner UI font, with Arabic fonts in the fallback so Arabic typed into
-     any field renders with proper ligatures and diacritics. */
   --font-body: "Inter", "Amiri", system-ui, -apple-system, "Segoe UI", sans-serif;
   --style-radius-s: 8px;
-  --style-radius-m: 12px;
-  --style-radius-l: 16px;
+  --style-radius-m: 11px;
+  --style-radius-l: 14px;
+  /* Payload's "success" ramp is the focus/selection colour — brand it green. */
+  --theme-success-450: #2a9168;
+  --theme-success-500: #157f54;
+  --theme-success-550: #0f6a45;
 }
 
-/* Brand the primary action button (Save / Create / Publish) in mosque green. */
+/* ---- Warm-neutral elevation ramp (LIGHT mode only) ------------------------
+   The ramp inverts in dark mode, so retinting is scoped to light to avoid
+   washing out dark mode. Subtle warm greys read more premium than cool greys. */
+:root,
+[data-theme="light"] {
+  --theme-elevation-0: #ffffff;
+  --theme-elevation-50: #f7f6f3;
+  --theme-elevation-100: #ecebe6;
+  --theme-elevation-150: #e2e0d9;
+  --theme-elevation-400: #8b887f;
+  --theme-elevation-500: #6f6c63;
+  --theme-elevation-600: #565249;
+  --theme-elevation-700: #3c3a33;
+  --theme-elevation-800: #2b2922;
+  --theme-border-color: var(--theme-elevation-150);
+}
+
+/* ---- Typography ----------------------------------------------------------- */
+.doc-header__title,
+h1 { font-weight: 700; letter-spacing: -0.015em; }
+h2, h3 { font-weight: 600; letter-spacing: -0.01em; }
+.nav__label,
+.nav-group__label,
+.nav-group__toggle {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--theme-elevation-400);
+  font-weight: 600;
+}
+
+/* ---- Left nav / sidebar --------------------------------------------------- */
+.nav { border-right: 1px solid var(--theme-elevation-100); }
+.nav__link {
+  padding: 6px 10px;
+  border-radius: var(--style-radius-m);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.nav a.nav__link:hover {
+  text-decoration: none;
+  background: var(--theme-elevation-50);
+}
+.nav .nav__link.active,
+.nav__link--active {
+  background: rgba(21, 127, 84, 0.1);
+  color: #157f54 !important;
+  font-weight: 600;
+}
+.nav__link-indicator { background: #157f54; }
+
+/* ---- Collection list tables ----------------------------------------------- */
+.table thead th {
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--theme-elevation-500);
+}
+.collection-list .table tbody tr:nth-child(odd) { background: transparent; }
+.collection-list .table tbody tr:hover { background: var(--theme-elevation-50); }
+.collection-list .table td { border-bottom: 1px solid var(--theme-elevation-100); }
+.card,
+.collection-list__wrap,
+.dashboard__card,
+.table { border-radius: var(--style-radius-l); }
+
+/* ---- Document form: inputs + brand focus ring -----------------------------
+   Scoped to field types only — never bare input/textarea or the editor. */
+.field-type.text input,
+.field-type.textarea textarea,
+.field-type.number input,
+.field-type.email input,
+.field-type.date .date-time-picker__input-wrapper input,
+.field-type.code input {
+  border-color: var(--theme-elevation-150);
+  box-shadow: none;
+}
+.field-type.text input:focus,
+.field-type.textarea textarea:focus,
+.field-type.number input:focus,
+.field-type.email input:focus,
+.field-type.date .date-time-picker__input-wrapper input:focus,
+.field-type.select .rs__control--is-focused,
+.field-type.relationship .rs__control--is-focused {
+  border-color: #157f54;
+  box-shadow: 0 0 0 3px rgba(21, 127, 84, 0.13);
+}
+.doc-tabs__tab--active { box-shadow: inset 0 -2px 0 #c9a227; }
+
+/* ---- Cards / sticky save bar ---------------------------------------------- */
+.card {
+  border-color: var(--theme-elevation-100);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+}
+.card--has-onclick:hover { box-shadow: 0 6px 18px -6px rgba(16, 24, 40, 0.16); }
+.doc-controls__divider { border-bottom: 1px solid var(--theme-elevation-150); }
+
+/* ---- Buttons -------------------------------------------------------------- */
 .btn--style-primary,
 button.btn--style-primary,
 .form-submit .btn {
   background: linear-gradient(150deg, #157f54, #0b3d2e) !important;
   border-color: #0b3d2e !important;
   color: #fff !important;
+  box-shadow: 0 1px 2px rgba(11, 61, 46, 0.25);
 }
 .btn--style-primary:hover { filter: brightness(1.07); }
+.btn--style-secondary {
+  --bg-color: var(--theme-elevation-0);
+  --color: var(--theme-elevation-800);
+  --hover-bg: var(--theme-elevation-50);
+  --btn-border: var(--theme-elevation-150);
+}
 
-/* Brand links + the active nav item. */
-.nav__link--active,
-.nav .nav__link.active { color: #157f54 !important; font-weight: 600; }
-.doc-tabs__tab--active { box-shadow: inset 0 -2px 0 #c9a227; }
-
-/* Softer, more premium surfaces. */
-.card,
-.collection-list__wrap,
-.dashboard__card,
-.table { border-radius: var(--style-radius-l); }
+/* ---- Login screen (branded card) ------------------------------------------ */
+.template-minimal {
+  background:
+    radial-gradient(60% 50% at 50% 0%, rgba(21, 127, 84, 0.07), transparent 70%),
+    var(--theme-bg);
+}
+.template-minimal__wrap {
+  background: var(--theme-elevation-0);
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: var(--style-radius-l);
+  padding: calc(var(--base) * 2);
+  box-shadow: 0 14px 44px -16px rgba(16, 24, 40, 0.22);
+}
+.login__brand { justify-content: center; margin-bottom: calc(var(--base) * 1.5); }
+form > .form-submit .btn { width: 100%; }
 
 /* --- Arabic / Qur'anic / RTL handling in fields ---------------------------- */
-/* Long-text fields auto-detect direction from their content, so Arabic types
-   right-to-left and English left-to-right in the same admin. */
 textarea,
 .rich-text [contenteditable],
 .rich-text-lexical [contenteditable],
@@ -52,4 +163,4 @@ textarea,
 [dir="rtl"] { font-family: "Amiri", "Scheherazade New", serif; }
 
 /* A subtle gold accent on focus rings to match the brand. */
-:focus-visible { outline-color: #c9a227 !important; }
+:focus-visible { outline-color: #c9a227; }

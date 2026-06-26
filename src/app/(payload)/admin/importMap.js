@@ -26,6 +26,7 @@ import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { DashboardGrid as DashboardGrid_kma } from '@/payload/components/DashboardGrid'
 import { CommandPaletteProvider as CommandPaletteProvider_kma } from '@/payload/components/CommandPaletteProvider'
+import { HelpPanel as HelpPanel_kma } from '@/payload/components/HelpPanel'
 
 /** @type import('payload').ImportMap */
 export const importMap = {
@@ -56,5 +57,6 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@/payload/components/DashboardGrid#DashboardGrid": DashboardGrid_kma,
-  "@/payload/components/CommandPaletteProvider#CommandPaletteProvider": CommandPaletteProvider_kma
+  "@/payload/components/CommandPaletteProvider#CommandPaletteProvider": CommandPaletteProvider_kma,
+  "@/payload/components/HelpPanel#HelpPanel": HelpPanel_kma
 }

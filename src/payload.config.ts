@@ -35,6 +35,7 @@ import {
   MainMenu,
 } from "./payload/globals";
 import { AuditLog, withAudit } from "./payload/audit";
+import { withHelp, withHelpGlobal } from "./payload/help";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -97,25 +98,32 @@ export default buildConfig({
     },
   },
   collections: [
-    // Content & security-relevant collections are wrapped with withAudit so
-    // every create/update/delete is recorded in the Audit Log.
-    withAudit(Pages),
-    withAudit(Posts),
-    withAudit(Events),
-    withAudit(Classes),
-    withAudit(Services),
-    withAudit(Announcements),
-    PrayerDays,
-    TimetableUploads,
-    ContactSubmissions,
+    // withAudit records every change to the Audit Log; withHelp injects the
+    // in-CMS "how to use this page" panel (slug-driven, no-op without content).
+    withHelp(withAudit(Pages)),
+    withHelp(withAudit(Posts)),
+    withHelp(withAudit(Events)),
+    withHelp(withAudit(Classes)),
+    withHelp(withAudit(Services)),
+    withHelp(withAudit(Announcements)),
+    withHelp(PrayerDays),
+    withHelp(TimetableUploads),
+    withHelp(ContactSubmissions),
     DeviceTokens,
-    Subscribers,
-    withAudit(Broadcasts),
-    withAudit(Media),
-    withAudit(Users),
-    AuditLog,
+    withHelp(Subscribers),
+    withHelp(withAudit(Broadcasts)),
+    withHelp(withAudit(Media)),
+    withHelp(withAudit(Users)),
+    withHelp(AuditLog),
   ],
-  globals: [SiteSettings, JummahSettings, DonationSettings, SpecialSchedule, BroadcastSettings, MainMenu],
+  globals: [
+    withHelpGlobal(SiteSettings),
+    withHelpGlobal(JummahSettings),
+    withHelpGlobal(DonationSettings),
+    withHelpGlobal(SpecialSchedule),
+    withHelpGlobal(BroadcastSettings),
+    withHelpGlobal(MainMenu),
+  ],
   // Rich editor for ALL richText fields: keeps every default feature (headings,
   // lists, links, images, alignment…), shows an always-visible toolbar so the
   // options are discoverable, and adds text/highlight colours. The same colour
