@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/layout/PageHero";
 import DonateSection from "@/components/sections/DonateSection";
+import CardGrid from "@/components/sections/CardGrid";
+import { donationCategories } from "@/lib/site-content";
 
 export const metadata: Metadata = { title: "Donate" };
 
@@ -12,6 +14,22 @@ export default function DonatePage() {
         crumb="Donate"
         intro="Support the running of your mosque, the Madrasah, and free community services."
       />
+
+      <section>
+        <div className="wrap">
+          <div className="section-head">
+            <div className="eyebrow">Ways to give</div>
+            <h2>Where your support goes</h2>
+            <p>Choose how you’d like to help your mosque and community.</p>
+          </div>
+          <CardGrid cols={4} items={donationCategories} />
+          <p className="note-box" style={{ marginTop: 24 }}>
+            Consider setting up a <strong>regular monthly donation</strong> — steady support helps the
+            mosque plan ahead and keeps services running all year round.
+          </p>
+        </div>
+      </section>
+
       <DonateSection />
       <section>
         <div className="wrap narrow prose">
