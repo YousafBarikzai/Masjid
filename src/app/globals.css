@@ -1,16 +1,19 @@
 :root {
-  --green: #0b3d2e;
-  --green-2: #0f5132;
-  --green-3: #157f54;
-  --gold: #c9a227;
-  --gold-soft: #e8d59a;
-  --cream: #faf7f0;
-  --cream-2: #f3eee2;
-  --ink: #23201a;
-  --muted: #6c6557;
-  --line: #e7e0d0;
+  /* Brand palette — aligned to the Kingston Mosque redesign */
+  --green: #0e3d29;
+  --green-2: #16492f;
+  --green-3: #1c5a3a;
+  --green-deep: #0c3322;
+  --green-deeper: #0a2c1d;
+  --gold: #c4951c;
+  --gold-soft: #e6c879;
+  --cream: #f8f4ea;
+  --cream-2: #ece6d5;
+  --ink: #2c3a30;
+  --muted: #5c6a60;
+  --line: #eae1cc;
   --white: #fff;
-  --shadow: 0 14px 40px rgba(11, 61, 46, 0.12);
+  --shadow: 0 14px 40px rgba(14, 61, 41, 0.12);
   --radius: 16px;
 }
 
@@ -59,8 +62,8 @@ img { max-width: 100%; display: block; }
 
 /* buttons */
 .btn { display: inline-flex; align-items: center; gap: .5em; padding: .8em 1.5em; border-radius: 999px; font-weight: 600; font-size: .95rem; transition: .2s; cursor: pointer; border: 0; }
-.btn-gold { background: linear-gradient(135deg, var(--gold), #b8860b); color: #3a2c00; box-shadow: 0 8px 22px rgba(201, 162, 39, .35); }
-.btn-gold:hover { transform: translateY(-2px); }
+.btn-gold { background: var(--gold); color: #0c3322; font-weight: 700; box-shadow: 0 8px 20px -10px rgba(196, 149, 28, .8); }
+.btn-gold:hover { transform: translateY(-2px); background: #b08514; }
 .btn-outline { border: 1.5px solid rgba(255, 255, 255, .55); color: #fff; }
 .btn-outline:hover { background: rgba(255, 255, 255, .12); }
 .btn-green { background: var(--green-2); color: #fff; }
@@ -73,14 +76,16 @@ section { padding: 72px 0; }
 .section-head p { color: var(--muted); }
 
 /* top bar */
-.topbar { background: var(--green); color: #dfeee7; font-size: .82rem; }
-.topbar .wrap { display: flex; justify-content: space-between; align-items: center; min-height: 40px; flex-wrap: wrap; gap: 4px 8px; padding-top: 6px; padding-bottom: 6px; }
-.topbar a { opacity: .9; }
-.topbar a:hover { opacity: 1; color: var(--gold-soft); }
-.topbar .sep { opacity: .4; margin: 0 10px; }
+.topbar { background: #0c3322; color: #cbd8cd; font-size: .82rem; }
+.topbar .wrap { display: flex; justify-content: space-between; align-items: center; min-height: 40px; flex-wrap: wrap; gap: 4px 8px; padding-top: 7px; padding-bottom: 7px; }
+.topbar a { opacity: .92; display: inline-flex; align-items: center; gap: 7px; }
+.topbar a:hover { opacity: 1; color: #fff; }
+.topbar .sep { color: #3a5446; margin: 0 10px; }
+.topbar-contact { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 0; }
+.topbar-contact svg { flex: none; }
 
 /* header */
-header.site { position: sticky; top: 0; z-index: 50; background: rgba(250, 247, 240, .92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+header.site { position: sticky; top: 0; z-index: 50; background: rgba(248, 244, 234, .88); backdrop-filter: blur(12px); border-bottom: 1px solid #e7dfcb; }
 header.site .wrap { display: flex; align-items: center; justify-content: space-between; height: 74px; }
 .brand { display: flex; align-items: center; gap: 12px; }
 .brand .mark { width: 46px; height: 46px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, var(--green-3), var(--green)); display: grid; place-items: center; color: var(--gold-soft); box-shadow: var(--shadow); flex: none; }
@@ -156,10 +161,11 @@ nav.main a:hover { color: var(--green-3); }
 .jcard .big { font-family: "Cormorant Garamond", serif; font-size: 2.6rem; color: #fff; margin: 6px 0; }
 .jcard small { color: #bcd6ca; }
 
-/* alert */
-.alert { background: linear-gradient(90deg, #7a5b00, #9a7400); color: #fff; font-size: .92rem; }
-.alert .wrap { display: flex; align-items: center; gap: 14px; padding: 12px 20px; }
-.alert b { background: rgba(255, 255, 255, .18); padding: 3px 10px; border-radius: 6px; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; flex: none; }
+/* alert / notice ticker — matches the home design's gold band */
+.alert { background: linear-gradient(90deg, #b07f12, #c4951c); color: #fff7e2; font-size: .9rem; }
+.alert .wrap { display: flex; align-items: center; gap: 14px; padding: 11px 20px; }
+.alert b { background: rgba(12, 51, 34, .22); color: #fff7e2; padding: 3px 10px; border-radius: 5px; font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; flex: none; }
+.alert span { font-weight: 500; }
 
 /* donate */
 .donate .inner { background: linear-gradient(135deg, var(--green-2), var(--green)); color: #fff; border-radius: 24px; padding: 48px; display: grid; grid-template-columns: 1.3fr 1fr; gap: 40px; align-items: center; box-shadow: var(--shadow); position: relative; overflow: hidden; }
@@ -189,12 +195,13 @@ nav.main a:hover { color: var(--green-3); }
 .info .k { color: var(--gold); font-weight: 700; min-width: 92px; flex: none; }
 
 /* footer */
-footer.site { background: #072a20; color: #a9c4b8; font-size: .9rem; padding: 54px 0 26px; }
-footer.site .cols { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 30px; }
-footer.site h4 { color: #fff; font-family: "Inter", sans-serif; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 14px; }
-footer.site a { display: block; padding: 5px 0; }
-footer.site a:hover { color: var(--gold-soft); }
-footer.site .base { border-top: 1px solid rgba(255, 255, 255, .1); margin-top: 34px; padding-top: 18px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: .82rem; opacity: .8; }
+footer.site { background: #0a2c1d; color: #9db1a2; font-size: .9rem; padding: 64px 0 32px; }
+footer.site .cols { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 40px; }
+footer.site h4 { color: var(--gold-soft); font-family: "Inter", sans-serif; font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 16px; }
+footer.site a { display: block; padding: 6px 0; color: #bccdc0; }
+footer.site a:hover { color: #fff; }
+footer.site p { color: #9db1a2; }
+footer.site .base { border-top: 1px solid rgba(255, 255, 255, .1); margin-top: 44px; padding-top: 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: .82rem; color: #6e8676; }
 @media (max-width: 760px) { footer.site .cols { grid-template-columns: 1fr 1fr; } }
 
 /* inner page hero + prose */
