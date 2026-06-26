@@ -114,8 +114,13 @@ export function CommandPalette() {
         setOpen((o) => !o);
       }
     };
+    const onOpen = () => setOpen(true);
     document.addEventListener("keydown", onKey, true);
-    return () => document.removeEventListener("keydown", onKey, true);
+    window.addEventListener("kma:palette", onOpen as EventListener);
+    return () => {
+      document.removeEventListener("keydown", onKey, true);
+      window.removeEventListener("kma:palette", onOpen as EventListener);
+    };
   }, []);
 
   /* On open: remember focus, load recent, focus input, lock body scroll. */

@@ -1,15 +1,12 @@
 import React from "react";
-import { WidgetCard } from "../WidgetCard";
 import { NextPrayerCountdown } from "./NextPrayerCountdown";
 import { IconClock } from "../icons";
 import { getToday, getNextDay, dayRows, londonTodayISO } from "@/lib/prayer";
 import { getPrayerOverride } from "@/lib/cms";
-import { collectionHref } from "../destinations";
 
 /* Server component: resolves today's prayer rows (CMS override wins over the static
-   timetable) and tomorrow's Fajr, then hands them to the client countdown leaf.
-   Self-contained and fail-safe — any error renders nothing rather than breaking the
-   dashboard. */
+   timetable) and tomorrow's Fajr, then renders the green "Next prayer" hero card with
+   the live countdown leaf. Self-contained and fail-safe. */
 
 export async function NextPrayerWidget() {
   try {
@@ -24,14 +21,14 @@ export async function NextPrayerWidget() {
     for (const r of rows) if (!r.isInfo) arabicByName[r.en] = r.ar;
 
     return (
-      <WidgetCard
-        title="Next prayer"
-        icon={<IconClock />}
-        className="kma-card--prayer kma-grid__wide"
-        action={{ label: "Prayer times →", href: collectionHref("prayer-days") }}
-      >
+      <section className="kma-card kma-card--prayer">
+        <header className="kma-card__head">
+          <span className="kma-card__title">
+            <IconClock size={15} /> Next prayer
+          </span>
+        </header>
         <NextPrayerCountdown rows={rows} tomorrowFajr={tomorrowFajr} arabicByName={arabicByName} />
-      </WidgetCard>
+      </section>
     );
   } catch {
     return null;
