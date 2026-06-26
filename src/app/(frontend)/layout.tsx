@@ -6,7 +6,10 @@ import PwaRegister from "@/components/pwa/PwaRegister";
 import PwaInstallPrompt from "@/components/pwa/PwaInstallPrompt";
 import PullToRefresh from "@/components/pwa/PullToRefresh";
 import Reveal from "@/components/pwa/Reveal";
+import OfflineBanner from "@/components/pwa/OfflineBanner";
+import IosSplash from "@/components/pwa/IosSplash";
 import MobileNav from "@/components/layout/MobileNav";
+import PrayerBarMount from "@/components/prayer/PrayerBarMount";
 import { site, siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -82,12 +85,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <IosSplash />
       </head>
       <body>
         <a href="#main" className="skip-link">
           Skip to content
         </a>
+        <OfflineBanner />
         <SiteHeader />
+        <PrayerBarMount />
         <main id="main">{children}</main>
         <SiteFooter />
         <MobileNav />

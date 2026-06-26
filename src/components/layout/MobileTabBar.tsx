@@ -63,6 +63,15 @@ const MailIcon = () => (
   </svg>
 );
 
+// A whisper of haptic feedback on tap (Android; iOS ignores it) for a native feel.
+function tap() {
+  try {
+    navigator.vibrate?.(8);
+  } catch {
+    /* ignore */
+  }
+}
+
 export default function MobileTabBar({ menu, phone, phoneHref, email }: TabBarProps) {
   const pathname = usePathname() || "/";
   const [sheet, setSheet] = useState(false);
@@ -88,7 +97,7 @@ export default function MobileTabBar({ menu, phone, phoneHref, email }: TabBarPr
   return (
     <>
       <nav className="tabbar" aria-label="Primary">
-        <Link href="/" className={`tabbar__item${isActive("/") ? " is-active" : ""}`}>
+        <Link href="/" onClick={tap} className={`tabbar__item${isActive("/") ? " is-active" : ""}`}>
           <span className="tabbar__icon">
             <HomeIcon />
           </span>
@@ -97,6 +106,7 @@ export default function MobileTabBar({ menu, phone, phoneHref, email }: TabBarPr
 
         <Link
           href="/prayer-times"
+          onClick={tap}
           className={`tabbar__item${isActive("/prayer-times") ? " is-active" : ""}`}
         >
           <span className="tabbar__icon">
@@ -105,7 +115,7 @@ export default function MobileTabBar({ menu, phone, phoneHref, email }: TabBarPr
           <span className="tabbar__label">Prayer</span>
         </Link>
 
-        <Link href="/donate" className="tabbar__fab" aria-label="Donate">
+        <Link href="/donate" onClick={tap} className="tabbar__fab" aria-label="Donate">
           <span className="tabbar__fab-ring">
             <HeartIcon />
           </span>
@@ -114,6 +124,7 @@ export default function MobileTabBar({ menu, phone, phoneHref, email }: TabBarPr
 
         <Link
           href="/events"
+          onClick={tap}
           className={`tabbar__item${isActive("/events") ? " is-active" : ""}`}
         >
           <span className="tabbar__icon">
@@ -127,7 +138,10 @@ export default function MobileTabBar({ menu, phone, phoneHref, email }: TabBarPr
           className={`tabbar__item${sheet ? " is-active" : ""}`}
           aria-haspopup="dialog"
           aria-expanded={sheet}
-          onClick={() => setSheet(true)}
+          onClick={() => {
+            tap();
+            setSheet(true);
+          }}
         >
           <span className="tabbar__icon">
             <MoreIcon />
