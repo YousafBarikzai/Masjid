@@ -679,6 +679,10 @@ export const DeviceTokens: CollectionConfig = {
         { label: "Prayer reminders", value: "prayer" },
       ],
     },
+    // Web Push (browser/PWA) subscriptions store the endpoint in `token` and the
+    // encryption keys here. Native (Expo) devices leave these blank.
+    { name: "p256dh", type: "text", admin: { readOnly: true, condition: (d) => d?.platform === "web" } },
+    { name: "auth", type: "text", admin: { readOnly: true, condition: (d) => d?.platform === "web" } },
     { name: "enabled", type: "checkbox", defaultValue: true },
   ],
 };

@@ -13,15 +13,25 @@ export interface PushMessage {
 
 /**
  * Send a push notification to every enabled device, optionally filtered to a
- * topic (e.g. "news", "events"). Best-effort: failures are swallowed so a push
- * outage never breaks the content save that triggered it. Returns how many
- * tokens were dispatched.
+ * topic (e.g. "news", "events"). Dispatches to BOTH native apps (Expo) and
+ * browsers / installed PWAs (Web Push). Best-effort: failures are swallowed so a
+ * push outage never breaks the content save that triggered it. Returns how many
+ * messages were dispatched across both channels.
  */
 export async function sendPushToAll(
   payload: Payload,
   message: PushMessage,
   topic?: string,
 ): Promise<{ sent: number }> {
+  // Web Push (browser / PWA) — independent channel, env-gated, never throws.
+  let webSent = 0;
+  try {
+    const { sendWebPushToAll } = await import("./webpush");
+    webSent = (await sendWebPushToAll(payload, message, topic)).sent;
+  } catch {
+    /* web push unavailable; continue with native */
+  }
+
   const where: Record<string, unknown> = { enabled: { equals: true } };
   if (topic) where.topics = { contains: topic };
 
@@ -37,10 +47,10 @@ export async function sendPushToAll(
     .map((d) => d.token)
     .filter((t): t is string => !!t && t.startsWith("ExponentPushToken"));
 
-  if (!tokens.length) return { sent: 0 };
+  if (!tokens.length) return { sent: webSent };
 
   // Expo accepts up to 100 messages per request.
-  let sent = 0;
+  let sent = webSent;
   for (let i = 0; i < tokens.length; i += 100) {
     const chunk = tokens.slice(i, i + 100);
     const messages = chunk.map((to) => ({
