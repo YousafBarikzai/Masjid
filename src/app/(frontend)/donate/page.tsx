@@ -3,6 +3,7 @@ import PageHero from "@/components/layout/PageHero";
 import DonateSection from "@/components/sections/DonateSection";
 import CardGrid from "@/components/sections/CardGrid";
 import QuickDonate from "@/components/donate/QuickDonate";
+import Campaigns from "@/components/donate/Campaigns";
 import { donationCategories } from "@/lib/site-content";
 import { getDonation } from "@/lib/cms";
 
@@ -39,6 +40,8 @@ export default async function DonatePage() {
           </div>
         </section>
       )}
+
+      <Campaigns campaigns={donation.campaigns ?? []} />
 
       <section>
         <div className="wrap">

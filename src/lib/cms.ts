@@ -81,13 +81,20 @@ export const getJummah = cache(async (): Promise<typeof seed.jummah> => {
 });
 
 /* -------------------------------- Donation -------------------------------- */
+export type Campaign = {
+  title: string;
+  goal: number;
+  raised: number;
+  imageUrl?: string;
+  link?: string;
+};
 type DonationData = typeof seed.donation &
-  Partial<{ donateUrl: string; presets: number[]; giftAid: boolean; monthly: boolean }>;
+  Partial<{ donateUrl: string; presets: number[]; giftAid: boolean; monthly: boolean; campaigns: Campaign[] }>;
 
 export const getDonation = cache(async (): Promise<DonationData> => {
   try {
     const p = await getPayloadClient();
-    const g = (await p.findGlobal({ slug: "donation-settings", depth: 0 })) as Record<string, any>;
+    const g = (await p.findGlobal({ slug: "donation-settings", depth: 1 })) as Record<string, any>;
     const bank = Array.isArray(g?.bankDetails) && g.bankDetails.length
       ? g.bankDetails.map((b: any) => ({ label: val(b.label, ""), value: val(b.value, "") }))
       : seed.donation.bank;
@@ -95,6 +102,18 @@ export const getDonation = cache(async (): Promise<DonationData> => {
       .split(",")
       .map((s) => parseInt(s.trim(), 10))
       .filter((n) => Number.isFinite(n) && n > 0);
+    const campaigns: Campaign[] = Array.isArray(g?.campaigns)
+      ? g.campaigns
+          .filter((c: any) => c?.active !== false && c?.title)
+          .map((c: any) => ({
+            title: val(c.title, ""),
+            goal: Number(c.goal) || 0,
+            raised: Number(c.raised) || 0,
+            imageUrl:
+              c.image && typeof c.image === "object" ? (c.image.url as string | undefined) : undefined,
+            link: typeof c.link === "string" ? c.link : undefined,
+          }))
+      : [];
     return {
       heading: val(g?.heading, seed.donation.heading),
       body: val(g?.body, seed.donation.body),
@@ -103,6 +122,7 @@ export const getDonation = cache(async (): Promise<DonationData> => {
       presets: presets.length ? presets : [5, 10, 25, 50, 100],
       giftAid: g?.enableGiftAid !== false,
       monthly: g?.enableMonthly !== false,
+      campaigns,
     };
   } catch {
     return seed.donation;
