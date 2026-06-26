@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/layout/PageHero";
 import ContactSection from "@/components/sections/ContactSection";
+import ImageSlot from "@/components/media/ImageSlot";
 import { stats } from "@/lib/content";
 import { getAbout } from "@/lib/cms";
 
@@ -16,17 +17,22 @@ export default async function AboutPage() {
         intro="Kingston Muslim Association — serving the community of Kingston upon Thames since 1979."
       />
       <section>
-        <div className="wrap narrow prose">
-          <h2>{about.heading}</h2>
-          {about.paragraphs.map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
-          <h3>Our facilities</h3>
-          <ul>
-            {about.facilities.map((f) => (
-              <li key={f}>{f}</li>
+        <div className="wrap content-layout">
+          <div className="content-media">
+            <ImageSlot slot="about-mosque" alt="Kingston Mosque building" ratio="4 / 3" />
+          </div>
+          <div className="prose content-body">
+            <h2>{about.heading}</h2>
+            {about.paragraphs.map((p, i) => (
+              <p key={i}>{p}</p>
             ))}
-          </ul>
+            <h3>Our facilities</h3>
+            <ul>
+              {about.facilities.map((f) => (
+                <li key={f}>{f}</li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
       <section className="impact">

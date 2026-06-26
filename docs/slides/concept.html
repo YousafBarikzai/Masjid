@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kingston Mosque · Digital Platform — Concept</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&family=Amiri&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --green: #0b3d2e;
+        --green-2: #0f5132;
+        --green-3: #157f54;
+        --gold: #c9a227;
+        --gold-soft: #e8d59a;
+        --cream: #faf7f0;
+        --cream-2: #f3eee2;
+        --ink: #23201a;
+        --muted: #6c6557;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { font-family: "Inter", system-ui, sans-serif; color: var(--ink); background: #1b1b1b; }
+      .serif { font-family: "Cormorant Garamond", Georgia, serif; }
+      .ar { font-family: "Amiri", serif; }
+
+      /* A 16:9 slide that prints to one A4/letter landscape page and looks good
+         full-screen on a laptop. Two of these in a deck. */
+      .slide {
+        width: 1280px;
+        max-width: 100%;
+        aspect-ratio: 16 / 9;
+        margin: 24px auto;
+        background:
+          radial-gradient(circle at 0% 0%, rgba(21, 127, 84, 0.20), transparent 50%),
+          radial-gradient(circle at 100% 100%, rgba(201, 162, 39, 0.10), transparent 50%),
+          var(--cream);
+        color: var(--ink);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+        padding: 44px 56px 36px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      /* ---- header ---- */
+      .head { display: flex; justify-content: space-between; align-items: flex-start; }
+      .brand { display: flex; align-items: center; gap: 14px; }
+      .crest {
+        width: 56px; height: 56px; border-radius: 14px;
+        background: linear-gradient(150deg, var(--green-3), var(--green));
+        display: grid; place-items: center; color: var(--gold-soft);
+        box-shadow: 0 8px 20px rgba(11, 61, 46, 0.25);
+        font-size: 26px;
+      }
+      .brand b { font-family: "Cormorant Garamond", serif; font-size: 24px; color: var(--green); }
+      .brand small { display: block; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); }
+      /* Kingston Muslim Association logo lockup (navy) */
+      .kma { display: flex; align-items: center; gap: 13px; }
+      .kma-mark { width: 46px; height: 46px; flex: none; }
+      .kma-words { display: flex; flex-direction: column; line-height: 1; color: #2a4a8c; }
+      .kma-words .l1 { font-size: 15px; font-weight: 700; letter-spacing: 0.01em; }
+      .kma-words .l2 { font-size: 22px; font-weight: 800; letter-spacing: 0.005em; margin-top: 2px; }
+      .kma-words .l3 { font-size: 10px; font-weight: 600; letter-spacing: 0.345em; margin-top: 3px; }
+      .meta { text-align: right; color: var(--muted); font-size: 12px; line-height: 1.5; }
+      .meta b { color: var(--green); font-weight: 700; }
+
+      h1 {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 44px; color: var(--green); margin-top: 14px; line-height: 1.1;
+      }
+      h1 small { display: block; font-family: "Inter", sans-serif; font-size: 14px;
+        letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold);
+        font-weight: 700; margin-bottom: 8px; }
+
+      /* ---- diagram ---- */
+      .body { display: grid; grid-template-columns: 320px 1fr; gap: 36px; margin-top: 22px; align-items: start; }
+
+      .hub {
+        position: relative;
+        background: linear-gradient(150deg, var(--green-3), var(--green));
+        color: var(--cream); border-radius: 24px;
+        padding: 22px 22px 24px; box-shadow: 0 18px 40px rgba(11, 61, 46, 0.35);
+      }
+      .hub .pill {
+        display: inline-block; padding: 4px 10px; border-radius: 999px;
+        background: rgba(255, 255, 255, 0.16); color: var(--gold-soft);
+        font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700;
+      }
+      .hub h2 { font-family: "Cormorant Garamond", serif; font-size: 28px; margin: 8px 0 4px; color: var(--gold-soft); }
+      .hub p { font-size: 13px; line-height: 1.55; color: rgba(255, 255, 255, 0.85); }
+      .hub ul { margin-top: 12px; padding-left: 0; list-style: none; }
+      .hub li { font-size: 12.5px; padding: 5px 0; border-top: 1px solid rgba(232, 213, 154, 0.18); display: flex; align-items: center; gap: 8px; }
+      .hub li:first-child { border-top: 0; }
+      .hub li::before { content: "•"; color: var(--gold); font-weight: 700; }
+      .hub footer { margin-top: 14px; font-size: 11px; color: rgba(232, 213, 154, 0.7); letter-spacing: 0.08em; }
+
+      .surfaces { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+      .surface {
+        position: relative;
+        background: #ffffff; border: 1px solid rgba(11, 61, 46, 0.12);
+        border-radius: 18px; padding: 14px 14px 16px;
+        box-shadow: 0 10px 24px rgba(11, 61, 46, 0.08);
+        display: flex; flex-direction: column; gap: 6px;
+      }
+      .surface .icon {
+        width: 38px; height: 38px; border-radius: 10px;
+        background: linear-gradient(150deg, var(--gold), #b8860b);
+        color: #2a2000; display: grid; place-items: center; font-size: 18px; font-weight: 800;
+        box-shadow: 0 6px 14px rgba(201, 162, 39, 0.35);
+      }
+      .surface h3 { font-family: "Cormorant Garamond", serif; font-size: 19px; color: var(--green); margin-top: 2px; }
+      .surface p { font-size: 11.5px; color: var(--muted); line-height: 1.45; }
+      .surface .who { margin-top: auto; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--green-3); font-weight: 700; }
+
+      /* outbound row (broadcast) */
+      .outbound {
+        margin-top: 14px;
+        background: #fff; border: 1px solid rgba(201, 162, 39, 0.45);
+        border-radius: 18px; padding: 12px 16px 14px;
+        box-shadow: 0 10px 24px rgba(11, 61, 46, 0.06);
+        display: grid; grid-template-columns: 200px 1fr; align-items: center; gap: 14px;
+      }
+      .outbound .label { font-family: "Cormorant Garamond", serif; color: var(--green); }
+      .outbound .label small {
+        display: block; font-family: "Inter", sans-serif; font-size: 10px; letter-spacing: 0.22em;
+        color: var(--gold); text-transform: uppercase; font-weight: 700;
+      }
+      .outbound .label b { font-size: 18px; display: block; line-height: 1.15; }
+      .channels { display: flex; flex-wrap: wrap; gap: 8px; }
+      .ch {
+        font-size: 11px; padding: 5px 10px; border-radius: 999px;
+        background: var(--cream-2); color: var(--ink); border: 1px solid rgba(11, 61, 46, 0.12);
+        font-weight: 600;
+      }
+      .ch.primary { background: var(--green); color: var(--gold-soft); border-color: var(--green); }
+
+      /* ---- footer ---- */
+      .foot { margin-top: 18px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+      .kpi {
+        background: rgba(11, 61, 46, 0.06); border-left: 3px solid var(--gold);
+        padding: 8px 12px; border-radius: 0 8px 8px 0;
+      }
+      .kpi b { display: block; font-family: "Cormorant Garamond", serif; color: var(--green); font-size: 17px; }
+      .kpi small { font-size: 10.5px; color: var(--muted); letter-spacing: 0.05em; }
+
+      /* watermark */
+      .watermark { position: absolute; right: 36px; bottom: 18px; font-size: 10.5px; color: var(--muted); }
+
+      /* print: one slide per page, landscape */
+      @media print {
+        @page { size: A4 landscape; margin: 0; }
+        html, body { background: #fff; }
+        .slide { width: 100%; height: 100vh; aspect-ratio: auto; margin: 0; box-shadow: none; page-break-after: always; }
+        .slide:last-of-type { page-break-after: auto; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ========================== SLIDE 1 ============================ -->
+    <section class="slide">
+      <div class="head">
+        <div class="brand kma">
+          <svg class="kma-mark" viewBox="0 0 64 54" xmlns="http://www.w3.org/2000/svg" aria-label="Kingston Muslim Association">
+            <g fill="#2a4a8c">
+              <rect x="0" y="5" width="13" height="44" rx="1" />
+              <rect x="22" y="5" width="13" height="44" rx="1" />
+              <rect x="51" y="5" width="13" height="44" rx="1" />
+              <polygon points="22,5 35,5 64,49 51,49" />
+            </g>
+          </svg>
+          <div class="kma-words">
+            <span class="l1">KINGSTON</span>
+            <span class="l2">MUSLIM</span>
+            <span class="l3">ASSOCIATION</span>
+          </div>
+        </div>
+        <div class="meta">
+          <b>One mosque, every screen</b><br />
+          Concept overview · for stakeholder discussion
+        </div>
+      </div>
+
+      <div>
+        <h1>
+          <small>The idea in one line</small>
+          One website. One control panel. Every screen in sync.
+        </h1>
+
+        <div class="body">
+          <!-- the hub -->
+          <div class="hub">
+            <span class="pill">Source of truth</span>
+            <h2>Website &amp; CMS</h2>
+            <p>The mosque edits content in one place — prayer times, news, services, events, contact, Madrasah, Sisters' section.</p>
+            <ul>
+              <li>365-day prayer timetable (auto)</li>
+              <li>News &amp; announcements</li>
+              <li>Events &amp; Madrasah / classes</li>
+              <li>Services — Nikah, Janāzah, etc.</li>
+              <li>Contact &amp; opening times</li>
+            </ul>
+            <footer>Built on Next.js + Payload CMS</footer>
+          </div>
+
+          <!-- four surfaces -->
+          <div>
+            <div class="surfaces">
+              <div class="surface">
+                <div class="icon">🖥️</div>
+                <h3>Public website</h3>
+                <p>The mosque's site, kept fast and modern.</p>
+                <div class="who">For everyone</div>
+              </div>
+              <div class="surface">
+                <div class="icon">📱</div>
+                <h3>iOS &amp; Android apps</h3>
+                <p>One codebase, two app stores. Live prayer countdown + push.</p>
+                <div class="who">For worshippers</div>
+              </div>
+              <div class="surface">
+                <div class="icon">⊕</div>
+                <h3>Add-to-Home (PWA)</h3>
+                <p>The site installs on any phone — no app store needed.</p>
+                <div class="who">For everyone</div>
+              </div>
+              <div class="surface">
+                <div class="icon">📺</div>
+                <h3>Mosque screens</h3>
+                <p>Replaces MasjidBox at zero software cost. Always-on prayer board.</p>
+                <div class="who">In the mosque</div>
+              </div>
+            </div>
+
+            <div class="outbound">
+              <div class="label">
+                <small>Outbound · Compose once</small>
+                <b>Broadcast Center</b>
+              </div>
+              <div class="channels">
+                <span class="ch primary">WhatsApp</span>
+                <span class="ch">Email</span>
+                <span class="ch">Telegram</span>
+                <span class="ch">Facebook</span>
+                <span class="ch">Instagram</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="foot">
+        <div class="kpi"><b>~1 minute</b><small>From CMS edit to every screen</small></div>
+        <div class="kpi"><b>Zero per-screen cost</b><small>MasjidBox box replaced</small></div>
+        <div class="kpi"><b>One codebase → 2 apps</b><small>iOS + Android together</small></div>
+        <div class="kpi"><b>Free tier hosting</b><small>Plus £99/yr Apple, £25 Google</small></div>
+      </div>
+
+      <div class="watermark">Slide 1 of 2 · Concept for stakeholder review</div>
+    </section>
+
+    <!-- ========================== SLIDE 2 ============================ -->
+    <section class="slide">
+      <div class="head">
+        <div class="brand kma">
+          <svg class="kma-mark" viewBox="0 0 64 54" xmlns="http://www.w3.org/2000/svg" aria-label="Kingston Muslim Association">
+            <g fill="#2a4a8c">
+              <rect x="0" y="5" width="13" height="44" rx="1" />
+              <rect x="22" y="5" width="13" height="44" rx="1" />
+              <rect x="51" y="5" width="13" height="44" rx="1" />
+              <polygon points="22,5 35,5 64,49 51,49" />
+            </g>
+          </svg>
+          <div class="kma-words">
+            <span class="l1">KINGSTON</span>
+            <span class="l2">MUSLIM</span>
+            <span class="l3">ASSOCIATION</span>
+          </div>
+        </div>
+        <div class="meta">
+          <b>Why it matters · how it ships</b><br />
+          Value to the community · delivery plan
+        </div>
+      </div>
+
+      <div>
+        <h1>
+          <small>Slide 2 — value &amp; roadmap</small>
+          What this gives the mosque, and the path to launch.
+        </h1>
+
+        <div class="body" style="grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 18px;">
+          <!-- left: value pillars -->
+          <div class="hub" style="background: linear-gradient(160deg, #0f5132, #07271d);">
+            <span class="pill">Why it matters</span>
+            <h2 style="margin-bottom: 8px;">Value to the community</h2>
+            <ul style="margin-top: 10px;">
+              <li><b style="color: var(--gold-soft);">Reach everyone, everywhere</b> — phones, screens, web, WhatsApp.</li>
+              <li><b style="color: var(--gold-soft);">Always up to date</b> — change once; every surface syncs.</li>
+              <li><b style="color: var(--gold-soft);">Trusted, official source</b> — no scattered groups or copy-paste errors.</li>
+              <li><b style="color: var(--gold-soft);">Save running costs</b> — MasjidBox replaced, no per-screen fees.</li>
+              <li><b style="color: var(--gold-soft);">Janāzah &amp; urgent notices</b> — push, WhatsApp, screens — in minutes.</li>
+              <li><b style="color: var(--gold-soft);">Mosque owns it all</b> — no vendor lock-in, open architecture.</li>
+            </ul>
+            <footer>Designed for a small volunteer team to run with confidence.</footer>
+          </div>
+
+          <!-- right: roadmap -->
+          <div>
+            <div style="font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 10px;">
+              Phased delivery
+            </div>
+            <ol style="list-style: none; counter-reset: step; display: grid; gap: 10px;">
+              <li class="surface" style="flex-direction: row; align-items: center; gap: 14px;">
+                <div class="icon" style="background: var(--green); color: var(--gold-soft); flex: none;">1</div>
+                <div>
+                  <h3 style="margin: 0;">Website &amp; CMS · live</h3>
+                  <p>Single source of truth, prayer engine, admin roles.</p>
+                </div>
+              </li>
+              <li class="surface" style="flex-direction: row; align-items: center; gap: 14px;">
+                <div class="icon" style="background: var(--green); color: var(--gold-soft); flex: none;">2</div>
+                <div>
+                  <h3 style="margin: 0;">Mosque screens (free)</h3>
+                  <p>Replaces MasjidBox. Plug in any TV, it just works.</p>
+                </div>
+              </li>
+              <li class="surface" style="flex-direction: row; align-items: center; gap: 14px;">
+                <div class="icon" style="background: var(--green); color: var(--gold-soft); flex: none;">3</div>
+                <div>
+                  <h3 style="margin: 0;">Installable phone site (PWA)</h3>
+                  <p>Add-to-Home, offline prayer times — no app store needed.</p>
+                </div>
+              </li>
+              <li class="surface" style="flex-direction: row; align-items: center; gap: 14px;">
+                <div class="icon" style="background: linear-gradient(150deg, var(--gold), #b8860b); flex: none;">4</div>
+                <div>
+                  <h3 style="margin: 0;">iOS app → App Store</h3>
+                  <p>Live countdown to next jamā‘ah · announcement push notifications.</p>
+                </div>
+              </li>
+              <li class="surface" style="flex-direction: row; align-items: center; gap: 14px;">
+                <div class="icon" style="background: linear-gradient(150deg, var(--gold), #b8860b); flex: none;">5</div>
+                <div>
+                  <h3 style="margin: 0;">Android app → Google Play</h3>
+                  <p>Same codebase — re-build, ship to Play.</p>
+                </div>
+              </li>
+              <li class="surface" style="flex-direction: row; align-items: center; gap: 14px;">
+                <div class="icon" style="background: linear-gradient(150deg, var(--gold), #b8860b); flex: none;">6</div>
+                <div>
+                  <h3 style="margin: 0;">Broadcast Center</h3>
+                  <p>Compose once · WhatsApp · email · Telegram · social.</p>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <div class="foot">
+        <div class="kpi"><b>Free</b><small>Software &amp; hosting (tier limits)</small></div>
+        <div class="kpi"><b>£99/yr</b><small>Apple Developer (iOS)</small></div>
+        <div class="kpi"><b>£25 once</b><small>Google Play (Android)</small></div>
+        <div class="kpi"><b>Per-channel</b><small>WhatsApp/Email/Social — free at low volumes</small></div>
+      </div>
+
+      <div class="watermark">Slide 2 of 2 · Concept for stakeholder review</div>
+    </section>
+  </body>
+</html>

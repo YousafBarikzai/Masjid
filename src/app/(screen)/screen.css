@@ -1,0 +1,142 @@
+/* Mosque display board. Sized in viewport units so it fills any TV (designed
+   for 16:9 1080p/4K) without manual scaling. Self-contained — does not depend
+   on the public site's stylesheet. */
+
+:root {
+  --s-green: #0b3d2e;
+  --s-green-2: #0f5132;
+  --s-gold: #c9a227;
+  --s-gold-soft: #e8d59a;
+  --s-cream: #faf7f0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background: #07271d;
+  color: var(--s-cream);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+.ar { font-family: "Amiri", serif; }
+.serif { font-family: "Cormorant Garamond", Georgia, serif; }
+
+.board {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  padding: 3.2vh 3vw 2.4vh;
+  background:
+    radial-gradient(circle at 50% -20%, rgba(21, 127, 84, 0.55), transparent 60%),
+    linear-gradient(160deg, #0b3d2e 0%, #07271d 70%);
+}
+
+/* ------------------------------- Header ---------------------------------- */
+.board-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 0.12vw solid rgba(232, 213, 154, 0.25);
+  padding-bottom: 1.6vh;
+}
+.masjid {
+  font-size: 3vw;
+  line-height: 1.05;
+  color: var(--s-gold-soft);
+  font-weight: 700;
+}
+.masjid small { display: block; font-size: 1.1vw; letter-spacing: 0.28em; text-transform: uppercase; color: rgba(250, 247, 240, 0.6); font-family: "Inter", sans-serif; margin-top: 0.6vh; }
+.head-right { text-align: right; }
+.clock { font-size: 5.4vw; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
+.dates { margin-top: 0.6vh; font-size: 1.3vw; color: rgba(250, 247, 240, 0.82); }
+.dates .hijri { color: var(--s-gold-soft); }
+
+/* ----------------------------- Next prayer ------------------------------- */
+.next-hero {
+  text-align: center;
+  margin: 2.2vh 0 1.6vh;
+}
+.next-hero .eyebrow { font-size: 1.1vw; letter-spacing: 0.3em; text-transform: uppercase; color: var(--s-gold); font-weight: 700; }
+.next-hero .nh-line { display: flex; align-items: baseline; justify-content: center; gap: 1.6vw; margin-top: 0.6vh; }
+.next-hero .nh-name { font-size: 3.2vw; color: var(--s-cream); }
+.next-hero .nh-count { font-size: 4.4vw; font-weight: 700; color: var(--s-gold-soft); font-variant-numeric: tabular-nums; }
+.next-hero .nh-at { font-size: 1.5vw; color: rgba(250, 247, 240, 0.7); }
+
+/* ------------------------------ Prayer grid ------------------------------ */
+.prayers {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1.2vw;
+  flex: 1;
+  align-content: center;
+}
+.prayer {
+  background: rgba(255, 255, 255, 0.05);
+  border: 0.1vw solid rgba(232, 213, 154, 0.18);
+  border-radius: 1.1vw;
+  padding: 2.4vh 1vw;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8vh;
+  transition: transform 0.4s ease, background 0.4s ease;
+}
+.prayer .pname { font-size: 2vw; font-weight: 600; }
+.prayer .par { font-size: 1.7vw; color: var(--s-gold-soft); opacity: 0.85; }
+.prayer .prow { margin-top: 0.6vh; }
+.prayer .plabel { font-size: 0.8vw; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.6; }
+.prayer .ptime { font-size: 2.7vw; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.prayer .pbegins { font-size: 1.3vw; opacity: 0.72; font-variant-numeric: tabular-nums; }
+
+.prayer.is-next {
+  background: linear-gradient(150deg, var(--s-gold), #b8860b);
+  border-color: var(--s-gold-soft);
+  color: #2a2000;
+  transform: scale(1.05);
+  box-shadow: 0 1.4vh 4vh rgba(201, 162, 39, 0.4);
+}
+.prayer.is-next .par { color: #4a3a00; opacity: 0.9; }
+.prayer.is-next .plabel { opacity: 0.75; }
+
+/* -------------------------- Sunrise + footer ---------------------------- */
+.sunrise { text-align: center; margin-top: 1.4vh; font-size: 1.2vw; color: rgba(250, 247, 240, 0.7); }
+.sunrise b { color: var(--s-gold-soft); font-weight: 600; }
+
+.ticker {
+  margin-top: 1.8vh;
+  border-top: 0.12vw solid rgba(232, 213, 154, 0.25);
+  padding-top: 1.6vh;
+  display: flex;
+  align-items: center;
+  gap: 1.2vw;
+  min-height: 4vh;
+}
+.ticker .chip {
+  flex: none;
+  background: var(--s-gold);
+  color: #2a2000;
+  font-weight: 700;
+  font-size: 1vw;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.7vh 1.1vw;
+  border-radius: 999px;
+}
+.ticker .msg { font-size: 1.6vw; color: var(--s-cream); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ticker .msg.fade { animation: tickerfade 0.6s ease; }
+@keyframes tickerfade { from { opacity: 0; transform: translateY(0.6vh); } to { opacity: 1; transform: none; } }
+
+.offline {
+  position: fixed;
+  top: 1.4vh;
+  right: 1.4vw;
+  width: 1vw;
+  height: 1vw;
+  min-width: 10px;
+  min-height: 10px;
+  border-radius: 50%;
+  background: #e0533d;
+  box-shadow: 0 0 1.2vh rgba(224, 83, 61, 0.8);
+}

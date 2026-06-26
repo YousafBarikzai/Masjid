@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageHero from "@/components/layout/PageHero";
 import ContactSection from "@/components/sections/ContactSection";
 import ContactForm from "@/components/sections/ContactForm";
+import Newsletter from "@/components/sections/Newsletter";
 
 export const metadata: Metadata = { title: "Contact Us" };
 
@@ -22,6 +23,11 @@ export default function ContactPage() {
             <p>We&apos;ll get back to you as soon as we can.</p>
           </div>
           <ContactForm />
+        </div>
+      </section>
+      <section>
+        <div className="wrap">
+          <Newsletter />
         </div>
       </section>
     </>
