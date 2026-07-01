@@ -218,3 +218,11 @@ textarea,
 
 /* Keep the custom dashboard flush to the top. */
 .dashboard .kma-dash { margin-top: 4px; }
+
+/* ---- Waterfall navigation replaces the default flat group list ------------- */
+/* Hide Payload's own nav groups; the AdminNav tree (beforeNavLinks) is the
+   single source of navigation. The logout/settings controls are kept. */
+.nav__wrap > .nav-group,
+.nav__wrap > a.nav__link {
+  display: none !important;
+}
