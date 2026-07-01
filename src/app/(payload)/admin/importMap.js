@@ -27,6 +27,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 import { DashboardGrid as DashboardGrid_kma } from '@/payload/components/DashboardGrid'
 import { CommandPaletteProvider as CommandPaletteProvider_kma } from '@/payload/components/CommandPaletteProvider'
 import { HelpPanel as HelpPanel_kma } from '@/payload/components/HelpPanel'
+import { AdminNav as AdminNav_kma } from '@/payload/components/AdminNav'
 
 /** @type import('payload').ImportMap */
 export const importMap = {
@@ -58,5 +59,6 @@ export const importMap = {
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@/payload/components/DashboardGrid#DashboardGrid": DashboardGrid_kma,
   "@/payload/components/CommandPaletteProvider#CommandPaletteProvider": CommandPaletteProvider_kma,
-  "@/payload/components/HelpPanel#HelpPanel": HelpPanel_kma
+  "@/payload/components/HelpPanel#HelpPanel": HelpPanel_kma,
+  "@/payload/components/AdminNav#AdminNav": AdminNav_kma
 }
