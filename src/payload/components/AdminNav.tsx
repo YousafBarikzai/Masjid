@@ -35,8 +35,8 @@ type Group = {
   label: string;
   icon: string;
   items: Item[];
-  /** when true, also list the actual page documents as child links */
-  pagesTree?: boolean;
+  /** list the collection's actual documents as child links (e.g. pages, screens) */
+  docsTree?: { collection: string; titleField: string };
 };
 
 const col = (slug: string) => `/admin/collections/${slug}`;
@@ -48,7 +48,7 @@ const GROUPS: Group[] = [
     key: "pages",
     label: "Website Pages",
     icon: "📄",
-    pagesTree: true,
+    docsTree: { collection: "pages", titleField: "title" },
     items: [
       { label: "Site navigation (menus)", href: glob("main-menu"), hint: "Header menu & dropdowns" },
       { label: "All pages", href: col("pages"), addHref: add("pages") },
@@ -99,6 +99,13 @@ const GROUPS: Group[] = [
     ],
   },
   {
+    key: "tv",
+    label: "Digital Screens",
+    icon: "📺",
+    docsTree: { collection: "screens", titleField: "name" },
+    items: [{ label: "All screens", href: col("screens"), addHref: add("screens"), hint: "Each TV's slide playlist" }],
+  },
+  {
     key: "settings",
     label: "Site Settings",
     icon: "⚙️",
@@ -121,13 +128,13 @@ const GROUPS: Group[] = [
 
 const STORE = "kma-admin-nav-open";
 
-type PageDoc = { id: string | number; title?: string; slug?: string; _status?: string };
+type TreeDoc = { id: string | number; title?: string; name?: string; slug?: string; _status?: string };
 
 export function AdminNav() {
   const pathname = usePathname() || "";
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
-  const [pages, setPages] = useState<PageDoc[]>([]);
+  const [trees, setTrees] = useState<Record<string, TreeDoc[]>>({});
 
   // Restore open/closed state (default: the group containing the active link,
   // plus Website Pages so the tree is visible on first visit).
@@ -159,15 +166,19 @@ export function AdminNav() {
     }
   }, [open, loaded]);
 
-  // Live list of website pages so each one is a direct child link.
+  // Live document lists (website pages, digital screens) as direct child links.
   useEffect(() => {
     let active = true;
-    fetch("/api/pages?limit=100&depth=0&sort=title&draft=true", { credentials: "include" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (active && data?.docs) setPages(data.docs as PageDoc[]);
-      })
-      .catch(() => {});
+    for (const g of GROUPS) {
+      if (!g.docsTree) continue;
+      const { collection, titleField } = g.docsTree;
+      fetch(`/api/${collection}?limit=100&depth=0&sort=${titleField}&draft=true`, { credentials: "include" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (active && data?.docs) setTrees((t) => ({ ...t, [collection]: data.docs as TreeDoc[] }));
+        })
+        .catch(() => {});
+    }
     return () => {
       active = false;
     };
@@ -235,24 +246,24 @@ export function AdminNav() {
                   </div>
                 ))}
 
-                {g.pagesTree && pages.length > 0 && (
+                {g.docsTree && (trees[g.docsTree.collection]?.length ?? 0) > 0 && (
                   <div className="kma-nav__tree">
-                    {pages.map((p) => (
+                    {trees[g.docsTree.collection].map((p) => (
                       <Link
                         key={p.id}
-                        href={`/admin/collections/pages/${p.id}`}
+                        href={`/admin/collections/${g.docsTree!.collection}/${p.id}`}
                         className={`kma-nav__leaf${
-                          pathname === `/admin/collections/pages/${p.id}` ? " is-active" : ""
+                          pathname === `/admin/collections/${g.docsTree!.collection}/${p.id}` ? " is-active" : ""
                         }`}
                       >
                         <span className="kma-nav__leaf-dot" aria-hidden />
-                        <span className="kma-nav__leaf-label">{p.title || p.slug || "Untitled"}</span>
+                        <span className="kma-nav__leaf-label">{p.title || p.name || p.slug || "Untitled"}</span>
                         {p._status === "draft" && <span className="kma-nav__draft">draft</span>}
                       </Link>
                     ))}
-                    <Link href={add("pages")} className="kma-nav__leaf kma-nav__leaf--new">
+                    <Link href={add(g.docsTree.collection)} className="kma-nav__leaf kma-nav__leaf--new">
                       <span className="kma-nav__leaf-dot is-new" aria-hidden>+</span>
-                      <span className="kma-nav__leaf-label">Add a new page</span>
+                      <span className="kma-nav__leaf-label">Add new</span>
                     </Link>
                   </div>
                 )}

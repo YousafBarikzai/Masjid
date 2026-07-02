@@ -28,6 +28,7 @@ import { DashboardGrid as DashboardGrid_kma } from '@/payload/components/Dashboa
 import { CommandPaletteProvider as CommandPaletteProvider_kma } from '@/payload/components/CommandPaletteProvider'
 import { HelpPanel as HelpPanel_kma } from '@/payload/components/HelpPanel'
 import { AdminNav as AdminNav_kma } from '@/payload/components/AdminNav'
+import { SlideRowLabel as SlideRowLabel_kma } from '@/payload/components/SlideRowLabel'
 
 /** @type import('payload').ImportMap */
 export const importMap = {
@@ -60,5 +61,6 @@ export const importMap = {
   "@/payload/components/DashboardGrid#DashboardGrid": DashboardGrid_kma,
   "@/payload/components/CommandPaletteProvider#CommandPaletteProvider": CommandPaletteProvider_kma,
   "@/payload/components/HelpPanel#HelpPanel": HelpPanel_kma,
-  "@/payload/components/AdminNav#AdminNav": AdminNav_kma
+  "@/payload/components/AdminNav#AdminNav": AdminNav_kma,
+  "@/payload/components/SlideRowLabel#SlideRowLabel": SlideRowLabel_kma
 }
