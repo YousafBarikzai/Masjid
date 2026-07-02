@@ -29,6 +29,7 @@ import { CommandPaletteProvider as CommandPaletteProvider_kma } from '@/payload/
 import { HelpPanel as HelpPanel_kma } from '@/payload/components/HelpPanel'
 import { AdminNav as AdminNav_kma } from '@/payload/components/AdminNav'
 import { SlideRowLabel as SlideRowLabel_kma } from '@/payload/components/SlideRowLabel'
+import { TimetableGrid as TimetableGrid_kma } from '@/payload/components/TimetableGrid'
 
 /** @type import('payload').ImportMap */
 export const importMap = {
@@ -62,5 +63,6 @@ export const importMap = {
   "@/payload/components/CommandPaletteProvider#CommandPaletteProvider": CommandPaletteProvider_kma,
   "@/payload/components/HelpPanel#HelpPanel": HelpPanel_kma,
   "@/payload/components/AdminNav#AdminNav": AdminNav_kma,
-  "@/payload/components/SlideRowLabel#SlideRowLabel": SlideRowLabel_kma
+  "@/payload/components/SlideRowLabel#SlideRowLabel": SlideRowLabel_kma,
+  "@/payload/components/TimetableGrid#TimetableGrid": TimetableGrid_kma
 }

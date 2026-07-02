@@ -444,7 +444,8 @@ export const PrayerDays: CollectionConfig = {
     defaultColumns: ["date", "fajrJamaah", "dhuhrJamaah", "asrJamaah", "ishaJamaah", "source"],
     group: "Prayer Times",
     description:
-      "One record per day. Annual upload fills these in; managers can override any single day.",
+      "Edit any time directly in the grid above — click a cell, type, press Enter. The list below holds the individual override records.",
+    components: { beforeList: ["@/payload/components/TimetableGrid#TimetableGrid"] },
   },
   access: { read: anyone, create: isPrayerManager, update: isPrayerManager, delete: isPrayerManager },
   fields: [
