@@ -13,6 +13,20 @@ export interface HelpEntry {
 
 /** Keyed by collection slug OR global slug. */
 export const HELP_CONTENT: Record<string, HelpEntry> = {
+  "screens": {
+    title: "Digital Screens",
+    intro: "Each entry here is one TV in the mosque (Mimbar & Outside, Sisters, Middle Masjid, Ablution Area). A screen plays its list of slides in a loop \u2014 every slide shows for its own number of seconds, then the next appears.",
+    steps: [
+      "Open the screen you want to change (or Create a new one for a new TV).",
+      "Under Slides, click Add Slide and choose the type: Prayer times board, Announcement, Picture / poster, or QR code.",
+      "Set the seconds for the slide \u2014 how long it stays on screen (10\u201315s reads well; give the prayer board 60s or more).",
+      "Fill in the slide's fields: an announcement needs a heading and short text; a picture needs an image from the media library; a QR code needs the link it should open and a caption.",
+      "Drag the handle on the left of each row to change the running order \u2014 the loop plays top to bottom, then repeats.",
+      "Untick \u2018Show this slide\u2019 to take a slide out of rotation without deleting it (handy for seasonal notices).",
+      "Save. The TV updates itself within about a minute \u2014 no need to touch it.",
+    ],
+    tip: "On the TV, open /display/<slug> (for example /display/mimbar-outside) in the browser and make it the homepage \u2014 see docs/SCREENS.md for per-TV setup.",
+  },
   "pages": {
     title: "Pages",
     intro: "Pages are the permanent parts of your website, like About the Mosque, Visit Us or Donate. Use these for information that stays up most of the time, rather than dated news.",

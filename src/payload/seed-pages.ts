@@ -102,3 +102,49 @@ export async function seedWebsitePages(payload: Payload): Promise<void> {
   }
   if (created > 0) payload.logger.info(`✓ Seeded ${created} editable website page(s).`);
 }
+
+/* ---- Digital screens: seed the four TVs once ------------------------------ */
+const SCREEN_SEEDS = [
+  { name: "Mimbar & Outside Screen", slug: "mimbar-outside" },
+  { name: "Sisters Screen", slug: "sisters" },
+  { name: "Middle Masjid Screen", slug: "middle-masjid" },
+  { name: "Ablution Area Screen", slug: "ablution" },
+];
+
+export async function seedScreens(payload: Payload): Promise<void> {
+  let created = 0;
+  for (const seed of SCREEN_SEEDS) {
+    try {
+      const existing = await payload.find({
+        collection: "screens" as never,
+        where: { slug: { equals: seed.slug } } as never,
+        limit: 1,
+        depth: 0,
+        overrideAccess: true,
+      });
+      if (existing.totalDocs > 0) continue;
+      await payload.create({
+        collection: "screens" as never,
+        data: {
+          name: seed.name,
+          slug: seed.slug,
+          slides: [
+            { type: "prayer-board", duration: 60, enabled: true },
+            {
+              type: "announcement",
+              duration: 10,
+              enabled: true,
+              heading: "Welcome to Kingston Mosque",
+              body: "Please put your phone on silent before entering the prayer hall.",
+            },
+          ],
+        } as never,
+        overrideAccess: true,
+      });
+      created += 1;
+    } catch (err) {
+      payload.logger.warn(`Screen seed skipped (${seed.slug}): ${(err as Error).message}`);
+    }
+  }
+  if (created > 0) payload.logger.info(`✓ Seeded ${created} digital screen(s).`);
+}

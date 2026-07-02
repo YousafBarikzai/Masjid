@@ -35,6 +35,7 @@ import {
   MainMenu,
 } from "./payload/globals";
 import { AuditLog, withAudit } from "./payload/audit";
+import { Screens } from "./payload/screens";
 import { withHelp, withHelpGlobal } from "./payload/help";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -132,6 +133,7 @@ export default buildConfig({
     DeviceTokens,
     withHelp(Subscribers),
     withHelp(withAudit(Broadcasts)),
+    withHelp(withAudit(Screens)),
     withHelp(withAudit(Media)),
     withHelp(withAudit(Users)),
     withHelp(AuditLog),
@@ -212,8 +214,9 @@ export default buildConfig({
     // Make every website page editable: seed the Pages collection with the
     // site's built-in text once (never overwrites staff edits — see seed-pages.ts).
     try {
-      const { seedWebsitePages } = await import("./payload/seed-pages");
+      const { seedWebsitePages, seedScreens } = await import("./payload/seed-pages");
       await seedWebsitePages(payload);
+      await seedScreens(payload);
     } catch (err) {
       payload.logger.warn("Website page seeding failed: " + (err as Error).message);
     }
