@@ -19,12 +19,35 @@ export async function runBroadcast(
   channels: ChannelId[],
 ): Promise<ChannelResult[]> {
   const results: ChannelResult[] = [];
+  if (channels.includes("push")) results.push(await sendPush(payload, input));
   if (channels.includes("email")) results.push(await sendEmail(payload, input));
   if (channels.includes("telegram")) results.push(await sendTelegram(input));
   if (channels.includes("whatsapp")) results.push(await sendWhatsApp(payload, input));
   if (channels.includes("facebook")) results.push(await sendFacebook(input));
   if (channels.includes("instagram")) results.push(await sendInstagram(input));
   return results;
+}
+
+/* ------------------------- App notification (push) ------------------------ */
+// Reaches everyone who installed the PWA / app and opted into notifications,
+// via the same pipeline as published announcements (Web Push + Expo).
+async function sendPush(payload: Payload, input: BroadcastInput): Promise<ChannelResult> {
+  try {
+    const { sendPushToAll } = await import("../push");
+    const { sent } = await sendPushToAll(
+      payload,
+      { title: input.title, body: input.body, data: { type: "broadcast" } },
+      "news",
+    );
+    return {
+      channel: "push",
+      status: sent ? "sent" : "skipped",
+      detail: sent ? `${sent} device(s)` : "no subscribers",
+      count: sent,
+    };
+  } catch (err) {
+    return { channel: "push", status: "failed", detail: (err as Error).message };
+  }
 }
 
 /* --------------------------------- Email ---------------------------------- */

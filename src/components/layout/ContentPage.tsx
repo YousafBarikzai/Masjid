@@ -5,11 +5,21 @@ import CTASection from "@/components/sections/CTASection";
 import type { ServicePage } from "@/lib/site-content";
 
 /** Renders a service/content page (hero + lead image + body sections + optional
- *  gallery + call-to-action) from structured data. */
-export default function ContentPage({ page }: { page: ServicePage }) {
+ *  gallery + call-to-action) from structured data. When CMS overrides are
+ *  provided (an editable Pages document exists for this URL), the title, intro
+ *  and body text come from the CMS while the visual shell stays the same. */
+export default function ContentPage({
+  page,
+  override,
+}: {
+  page: ServicePage;
+  override?: { title?: string; intro?: string; body?: React.ReactNode };
+}) {
+  const title = override?.title || page.title;
+  const intro = override?.intro ?? page.intro;
   return (
     <>
-      <PageHero title={page.title} crumb={page.title} intro={page.intro} />
+      <PageHero title={title} crumb={title} intro={intro} />
 
       <section>
         <div className="wrap content-layout">
@@ -17,21 +27,22 @@ export default function ContentPage({ page }: { page: ServicePage }) {
             <ImageSlot slot={page.image} alt={page.imageAlt} ratio="4 / 3" />
           </div>
           <div className="prose content-body">
-            {page.sections.map((s, i) => (
-              <div key={i}>
-                {s.heading && <h2>{s.heading}</h2>}
-                {s.body?.map((p, j) => (
-                  <p key={j}>{p}</p>
-                ))}
-                {s.bullets && (
-                  <ul>
-                    {s.bullets.map((b, k) => (
-                      <li key={k}>{b}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
+            {override?.body ??
+              page.sections.map((s, i) => (
+                <div key={i}>
+                  {s.heading && <h2>{s.heading}</h2>}
+                  {s.body?.map((p, j) => (
+                    <p key={j}>{p}</p>
+                  ))}
+                  {s.bullets && (
+                    <ul>
+                      {s.bullets.map((b, k) => (
+                        <li key={k}>{b}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
           </div>
         </div>
       </section>

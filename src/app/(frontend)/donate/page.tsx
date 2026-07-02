@@ -2,11 +2,19 @@ import type { Metadata } from "next";
 import PageHero from "@/components/layout/PageHero";
 import DonateSection from "@/components/sections/DonateSection";
 import CardGrid from "@/components/sections/CardGrid";
+import QuickDonate from "@/components/donate/QuickDonate";
+import Campaigns from "@/components/donate/Campaigns";
 import { donationCategories } from "@/lib/site-content";
+import { getDonation } from "@/lib/cms";
 
 export const metadata: Metadata = { title: "Donate" };
 
-export default function DonatePage() {
+export const dynamic = "force-dynamic";
+
+export default async function DonatePage() {
+  const donation = await getDonation();
+  const donateUrl = donation.donateUrl ?? "";
+
   return (
     <>
       <PageHero
@@ -14,6 +22,26 @@ export default function DonatePage() {
         crumb="Donate"
         intro="Support the running of your mosque, the Madrasah, and free community services."
       />
+
+      {donateUrl && (
+        <section className="qd-section">
+          <div className="wrap narrow">
+            <div className="section-head" style={{ marginBottom: 26 }}>
+              <div className="eyebrow">Give online</div>
+              <h2>Make a donation</h2>
+              <p>Quick, secure giving — one-off or monthly.</p>
+            </div>
+            <QuickDonate
+              donateUrl={donateUrl}
+              presets={donation.presets ?? [5, 10, 25, 50, 100]}
+              giftAid={donation.giftAid ?? true}
+              monthly={donation.monthly ?? true}
+            />
+          </div>
+        </section>
+      )}
+
+      <Campaigns campaigns={donation.campaigns ?? []} />
 
       <section>
         <div className="wrap">
@@ -46,9 +74,9 @@ export default function DonatePage() {
             mosque.
           </p>
           <p className="note-box">
-            Online card and Direct Debit giving (with campaign progress and Gift Aid) can be added
-            later — the design already leaves room for it. For now, bank transfer and in-person
-            giving are shown, as agreed.
+            {donateUrl
+              ? "You can give securely online using the Donate panel above (Apple Pay & Google Pay supported), by bank transfer using the details above, or in person via the donation box by the main office."
+              : "You can give by bank transfer using the details above, or in person via the donation box by the main office inside the mosque."}
           </p>
         </div>
       </section>

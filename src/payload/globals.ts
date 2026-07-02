@@ -148,6 +148,34 @@ export const DonationSettings: GlobalConfig = {
     { name: "heading", type: "text" },
     { name: "body", type: "textarea" },
     {
+      name: "donateUrl",
+      type: "text",
+      label: "Online giving link",
+      admin: {
+        description:
+          "Paste your donation page link (e.g. Stripe Payment Link, Donorbox, JustGiving). When set, a Donate button with quick amounts appears on the site. Apple Pay / Google Pay are handled by that platform's checkout.",
+      },
+    },
+    {
+      name: "presetAmounts",
+      type: "text",
+      label: "Quick amounts (£)",
+      defaultValue: "5, 10, 25, 50, 100",
+      admin: { description: "Comma-separated, e.g. 5, 10, 25, 50, 100" },
+    },
+    {
+      name: "enableGiftAid",
+      type: "checkbox",
+      label: "Show Gift Aid (+25%) reminder",
+      defaultValue: true,
+    },
+    {
+      name: "enableMonthly",
+      type: "checkbox",
+      label: "Offer monthly giving",
+      defaultValue: true,
+    },
+    {
       name: "bankDetails",
       type: "array",
       labels: { singular: "Bank detail", plural: "Bank details" },

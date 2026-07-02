@@ -3,6 +3,14 @@ import type { Metadata, Viewport } from "next";
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
 import PwaRegister from "@/components/pwa/PwaRegister";
+import PwaInstallPrompt from "@/components/pwa/PwaInstallPrompt";
+import PullToRefresh from "@/components/pwa/PullToRefresh";
+import Reveal from "@/components/pwa/Reveal";
+import OfflineBanner from "@/components/pwa/OfflineBanner";
+import IosSplash from "@/components/pwa/IosSplash";
+import MobileNav from "@/components/layout/MobileNav";
+import PrayerBarMount from "@/components/prayer/PrayerBarMount";
+import { I18nProvider } from "@/lib/i18n";
 import { site, siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -36,6 +44,9 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#0b3d2e",
+  // Let the page draw under the iOS notch/home-indicator so the standalone PWA
+  // feels full-screen; components opt back in with env(safe-area-inset-*).
+  viewportFit: "cover",
 };
 
 // The header/footer read live data from the CMS, so render at request time.
@@ -65,7 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');if(!t){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`,
+            __html: `(function(){try{var d=document.documentElement;var t=localStorage.getItem('theme');if(!t){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}d.setAttribute('data-theme',t);var l=localStorage.getItem('kma-lang');if(l){d.lang=l;d.dir=(l==='ar'||l==='ur')?'rtl':'ltr';}var z=localStorage.getItem('kma-textsize');if(z){var m={sm:1,md:1.12,lg:1.25};if(m[z])d.style.setProperty('--read-zoom',m[z]);}}catch(e){}})();`,
           }}
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -75,15 +86,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <IosSplash />
       </head>
       <body>
-        <a href="#main" className="skip-link">
-          Skip to content
-        </a>
-        <SiteHeader />
-        <main id="main">{children}</main>
-        <SiteFooter />
-        <PwaRegister />
+        <I18nProvider>
+          <a href="#main" className="skip-link">
+            Skip to content
+          </a>
+          <OfflineBanner />
+          <SiteHeader />
+          <PrayerBarMount />
+          <main id="main">{children}</main>
+          <SiteFooter />
+          <MobileNav />
+          <PullToRefresh />
+          <Reveal />
+          <PwaRegister />
+          <PwaInstallPrompt />
+        </I18nProvider>
       </body>
     </html>
   );

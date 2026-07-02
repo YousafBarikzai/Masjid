@@ -679,6 +679,13 @@ export const DeviceTokens: CollectionConfig = {
         { label: "Prayer reminders", value: "prayer" },
       ],
     },
+    // Web Push (browser/PWA) subscriptions store the endpoint in `token` and the
+    // encryption keys here. Native (Expo) devices leave these blank.
+    { name: "p256dh", type: "text", admin: { readOnly: true, condition: (d) => d?.platform === "web" } },
+    { name: "auth", type: "text", admin: { readOnly: true, condition: (d) => d?.platform === "web" } },
+    // Minutes before jamāʿah to send a prayer reminder (only used when the
+    // "prayer" topic is selected). Default 15.
+    { name: "reminderOffset", type: "number", defaultValue: 15, admin: { description: "Minutes before jamāʿah for prayer reminders." } },
     { name: "enabled", type: "checkbox", defaultValue: true },
   ],
 };
@@ -735,6 +742,7 @@ export const Broadcasts: CollectionConfig = {
       hasMany: true,
       admin: { description: "Where to send this." },
       options: [
+        { label: "App notification (push)", value: "push" },
         { label: "Email", value: "email" },
         { label: "Telegram", value: "telegram" },
         { label: "WhatsApp", value: "whatsapp" },

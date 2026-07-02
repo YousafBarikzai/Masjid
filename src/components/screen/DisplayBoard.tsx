@@ -155,6 +155,7 @@ export default function DisplayBoard({ initial }: { initial: Snapshot }) {
 
   const fivePrayers = data.prayers.filter((p) => !p.isInfo);
   const sunrise = data.prayers.find((p) => p.key === "sunrise");
+  const jummah = data.isFriday ? (data.jummah ?? []).filter((j) => j.khutbah || j.name) : [];
   const banners = buildBanners(data);
   const current = banners.length ? banners[banner % banners.length] : null;
 
@@ -206,7 +207,16 @@ export default function DisplayBoard({ initial }: { initial: Snapshot }) {
         ))}
       </section>
 
-      {sunrise ? (
+      {jummah.length > 0 ? (
+        <section className="jummah-board">
+          <span className="jb-title serif">Jumu‘ah</span>
+          {jummah.map((j, i) => (
+            <span className="jb-item" key={i}>
+              {j.name ? <b>{j.name}</b> : null} {j.khutbah ? <span className="jb-time">{j.khutbah}</span> : null}
+            </span>
+          ))}
+        </section>
+      ) : sunrise ? (
         <div className="sunrise">
           Sunrise (Shurūq) <b>{sunrise.begins}</b>
         </div>

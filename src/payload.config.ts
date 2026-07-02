@@ -108,6 +108,9 @@ export default buildConfig({
     // rather than breaking the admin (see admin/importMap.js).
     components: {
       beforeDashboard: ["@/payload/components/DashboardGrid#DashboardGrid"],
+      // Waterfall navigation: a clear heading → sub-heading → child-link tree.
+      // The default flat group list is hidden in admin-theme.css.
+      beforeNavLinks: ["@/payload/components/AdminNav#AdminNav"],
       providers: ["@/payload/components/CommandPaletteProvider#CommandPaletteProvider"],
     },
     meta: {
@@ -204,6 +207,15 @@ export default buildConfig({
       } catch (err) {
         payload.logger.error("Schema sync on boot failed: " + (err as Error).message);
       }
+    }
+
+    // Make every website page editable: seed the Pages collection with the
+    // site's built-in text once (never overwrites staff edits — see seed-pages.ts).
+    try {
+      const { seedWebsitePages } = await import("./payload/seed-pages");
+      await seedWebsitePages(payload);
+    } catch (err) {
+      payload.logger.warn("Website page seeding failed: " + (err as Error).message);
     }
 
     // Optional: provision a Super Admin login from env vars, so there's a
