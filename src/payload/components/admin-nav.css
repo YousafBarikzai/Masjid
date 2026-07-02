@@ -5,7 +5,8 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 4px 0 10px;
+  padding: 4px 6px 10px 0;
+  min-width: 0;
 }
 
 .kma-nav__dash {
@@ -63,9 +64,10 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
-  padding: 2px 6px 2px 14px;
+  padding: 2px 2px 2px 10px;
   border-left: 1px solid rgba(230, 200, 121, 0.22);
-  margin-left: 21px;
+  margin-left: 15px;
+  min-width: 0;
 }
 .kma-nav__row { display: flex; align-items: center; gap: 4px; }
 .kma-nav__link {

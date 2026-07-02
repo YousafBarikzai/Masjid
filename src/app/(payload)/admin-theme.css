@@ -226,3 +226,20 @@ textarea,
 .nav__wrap > a.nav__link {
   display: none !important;
 }
+
+/* ---- Sidebar scrollbar: slim + branded (was the default grey bar, clipping
+   the row "+" buttons). Space is reserved so nothing hides behind it. ------- */
+.nav__scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;                            /* Firefox */
+  scrollbar-color: rgba(230, 200, 121, 0.35) transparent;
+  scrollbar-gutter: stable;
+}
+.nav__scroll::-webkit-scrollbar { width: 6px; }
+.nav__scroll::-webkit-scrollbar-track { background: transparent; }
+.nav__scroll::-webkit-scrollbar-thumb {
+  background: rgba(230, 200, 121, 0.28);
+  border-radius: 999px;
+}
+.nav__scroll::-webkit-scrollbar-thumb:hover { background: rgba(230, 200, 121, 0.5); }
