@@ -2,12 +2,14 @@ import path from "path";
 import type { Block, CollectionConfig, Field } from "payload";
 import {
   anyone,
+  canEditContent,
   isAdmin,
   isAdminFieldLevel,
   isContributor,
   isEditor,
   isPrayerManager,
   isStaff,
+  isUpdater,
 } from "./access";
 import { editorialFields, notifyReviewers, restrictPublish } from "./editorial";
 import { parseTimetableCsv } from "../lib/parseTimetable";
@@ -27,10 +29,11 @@ export const Users: CollectionConfig = {
   },
   admin: {
     useAsTitle: "name",
-    defaultColumns: ["name", "email", "roles"],
+    defaultColumns: ["name", "email", "roles", "updatedAt"],
     group: "Administration",
     description:
-      "Staff logins. To add a manager or editor: Create → enter their name, email and a password, then choose a role.",
+      "Everyone who can sign in to this admin. Create → name, email, password → pick a role. The role decides what they see in the left menu and what they can do — the guide above explains each one.",
+    components: { beforeList: ["@/payload/components/RoleGuide#RoleGuide"] },
   },
   access: {
     read: isStaff,
@@ -64,14 +67,15 @@ export const Users: CollectionConfig = {
       access: { update: isAdminFieldLevel },
       admin: {
         description:
-          "Super Admin / Admin: full access incl. managing users. Editor: manages content (pages, news, events, services). Prayer Times Manager: edits the prayer timetable. Contributor: can create drafts only. (The first account is made Super Admin automatically.)",
+          "What this person can do — see the role guide at the top of the Users list. Only Admins can change roles.",
       },
       options: [
-        { label: "Super Admin", value: "super-admin" },
-        { label: "Admin", value: "admin" },
-        { label: "Editor / Manager", value: "editor" },
-        { label: "Prayer Times Manager", value: "prayer-times-manager" },
-        { label: "Contributor (drafts only)", value: "contributor" },
+        { label: "Super Admin — everything", value: "super-admin" },
+        { label: "Admin — everything incl. users & settings", value: "admin" },
+        { label: "Editor — create, edit & publish all content", value: "editor" },
+        { label: "Editor (edit only) — change existing content, no new items", value: "updater" },
+        { label: "Contributor — write drafts, an editor publishes", value: "contributor" },
+        { label: "Prayer Times Manager — timetable & Jumuʿah only", value: "prayer-times-manager" },
       ],
     },
   ],
@@ -91,7 +95,7 @@ export const Media: CollectionConfig = {
   },
   // Native folders: organise media into folders (and browse by folder).
   folders: true,
-  access: { read: anyone, create: isEditor, update: isEditor, delete: isEditor },
+  access: { read: anyone, create: isEditor, update: isUpdater, delete: isEditor },
   upload: {
     staticDir: path.resolve(process.cwd(), "media"),
     mimeTypes: ["image/*", "application/pdf"],
@@ -216,7 +220,7 @@ export const Pages: CollectionConfig = {
     defaultColumns: ["title", "slug", "reviewStatus", "_status"],
     group: "Content",
   },
-  access: { read: anyone, create: isContributor, update: isContributor, delete: isAdmin },
+  access: { read: anyone, create: isContributor, update: canEditContent, delete: isAdmin },
   versions: { drafts: { autosave: false }, maxPerDoc: 20 },
   hooks: { beforeChange: [restrictPublish], afterChange: [notifyReviewers] },
   fields: [
@@ -272,7 +276,7 @@ export const Posts: CollectionConfig = {
     defaultColumns: ["title", "publishedDate", "reviewStatus", "_status"],
     group: "Content",
   },
-  access: { read: anyone, create: isContributor, update: isContributor, delete: isAdmin },
+  access: { read: anyone, create: isContributor, update: canEditContent, delete: isAdmin },
   versions: { drafts: { autosave: false }, maxPerDoc: 20 },
   hooks: { beforeChange: [restrictPublish], afterChange: [notifyReviewers] },
   fields: [
@@ -363,7 +367,7 @@ export const Announcements: CollectionConfig = {
   slug: "announcements",
   labels: { singular: "Announcement / Banner", plural: "Announcements & Banners" },
   admin: { useAsTitle: "message", defaultColumns: ["message", "severity", "enabled"], group: "Content" },
-  access: { read: anyone, create: isEditor, update: isEditor, delete: isEditor },
+  access: { read: anyone, create: isEditor, update: isUpdater, delete: isEditor },
   fields: [
     { name: "label", type: "text", defaultValue: "Notice" },
     { name: "message", type: "textarea", required: true },
