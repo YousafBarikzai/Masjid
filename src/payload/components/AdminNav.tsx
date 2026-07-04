@@ -138,6 +138,7 @@ const GROUPS: Group[] = [
     items: [
       { label: "Site settings", href: glob("site-settings"), hint: "Contact info, about, socials" },
       { label: "Donations", href: glob("donation-settings"), hint: "Bank details, giving link, campaigns" },
+      { label: "Mobile app", href: glob("app-settings"), hint: "App home, quick actions, media links" },
     ],
   },
   {
