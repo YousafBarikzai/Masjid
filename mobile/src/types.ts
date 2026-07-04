@@ -1,6 +1,5 @@
-// Mirrors the shape returned by the website's /app-api/snapshot endpoint.
-// Kept as a small local interface so the app stays decoupled from the server
-// build (the web app's Snapshot type is server-only).
+// Mirrors the shapes returned by the website's app-api endpoints. Kept as small
+// local interfaces so the app stays decoupled from the server build.
 
 export interface PrayerRow {
   key: string;
@@ -33,11 +32,29 @@ export interface CardItem {
   href: string;
 }
 
+export interface JummahCongregation {
+  name: string;
+  language: string;
+  doors: string;
+  khutbah: string;
+}
+
+export interface AppConfig {
+  welcome: string;
+  timetablePdfUrl: string;
+  quickLinks: { icon: string; label: string; url: string }[];
+  mediaLinks: { kind: string; label: string; url: string }[];
+  donateUrl: string;
+  youtube: string;
+}
+
 export interface Snapshot {
   generatedAt: string;
   date: { iso: string; gregorian: string; hijri: string };
   prayers: PrayerRow[];
   nextPrayer: NextPrayer;
+  isFriday?: boolean;
+  jummah?: JummahCongregation[];
   announcement: { enabled: boolean; label: string; message: string } | null;
   news: NewsItem[];
   events: CardItem[];
@@ -51,4 +68,29 @@ export interface Snapshot {
     mapsQuery: string;
     social: { label: string; href: string }[];
   };
+  app?: AppConfig;
+}
+
+/* Monthly timetable (app-api/timetable-grid) */
+export interface MonthDay {
+  date: string; // YYYY-MM-DD
+  weekday: string;
+  isOverride: boolean;
+  fajrBegins: string;
+  fajrJamaah: string;
+  sunrise: string;
+  dhuhrBegins: string;
+  dhuhrJamaah: string;
+  asrBegins: string;
+  asrJamaah: string;
+  maghrib: string;
+  ishaBegins: string;
+  ishaJamaah: string;
+  note?: string;
+}
+
+export interface MonthGrid {
+  year: number;
+  month: string; // YYYY-MM
+  days: MonthDay[];
 }

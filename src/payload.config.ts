@@ -33,6 +33,7 @@ import {
   SpecialSchedule,
   BroadcastSettings,
   MainMenu,
+  AppSettings,
 } from "./payload/globals";
 import { AuditLog, withAudit } from "./payload/audit";
 import { Screens } from "./payload/screens";
@@ -145,6 +146,7 @@ export default buildConfig({
     withHelpGlobal(SpecialSchedule),
     withHelpGlobal(BroadcastSettings),
     withHelpGlobal(MainMenu),
+    withHelpGlobal(AppSettings),
   ],
   // Rich editor for ALL richText fields: keeps every default feature (headings,
   // lists, links, images, alignment…), shows an always-visible toolbar so the

@@ -2,6 +2,7 @@ import { Platform } from "react-native";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { registerDevice } from "./api";
+import { getTopics } from "./prefs";
 
 // Show notifications while the app is foregrounded too.
 Notifications.setNotificationHandler({
@@ -14,11 +15,11 @@ Notifications.setNotificationHandler({
 
 /**
  * Ask for notification permission, get this device's Expo push token, and
- * register it with the website so the mosque can broadcast announcements.
- * Best-effort: returns null and stays silent on simulators or if declined.
+ * register it (with the user's chosen topics) so the mosque can notify it.
+ * Best-effort: returns null on simulators or if permission is declined.
  */
-export async function registerForPush(): Promise<string | null> {
-  if (!Device.isDevice) return null; // push doesn't work on simulators
+export async function registerForPush(topics?: string[]): Promise<string | null> {
+  if (!Device.isDevice) return null;
 
   const existing = await Notifications.getPermissionsAsync();
   let status = existing.status;
@@ -30,15 +31,18 @@ export async function registerForPush(): Promise<string | null> {
 
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("default", {
-      name: "Announcements",
-      importance: Notifications.AndroidImportance.DEFAULT,
+      name: "Mosque announcements",
+      importance: Notifications.AndroidImportance.HIGH,
+      vibrationPattern: [0, 200, 120, 200],
+      lightColor: "#c9a227",
     });
   }
 
   try {
     const tokenResponse = await Notifications.getExpoPushTokenAsync();
     const token = tokenResponse.data;
-    await registerDevice(token, Platform.OS === "android" ? "android" : "ios");
+    const chosen = topics ?? (await getTopics());
+    await registerDevice(token, Platform.OS === "android" ? "android" : "ios", chosen);
     return token;
   } catch {
     return null;

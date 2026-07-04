@@ -1,12 +1,30 @@
 import type { ReactNode } from "react";
-import { View, Text, StyleSheet, ScrollView, RefreshControl } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+  Pressable,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { colors } from "./theme";
+import * as Haptics from "expo-haptics";
+import { colors, radius, space, type as t, aurora, shadowCard } from "./theme";
 
-/** Page scaffold: green header with title, then a scrollable cream body. */
+/* Shared UI kit — every screen composes these so the whole app feels like one
+   product: aurora headers, glass cards, gold pills, quiet dividers. */
+
+export function tap() {
+  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+}
+
+/** Screen scaffold: aurora gradient header + scrollable dark body. */
 export function Page({
   title,
   subtitle,
+  eyebrow,
+  headerExtra,
   children,
   offline,
   refreshing,
@@ -14,6 +32,8 @@ export function Page({
 }: {
   title: string;
   subtitle?: string;
+  eyebrow?: string;
+  headerExtra?: ReactNode;
   children: ReactNode;
   offline?: boolean;
   refreshing?: boolean;
@@ -21,50 +41,231 @@ export function Page({
 }) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={styles.root}>
-      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <Text style={styles.headerTitle}>{title}</Text>
-        {subtitle ? <Text style={styles.headerSub}>{subtitle}</Text> : null}
-        {offline ? <Text style={styles.offline}>Offline — showing saved info</Text> : null}
-      </View>
+    <View style={s.root}>
+      <LinearGradient colors={[...aurora]} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }}>
+        <View style={[s.header, { paddingTop: insets.top + 14 }]}>
+          {eyebrow ? <Text style={s.eyebrow}>{eyebrow}</Text> : null}
+          <Text style={s.headerTitle}>{title}</Text>
+          {subtitle ? <Text style={s.headerSub}>{subtitle}</Text> : null}
+          {offline ? (
+            <View style={s.offline}>
+              <View style={s.offlineDot} />
+              <Text style={s.offlineText}>Offline — showing saved times</Text>
+            </View>
+          ) : null}
+          {headerExtra}
+        </View>
+      </LinearGradient>
       <ScrollView
-        contentContainerStyle={styles.body}
+        style={s.body}
+        contentContainerStyle={s.bodyContent}
         refreshControl={
-          onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={colors.green2} /> : undefined
+          onRefresh ? (
+            <RefreshControl
+              refreshing={!!refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.goldSoft}
+              colors={[colors.gold]}
+            />
+          ) : undefined
         }
       >
         {children}
+        <View style={{ height: 36 }} />
       </ScrollView>
     </View>
   );
 }
 
+/** Glass card with soft elevation. */
 export function Card({ children, style }: { children: ReactNode; style?: object }) {
-  return <View style={[styles.card, style]}>{children}</View>;
+  return <View style={[s.card, style]}>{children}</View>;
 }
 
-export function SectionTitle({ children }: { children: ReactNode }) {
-  return <Text style={styles.sectionTitle}>{children}</Text>;
+/** Section heading with optional trailing action. */
+export function Section({
+  title,
+  action,
+  onAction,
+}: {
+  title: string;
+  action?: string;
+  onAction?: () => void;
+}) {
+  return (
+    <View style={s.section}>
+      <Text style={s.sectionTitle}>{title}</Text>
+      {action && onAction ? (
+        <Pressable
+          onPress={() => {
+            tap();
+            onAction();
+          }}
+          hitSlop={10}
+        >
+          <Text style={s.sectionAction}>{action} →</Text>
+        </Pressable>
+      ) : null}
+    </View>
+  );
 }
 
-export function Empty({ children }: { children: ReactNode }) {
-  return <Text style={styles.empty}>{children}</Text>;
+/** Gold pill button. */
+export function GoldButton({
+  label,
+  onPress,
+  compact,
+}: {
+  label: string;
+  onPress: () => void;
+  compact?: boolean;
+}) {
+  return (
+    <Pressable
+      onPress={() => {
+        tap();
+        onPress();
+      }}
+      style={({ pressed }) => [s.goldBtn, compact && s.goldBtnCompact, pressed && { transform: [{ scale: 0.97 }] }]}
+    >
+      <Text style={[s.goldBtnText, compact && { fontSize: t.small }]}>{label}</Text>
+    </Pressable>
+  );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.cream },
-  header: { backgroundColor: colors.green, paddingHorizontal: 20, paddingBottom: 18 },
-  headerTitle: { color: colors.goldSoft, fontSize: 26, fontWeight: "700" },
-  headerSub: { color: "rgba(255,255,255,0.82)", fontSize: 14, marginTop: 4 },
-  offline: { color: "#f3c1b6", fontSize: 12, marginTop: 6 },
-  body: { padding: 16, paddingBottom: 40, gap: 12 },
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: colors.line,
+/** Tappable list row: icon bubble, title/sub, chevron. */
+export function ListRow({
+  icon,
+  title,
+  sub,
+  onPress,
+  right,
+}: {
+  icon: string;
+  title: string;
+  sub?: string;
+  onPress?: () => void;
+  right?: ReactNode;
+}) {
+  const content = (
+    <View style={s.row}>
+      <View style={s.rowIcon}>
+        <Text style={{ fontSize: 18 }}>{icon}</Text>
+      </View>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text style={s.rowTitle} numberOfLines={1}>
+          {title}
+        </Text>
+        {sub ? (
+          <Text style={s.rowSub} numberOfLines={2}>
+            {sub}
+          </Text>
+        ) : null}
+      </View>
+      {right ?? (onPress ? <Text style={s.rowChev}>›</Text> : null)}
+    </View>
+  );
+  if (!onPress) return content;
+  return (
+    <Pressable
+      onPress={() => {
+        tap();
+        onPress();
+      }}
+      style={({ pressed }) => pressed && { opacity: 0.75 }}
+    >
+      {content}
+    </Pressable>
+  );
+}
+
+export function Divider() {
+  return <View style={s.divider} />;
+}
+
+export function Empty({ text }: { text: string }) {
+  return (
+    <View style={s.empty}>
+      <Text style={s.emptyText}>{text}</Text>
+    </View>
+  );
+}
+
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.bg },
+  header: { paddingHorizontal: space.xl, paddingBottom: space.xl },
+  eyebrow: {
+    color: colors.goldSoft,
+    fontSize: t.tiny,
+    fontWeight: "800",
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    marginBottom: 4,
   },
-  sectionTitle: { fontSize: 18, fontWeight: "700", color: colors.green, marginTop: 8, marginBottom: 2 },
-  empty: { color: colors.muted, fontStyle: "italic", paddingVertical: 8 },
+  headerTitle: { color: colors.text, fontSize: t.h1, fontWeight: "800", letterSpacing: -0.4 },
+  headerSub: { color: colors.textDim, fontSize: t.small, marginTop: 4 },
+  offline: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(224,83,61,0.16)",
+    borderColor: "rgba(224,83,61,0.4)",
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginTop: 10,
+  },
+  offlineDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.danger },
+  offlineText: { color: colors.text, fontSize: t.tiny, fontWeight: "600" },
+  body: { flex: 1 },
+  bodyContent: { padding: space.lg, gap: space.md },
+  card: {
+    backgroundColor: colors.glass,
+    borderColor: colors.glassBorder,
+    borderWidth: 1,
+    borderRadius: radius.lg,
+    padding: space.lg,
+    ...shadowCard,
+  },
+  section: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+    marginTop: space.md,
+    marginBottom: 2,
+    paddingHorizontal: 2,
+  },
+  sectionTitle: { color: colors.text, fontSize: t.h2, fontWeight: "800", letterSpacing: -0.3 },
+  sectionAction: { color: colors.goldSoft, fontSize: t.small, fontWeight: "700" },
+  goldBtn: {
+    backgroundColor: colors.gold,
+    borderRadius: radius.pill,
+    paddingVertical: 14,
+    paddingHorizontal: 22,
+    alignItems: "center",
+  },
+  goldBtnCompact: { paddingVertical: 9, paddingHorizontal: 16 },
+  goldBtnText: { color: colors.onGold, fontWeight: "800", fontSize: t.body },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.md,
+    paddingVertical: 12,
+  },
+  rowIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: "rgba(201,162,39,0.14)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rowTitle: { color: colors.text, fontSize: t.body, fontWeight: "700" },
+  rowSub: { color: colors.textFaint, fontSize: t.small, marginTop: 1 },
+  rowChev: { color: colors.textFaint, fontSize: 22, fontWeight: "300" },
+  divider: { height: 1, backgroundColor: colors.line },
+  empty: { padding: space.xl, alignItems: "center" },
+  emptyText: { color: colors.textFaint, fontSize: t.small, textAlign: "center" },
 });

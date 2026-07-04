@@ -27,6 +27,18 @@ export const HELP_CONTENT: Record<string, HelpEntry> = {
     ],
     tip: "On the TV, open /display/<slug> (for example /display/mimbar-outside) in the browser and make it the homepage \u2014 see docs/SCREENS.md for per-TV setup.",
   },
+  "app-settings": {
+    title: "Mobile App",
+    intro: "This page controls the iOS and Android app. Everything you set here reaches people's phones within about a minute — no app-store update needed. Prayer times, news, events and contact details come across automatically; this page covers the extras.",
+    steps: [
+      "Welcome greeting: the line at the top of the app's Home screen (for example As-salāmu ʿalaykum).",
+      "Monthly timetable PDF: paste a link to the printable timetable. The Download button on the app's Prayers tab opens it. Leave blank and the app sends people to the website's prayer-times page instead.",
+      "Quick actions: up to four buttons on the app's Home screen. Give each an emoji icon, a short label and a link — a full web address or a site path like /donate.",
+      "Media links: the app's Media tab. Add khutbahs, lectures, YouTube playlists or podcasts — pick the kind so the right icon shows. Each opens inside the app.",
+      "Save — the app refreshes itself; there is nothing else to do.",
+    ],
+    tip: "Announcements you publish (and Broadcasts you send) automatically notify every phone that has the app installed and notifications switched on.",
+  },
   "pages": {
     title: "Pages",
     intro: "Pages are the permanent parts of your website, like About the Mosque, Visit Us or Donate. Use these for information that stays up most of the time, rather than dated news.",

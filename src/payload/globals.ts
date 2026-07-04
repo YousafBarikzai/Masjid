@@ -245,3 +245,67 @@ export const SpecialSchedule: GlobalConfig = {
     },
   ],
 };
+
+/* ------------------------------- Mobile App ------------------------------- */
+// Everything the iOS/Android app shows that isn't already CMS content: the
+// welcome line, quick actions, multimedia links and the monthly-timetable PDF.
+// The app refreshes from the snapshot feed, so edits here reach phones within
+// a minute — no app-store release needed.
+export const AppSettings: GlobalConfig = {
+  slug: "app-settings",
+  label: "Mobile App",
+  admin: { group: "Configuration" },
+  access: { read: anyone, update: isAdmin },
+  fields: [
+    {
+      name: "welcome",
+      type: "text",
+      defaultValue: "As-salāmu ʿalaykum",
+      admin: { description: "Greeting shown at the top of the app's Home screen." },
+    },
+    {
+      name: "timetablePdfUrl",
+      type: "text",
+      admin: {
+        description:
+          "Link to the printable monthly timetable (PDF). The app's Download button opens this. Leave blank to send people to the website's prayer-times page.",
+      },
+    },
+    {
+      name: "quickLinks",
+      type: "array",
+      labels: { singular: "Quick action", plural: "Quick actions" },
+      admin: { description: "Buttons on the app home screen (kept to the first 4). Emoji make good icons." },
+      fields: [
+        { name: "icon", type: "text", admin: { description: "An emoji, e.g. 💛", width: "20%" } },
+        { name: "label", type: "text", required: true, admin: { width: "35%" } },
+        { name: "url", type: "text", required: true, admin: { description: "Full link or a site path like /donate", width: "45%" } },
+      ],
+    },
+    {
+      name: "mediaLinks",
+      type: "array",
+      labels: { singular: "Media link", plural: "Media links" },
+      admin: {
+        description:
+          "The app's Media tab: khutbahs, lectures, YouTube, podcasts… Each opens in the in-app browser.",
+      },
+      fields: [
+        {
+          name: "kind",
+          type: "select",
+          defaultValue: "video",
+          options: [
+            { label: "Video / YouTube", value: "video" },
+            { label: "Audio / podcast", value: "audio" },
+            { label: "PDF / document", value: "pdf" },
+            { label: "Other link", value: "link" },
+          ],
+          admin: { width: "30%" },
+        },
+        { name: "label", type: "text", required: true, admin: { width: "35%" } },
+        { name: "url", type: "text", required: true, admin: { width: "35%" } },
+      ],
+    },
+  ],
+};
