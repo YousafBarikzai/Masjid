@@ -50,7 +50,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "apiBase": "https://kingston-masjid.vnetechsolutions.com"
+      "apiBase": "https://masjid-production.up.railway.app"
     }
   }
 }
