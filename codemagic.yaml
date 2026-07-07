@@ -119,10 +119,11 @@ workflows:
           xcode-project use-profiles
       - name: Build the .ipa
         script: |
-          # Auto-detect the workspace + scheme Expo generated, so the build
-          # never breaks on how `expo prebuild` sanitises the app name.
+          # Expo prebuild names the app scheme after the workspace. Deriving it
+          # from the workspace filename avoids picking up Pod schemes (the
+          # workspace's scheme list starts with libraries like "boost").
           WORKSPACE=$(find ios -maxdepth 1 -name "*.xcworkspace" | head -1)
-          SCHEME=$(xcodebuild -workspace "$WORKSPACE" -list -json | python3 -c "import sys, json; print(json.load(sys.stdin)['workspace']['schemes'][0])")
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
           echo "Building workspace=$WORKSPACE scheme=$SCHEME"
           xcode-project build-ipa --workspace "$WORKSPACE" --scheme "$SCHEME"
     artifacts:
