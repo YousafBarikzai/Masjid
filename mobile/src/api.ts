@@ -5,7 +5,7 @@ import type { MonthGrid, Snapshot } from "./types";
 // EXPO_PUBLIC_API_BASE, else falls back to app.json's extra.apiBase.
 const fromEnv = process.env.EXPO_PUBLIC_API_BASE;
 const fromConfig = (Constants.expoConfig?.extra as { apiBase?: string } | undefined)?.apiBase;
-export const apiBase = (fromEnv || fromConfig || "https://kingston-masjid.vnetechsolutions.com").replace(/\/$/, "");
+export const apiBase = (fromEnv || fromConfig || "https://masjid-production.up.railway.app").replace(/\/$/, "");
 
 /** Turn a site path ("/donate") or full URL into an absolute URL. */
 export function absUrl(pathOrUrl: string): string {
