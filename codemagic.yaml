@@ -108,7 +108,7 @@ workflows:
         certificates:
           - kma_distribution
         provisioning_profiles:
-          - kma_appstore_profile
+          - Kingston Masjid App Store
       node: 20.18.1
       xcode: latest
       cocoapods: default
