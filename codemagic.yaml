@@ -97,11 +97,18 @@ workflows:
     integrations:
       app_store_connect: kma-appstore
     environment:
+      # Codemagic's managed iOS signing: fetches (or creates) the App Store
+      # certificate and provisioning profile via the kma-appstore integration,
+      # holding the certificate's private key itself. The profile inherits the
+      # App ID's current capabilities (incl. Push Notifications). This replaces
+      # hand-rolled keychain/fetch-signing-files scripting, which silently
+      # produced no usable signing files and left the target unprovisioned.
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: org.kingstonmosque.app
       node: 20.18.1
       xcode: latest
       cocoapods: default
-      vars:
-        BUNDLE_ID: org.kingstonmosque.app
     scripts:
       - name: Install dependencies
         script: npm ci
@@ -111,29 +118,8 @@ workflows:
         script: |
           cd ios
           pod install
-      - name: Set up code signing
-        script: |
-          keychain initialize
-          # Delete existing App Store profiles first. A profile created before
-          # Push Notifications was enabled on the App ID lingers in the account
-          # (API-created profiles are not visible in the web portal) and keeps
-          # being re-downloaded without the push entitlement, failing the
-          # archive. Deleting is safe — fetch-signing-files recreates a fresh
-          # profile that inherits the App ID's CURRENT capabilities.
-          app-store-connect list-profiles --profile-type IOS_APP_STORE --json > /tmp/profiles.json || echo "[]" > /tmp/profiles.json
-          for PID in $(python3 -c "import json; print(' '.join(p['id'] for p in json.load(open('/tmp/profiles.json'))))"); do
-            echo "Deleting stale provisioning profile $PID"
-            app-store-connect delete-profile "$PID" || true
-          done
-          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
-          # Diagnostic: show each downloaded profile's entitlements in the log,
-          # so a capability mismatch is visible without guessing.
-          for P in "$HOME/Library/MobileDevice/Provisioning Profiles/"*.mobileprovision; do
-            echo "--- Entitlements in $(basename "$P") ---"
-            security cms -D -i "$P" | plutil -extract Entitlements xml1 -o - - || true
-          done
-          keychain add-certificates
-          xcode-project use-profiles
+      - name: Apply provisioning profiles to the Xcode project
+        script: xcode-project use-profiles
       - name: Build the .ipa
         script: |
           # Expo prebuild names the app scheme after the workspace. Deriving it
