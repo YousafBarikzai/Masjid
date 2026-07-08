@@ -97,15 +97,18 @@ workflows:
     integrations:
       app_store_connect: kma-appstore
     environment:
-      # Codemagic's managed iOS signing: fetches (or creates) the App Store
-      # certificate and provisioning profile via the kma-appstore integration,
-      # holding the certificate's private key itself. The profile inherits the
-      # App ID's current capabilities (incl. Push Notifications). This replaces
-      # hand-rolled keychain/fetch-signing-files scripting, which silently
-      # produced no usable signing files and left the target unprovisioned.
+      # Signing via SAVED code signing identities (Codemagic → Personal
+      # Account → Code signing identities). The Apple Distribution certificate
+      # and the "Kingston Masjid App Store" provisioning profile are stored
+      # there under these EXACT reference names. This pins the build to
+      # known-good files instead of automatic portal matching, which kept
+      # failing with "No matching profiles found" despite the profile
+      # existing.
       ios_signing:
-        distribution_type: app_store
-        bundle_identifier: org.kingstonmosque.app
+        certificates:
+          - kma_distribution
+        provisioning_profiles:
+          - kma_appstore_profile
       node: 20.18.1
       xcode: latest
       cocoapods: default
