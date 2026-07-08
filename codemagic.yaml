@@ -131,7 +131,15 @@ workflows:
           WORKSPACE=$(find ios -maxdepth 1 -name "*.xcworkspace" | head -1)
           SCHEME=$(basename "$WORKSPACE" .xcworkspace)
           echo "Building workspace=$WORKSPACE scheme=$SCHEME"
-          xcode-project build-ipa --workspace "$WORKSPACE" --scheme "$SCHEME"
+          # On failure, surface the real xcodebuild error: build-ipa hides the
+          # detailed compiler output in a log file under $TMPDIR.
+          xcode-project build-ipa --workspace "$WORKSPACE" --scheme "$SCHEME" || {
+            echo "===== xcodebuild error lines ====="
+            grep -n "error:" "${TMPDIR:-/tmp}"/codemagic-*.log | head -40 || true
+            echo "===== last 200 lines of the detailed xcodebuild log ====="
+            tail -n 200 "${TMPDIR:-/tmp}"/codemagic-*.log || true
+            exit 65
+          }
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
