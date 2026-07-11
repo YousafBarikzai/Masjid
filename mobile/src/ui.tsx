@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { colors, radius, space, type as t, aurora, shadowCard } from "./theme";
 
@@ -19,7 +21,8 @@ export function tap() {
   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
 }
 
-/** Screen scaffold: aurora gradient header + scrollable dark body. */
+/** Screen scaffold: aurora gradient header + scrollable dark body.
+ *  Pass `back` to show a native back chevron (for pushed detail screens). */
 export function Page({
   title,
   subtitle,
@@ -29,6 +32,7 @@ export function Page({
   offline,
   refreshing,
   onRefresh,
+  back,
 }: {
   title: string;
   subtitle?: string;
@@ -38,19 +42,35 @@ export function Page({
   offline?: boolean;
   refreshing?: boolean;
   onRefresh?: () => void;
+  back?: boolean;
 }) {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   return (
     <View style={s.root}>
       <LinearGradient colors={[...aurora]} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }}>
         <View style={[s.header, { paddingTop: insets.top + 14 }]}>
+          {back ? (
+            <Pressable
+              onPress={() => {
+                tap();
+                router.back();
+              }}
+              hitSlop={12}
+              style={({ pressed }) => [s.back, pressed && { opacity: 0.6 }]}
+              accessibilityLabel="Go back"
+            >
+              <Ionicons name="chevron-back" size={20} color={colors.goldSoft} />
+              <Text style={s.backText}>Back</Text>
+            </Pressable>
+          ) : null}
           {eyebrow ? <Text style={s.eyebrow}>{eyebrow}</Text> : null}
           <Text style={s.headerTitle}>{title}</Text>
           {subtitle ? <Text style={s.headerSub}>{subtitle}</Text> : null}
           {offline ? (
             <View style={s.offline}>
               <View style={s.offlineDot} />
-              <Text style={s.offlineText}>Offline — showing saved times</Text>
+              <Text style={s.offlineText}>Offline — showing saved copy</Text>
             </View>
           ) : null}
           {headerExtra}
@@ -73,6 +93,35 @@ export function Page({
         {children}
         <View style={{ height: 36 }} />
       </ScrollView>
+    </View>
+  );
+}
+
+/** Renders the uniform { heading?, body?[], bullets?[] } section shape used by
+ *  every native service, information and article screen. */
+export function Sections({ sections }: { sections: { heading?: string; body?: string[]; bullets?: string[] }[] }) {
+  return (
+    <View style={{ gap: space.md }}>
+      {sections.map((sec, i) => (
+        <View key={i} style={{ gap: 8 }}>
+          {sec.heading ? <Text style={s.secHeading}>{sec.heading}</Text> : null}
+          {sec.body?.map((p, j) => (
+            <Text key={`b${j}`} style={s.secBody}>
+              {p}
+            </Text>
+          ))}
+          {sec.bullets?.length ? (
+            <View style={{ gap: 7, marginTop: 2 }}>
+              {sec.bullets.map((b, j) => (
+                <View key={`l${j}`} style={s.bulletRow}>
+                  <View style={s.bulletDot} />
+                  <Text style={s.bulletText}>{b}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+        </View>
+      ))}
     </View>
   );
 }
@@ -194,6 +243,8 @@ export function Empty({ text }: { text: string }) {
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
   header: { paddingHorizontal: space.xl, paddingBottom: space.xl },
+  back: { flexDirection: "row", alignItems: "center", gap: 2, marginBottom: 10, marginLeft: -4 },
+  backText: { color: colors.goldSoft, fontSize: t.small, fontWeight: "700" },
   eyebrow: {
     color: colors.goldSoft,
     fontSize: t.tiny,
@@ -268,4 +319,9 @@ const s = StyleSheet.create({
   divider: { height: 1, backgroundColor: colors.line },
   empty: { padding: space.xl, alignItems: "center" },
   emptyText: { color: colors.textFaint, fontSize: t.small, textAlign: "center" },
+  secHeading: { color: colors.goldSoft, fontSize: t.h2, fontWeight: "800", letterSpacing: -0.2 },
+  secBody: { color: colors.textDim, fontSize: t.body, lineHeight: 24 },
+  bulletRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  bulletDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.gold, marginTop: 9 },
+  bulletText: { color: colors.textDim, fontSize: t.body, lineHeight: 23, flex: 1 },
 });

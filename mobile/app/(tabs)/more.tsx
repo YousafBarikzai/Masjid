@@ -1,15 +1,19 @@
 import { Fragment, useEffect, useState } from "react";
-import { Text, View, StyleSheet, Pressable, Switch, Linking, Share } from "react-native";
-import * as WebBrowser from "expo-web-browser";
+import { Text, View, StyleSheet, Pressable, Switch, Share } from "react-native";
 import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
 import { useSnapshot } from "../../src/useSnapshot";
-import { apiBase, absUrl } from "../../src/api";
+import { useContent } from "../../src/useContent";
+import { apiBase } from "../../src/api";
 import { Page, Card, Section, ListRow, Divider, GoldButton, tap } from "../../src/ui";
 import { colors, radius, space, type as t } from "../../src/theme";
 import { ALL_TOPICS, getTopics, setTopics, getTasbih, setTasbih, type Topic, type TasbihState } from "../../src/prefs";
 import { registerForPush } from "../../src/push";
+import { callMosque, emailMosque, openMaps } from "../../src/actions";
+import { goTo } from "../../src/nav";
 
-/* More — notifications, digital tasbīḥ, giving, services & contact. */
+/* More — notifications, digital tasbīḥ, giving, services & contact. Every row
+   opens a native screen or a native OS action (call / email / maps). */
 
 const TOPIC_META: Record<Topic, { icon: string; title: string; sub: string }> = {
   news: { icon: "📰", title: "News & announcements", sub: "Community notices from the mosque" },
@@ -22,10 +26,6 @@ const DHIKR = [
   { ar: "الْحَمْدُ لِلَّه", en: "Alḥamdulillāh" },
   { ar: "اللَّهُ أَكْبَر", en: "Allāhu Akbar" },
 ];
-
-function openLink(url: string) {
-  WebBrowser.openBrowserAsync(absUrl(url)).catch(() => {});
-}
 
 /* ------------------------------ Notifications ----------------------------- */
 
@@ -132,8 +132,10 @@ function Tasbih() {
 
 export default function More() {
   const { data, offline, refresh } = useSnapshot();
-  const c = data?.contact;
-  const donateUrl = data?.app?.donateUrl;
+  const { content } = useContent();
+  const router = useRouter();
+  const c = data?.contact ?? content?.contact;
+  const services = content?.services ?? [];
 
   async function shareApp() {
     tap();
@@ -154,51 +156,51 @@ export default function More() {
       <Section title="Tasbīḥ counter" />
       <Tasbih />
 
-      {donateUrl ? (
-        <>
-          <Section title="Support your masjid" />
-          <Card style={{ gap: space.md }}>
-            <Text style={s.giveText}>
-              Every donation keeps the mosque open, warm and serving the community — and is an ongoing
-              charity (ṣadaqah jāriyah) for you.
-            </Text>
-            <GoldButton label="💛  Donate now" onPress={() => openLink(donateUrl)} />
-          </Card>
-        </>
-      ) : null}
+      <Section title="Support your masjid" />
+      <Card style={{ gap: space.md }}>
+        <Text style={s.giveText}>
+          Every donation keeps the mosque open, warm and serving the community — and is an ongoing
+          charity (ṣadaqah jāriyah) for you.
+        </Text>
+        <GoldButton label="💛  Donate" onPress={() => router.push("/donate")} />
+      </Card>
 
-      <Section title="Services" />
+      <Section title="Services & information" action="See all" onAction={() => router.push("/services")} />
       <Card style={{ paddingVertical: 4 }}>
-        {(data?.services ?? []).map((sv, i, arr) => (
-          <Fragment key={`${sv.title}-${i}`}>
-            <ListRow icon={sv.icon || "🕌"} title={sv.title} sub={sv.body} onPress={() => openLink(sv.href)} />
+        {services.slice(0, 6).map((sv, i, arr) => (
+          <Fragment key={sv.slug}>
+            <ListRow
+              icon={sv.icon || "🕌"}
+              title={sv.title}
+              sub={sv.intro}
+              onPress={() => router.push(`/service/${sv.slug}` as never)}
+            />
             {i < arr.length - 1 ? <Divider /> : null}
           </Fragment>
         ))}
-        {(data?.classes ?? []).length && (data?.services ?? []).length ? <Divider /> : null}
-        {(data?.classes ?? []).map((cl, i, arr) => (
-          <Fragment key={`${cl.title}-${i}`}>
-            <ListRow icon={cl.icon || "📖"} title={cl.title} sub={cl.body} onPress={() => openLink(cl.href)} />
-            {i < arr.length - 1 ? <Divider /> : null}
-          </Fragment>
-        ))}
+        {!services.length
+          ? (data?.services ?? []).map((sv, i, arr) => (
+              <Fragment key={`${sv.title}-${i}`}>
+                <ListRow icon={sv.icon || "🕌"} title={sv.title} sub={sv.body} onPress={() => goTo(router, sv.href)} />
+                {i < arr.length - 1 ? <Divider /> : null}
+              </Fragment>
+            ))
+          : null}
       </Card>
 
       {c ? (
         <>
           <Section title="Contact" />
           <Card style={{ paddingVertical: 4 }}>
-            <ListRow icon="📞" title="Call the mosque" sub={c.phone} onPress={() => Linking.openURL(c.phoneHref)} />
+            <ListRow icon="📞" title="Call the mosque" sub={c.phone} onPress={() => callMosque(c.phoneHref)} />
             <Divider />
-            <ListRow icon="✉️" title="Email" sub={c.email} onPress={() => Linking.openURL(`mailto:${c.email}`)} />
+            <ListRow icon="✉️" title="Email" sub={c.email} onPress={() => emailMosque(c.email)} />
             <Divider />
             <ListRow
               icon="📍"
               title="Directions"
               sub={`${c.address.line1}, ${c.address.city} ${c.address.postcode}`}
-              onPress={() =>
-                Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(c.mapsQuery)}`)
-              }
+              onPress={() => openMaps(c.mapsQuery)}
             />
           </Card>
         </>
@@ -206,8 +208,6 @@ export default function More() {
 
       <Section title="About" />
       <Card style={{ paddingVertical: 4 }}>
-        <ListRow icon="🌐" title="Visit the website" sub={apiBase.replace(/^https?:\/\//, "")} onPress={() => openLink("/")} />
-        <Divider />
         <ListRow icon="📤" title="Share this app" sub="Invite family & friends" onPress={shareApp} />
       </Card>
     </Page>

@@ -1,5 +1,5 @@
 import Constants from "expo-constants";
-import type { MonthGrid, Snapshot } from "./types";
+import type { ContentFeed, MonthGrid, Snapshot } from "./types";
 
 // Base URL of the deployed website/CMS. Override per build with the env var
 // EXPO_PUBLIC_API_BASE, else falls back to app.json's extra.apiBase.
@@ -23,6 +23,12 @@ export async function fetchMonth(month: string, signal?: AbortSignal): Promise<M
   const res = await fetch(`${apiBase}/app-api/timetable-grid?month=${month}`, { signal });
   if (!res.ok) throw new Error(`month ${res.status}`);
   return (await res.json()) as MonthGrid;
+}
+
+export async function fetchContent(signal?: AbortSignal): Promise<ContentFeed> {
+  const res = await fetch(`${apiBase}/app-api/content`, { signal });
+  if (!res.ok) throw new Error(`content ${res.status}`);
+  return (await res.json()) as ContentFeed;
 }
 
 export async function registerDevice(

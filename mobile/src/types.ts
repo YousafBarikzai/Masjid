@@ -94,3 +94,53 @@ export interface MonthGrid {
   month: string; // YYYY-MM
   days: MonthDay[];
 }
+
+/* Native content feed (app-api/content) — powers the service, information,
+   donation and article screens without any web views. */
+export interface ContentSection {
+  heading?: string;
+  body?: string[];
+  bullets?: string[];
+}
+
+export interface ServiceContent {
+  slug: string;
+  title: string;
+  icon: string;
+  intro: string;
+  sections: ContentSection[];
+  cta: { heading: string; body: string } | null;
+}
+
+export interface ArticleContent {
+  slug: string;
+  title: string;
+  date: string;
+  excerpt: string;
+  sections: ContentSection[];
+}
+
+export interface ContentFeed {
+  generatedAt: string;
+  services: ServiceContent[];
+  articles: ArticleContent[];
+  donation: {
+    heading: string;
+    body: string;
+    donateUrl: string;
+    presets: number[];
+    giftAid: boolean;
+    monthly: boolean;
+    bank: { label: string; value: string }[];
+    categories: { icon: string; title: string; body: string }[];
+  };
+  jummah: { intro: string; congregations: JummahCongregation[] };
+  contact: {
+    phone: string;
+    phoneHref: string;
+    email: string;
+    address: { line1: string; city: string; postcode: string };
+    mapsQuery: string;
+  };
+  qibla: { kaabaLat: number; kaabaLng: number };
+}
