@@ -117,6 +117,87 @@ export async function fetchMosques(
   return data.mosques ?? [];
 }
 
+/* Direct OpenStreetMap (Overpass) fallback, straight from the phone. This
+   matters because the server proxy funnels every user through Railway's single
+   IP, which Overpass rate-limits hard — so it can come back empty. Each phone
+   has its own IP, so querying directly is far more reliable. Same query and
+   mapping as the server route. */
+const OVERPASS_MIRRORS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass.openstreetmap.fr/api/interpreter",
+];
+
+function mapOverpass(elements: unknown[]): Mosque[] {
+  const out: Mosque[] = [];
+  for (const raw of elements ?? []) {
+    const e = raw as {
+      type?: string;
+      id?: number;
+      lat?: number;
+      lon?: number;
+      center?: { lat: number; lon: number };
+      tags?: Record<string, string>;
+    };
+    const t = e.tags ?? {};
+    const la = e.lat ?? e.center?.lat;
+    const lo = e.lon ?? e.center?.lon;
+    if (la == null || lo == null) continue;
+    const address = [
+      [t["addr:housenumber"], t["addr:street"]].filter(Boolean).join(" "),
+      t["addr:city"],
+      t["addr:postcode"],
+    ]
+      .filter(Boolean)
+      .join(", ");
+    out.push({
+      id: `${e.type}/${e.id}`,
+      name: t.name || t["name:en"] || "Mosque",
+      lat: la,
+      lng: lo,
+      address,
+      phone: t.phone || t["contact:phone"] || "",
+      website: t.website || t["contact:website"] || "",
+      wheelchair: t.wheelchair === "yes",
+      openingHours: t.opening_hours || "",
+      tags: t,
+    });
+  }
+  return out;
+}
+
+export async function fetchMosquesDirect(
+  lat: number,
+  lng: number,
+  radius: number,
+  signal?: AbortSignal,
+): Promise<Mosque[]> {
+  const r = Math.round(Math.min(30000, Math.max(500, radius)));
+  const q = `[out:json][timeout:25];(
+    node["amenity"="place_of_worship"]["religion"="muslim"](around:${r},${lat},${lng});
+    way["amenity"="place_of_worship"]["religion"="muslim"](around:${r},${lat},${lng});
+    node["building"="mosque"](around:${r},${lat},${lng});
+    way["building"="mosque"](around:${r},${lat},${lng});
+  );out center 120;`;
+  for (const url of OVERPASS_MIRRORS) {
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `data=${encodeURIComponent(q)}`,
+        signal,
+      });
+      if (!res.ok) continue;
+      const data = (await res.json()) as { elements?: unknown[] };
+      const mosques = mapOverpass(data.elements ?? []);
+      if (mosques.length) return mosques; // got results — done
+    } catch {
+      /* try the next mirror */
+    }
+  }
+  return [];
+}
+
 /** UK place search for the map's search bar. */
 export async function geocode(q: string, signal?: AbortSignal): Promise<GeocodeResult[]> {
   const res = await fetch(`${apiBase}/app-api/geocode?q=${encodeURIComponent(q)}`, { signal });
