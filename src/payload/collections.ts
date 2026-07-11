@@ -304,6 +304,118 @@ export const Posts: CollectionConfig = {
   ],
 };
 
+/* -------------------------------- Khutbahs -------------------------------- */
+// The Friday-sermon archive shown in the app's Media area. Staff add a khutbah
+// after Jumuʿah (or in advance): the video link, who delivered it, a written
+// synopsis and the key lessons. Publishing makes it live in the app within a
+// minute; a future date keeps it hidden until that day (scheduling); drafts
+// stay private until published.
+
+/** Diacritic-stripping slugify — same rules as the app's, so links match. */
+const khutbahSlug = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+export const Khutbahs: CollectionConfig = {
+  slug: "khutbahs",
+  labels: { singular: "Khutbah", plural: "Khutbah Archive" },
+  admin: {
+    useAsTitle: "title",
+    defaultColumns: ["title", "date", "khatib", "_status"],
+    group: "Content",
+    description:
+      "Friday sermons for the app's Khutbah Archive. Publish and it appears in the app within a minute — no app update needed. Give it a future date to schedule it for that day; keep it as a draft while you're still writing.",
+  },
+  access: { read: anyone, create: isEditor, update: isEditor, delete: isAdmin },
+  versions: { drafts: { autosave: false }, maxPerDoc: 20 },
+  hooks: {
+    beforeValidate: [
+      ({ data }) => {
+        // Auto-slug from the title + date so editors never have to think
+        // about it (the date keeps repeat titles unique).
+        if (data && !data.slug && data.title) {
+          data.slug = [khutbahSlug(String(data.title)), String(data.date || "").slice(0, 10)]
+            .filter(Boolean)
+            .join("-");
+        }
+        return data;
+      },
+    ],
+  },
+  fields: [
+    { name: "title", type: "text", required: true, admin: { description: "e.g. “The Prophet's ﷺ advice on patience”" } },
+    {
+      name: "slug",
+      type: "text",
+      unique: true,
+      admin: { description: "Leave blank — generated from the title and date automatically." },
+    },
+    {
+      type: "row",
+      fields: [
+        {
+          name: "date",
+          type: "date",
+          required: true,
+          admin: {
+            width: "50%",
+            date: { pickerAppearance: "dayOnly" },
+            description: "The Friday it was delivered. A future date hides it until that day.",
+          },
+        },
+        {
+          name: "khatib",
+          type: "text",
+          admin: { width: "50%", description: "Who delivered it, e.g. Imam Abdullah" },
+        },
+      ],
+    },
+    {
+      name: "youtubeUrl",
+      type: "text",
+      label: "YouTube video link",
+      admin: {
+        description:
+          "Paste the video's YouTube link (watch, youtu.be or live URL — any form works). The app plays it in its own player.",
+      },
+    },
+    {
+      name: "thumbnail",
+      type: "upload",
+      relationTo: "media",
+      admin: {
+        description: "Optional. Without one, the app uses the YouTube video's own thumbnail automatically.",
+      },
+    },
+    {
+      name: "synopsis",
+      type: "richText",
+      admin: {
+        description:
+          "A written summary of the khutbah. In the app people can read it — or listen to it read aloud while driving or walking.",
+      },
+    },
+    {
+      name: "lessons",
+      type: "array",
+      labels: { singular: "Lesson", plural: "Key lessons" },
+      admin: { description: "The takeaways, one per line — shown as a highlighted list." },
+      fields: [{ name: "lesson", type: "text", required: true }],
+    },
+    {
+      name: "tags",
+      type: "array",
+      labels: { singular: "Tag", plural: "Tags" },
+      admin: { description: "Optional topics, e.g. Patience, Family, Ramadan." },
+      fields: [{ name: "tag", type: "text", required: true }],
+    },
+  ],
+};
+
 /* --------------------------------- Events --------------------------------- */
 export const Events: CollectionConfig = {
   slug: "events",

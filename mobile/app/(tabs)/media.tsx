@@ -44,6 +44,20 @@ export default function Media() {
         </View>
       </PressCard>
 
+      {/* Khutbah Archive — watch, read or listen to every Friday sermon */}
+      <PressCard onPress={() => router.push("/khutbahs" as never)} style={s.khutbahCard}>
+        <View style={s.liveRow}>
+          <View style={s.khutbahIcon}>
+            <Text style={{ fontSize: 22 }}>🎙️</Text>
+          </View>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={s.liveTitle}>Khutbah Archive</Text>
+            <Text style={s.liveSub}>Watch, read or listen to every Friday sermon</Text>
+          </View>
+          <Text style={s.liveChev}>›</Text>
+        </View>
+      </PressCard>
+
       <Card style={{ paddingVertical: 4 }}>
         {youtube ? (
           <>
@@ -89,6 +103,19 @@ const s = StyleSheet.create({
     height: 44,
     borderRadius: 13,
     backgroundColor: "rgba(224,83,61,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  khutbahCard: {
+    borderColor: "rgba(201,162,39,0.4)",
+    backgroundColor: "rgba(201,162,39,0.08)",
+    paddingVertical: space.md,
+  },
+  khutbahIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 13,
+    backgroundColor: "rgba(201,162,39,0.15)",
     alignItems: "center",
     justifyContent: "center",
   },

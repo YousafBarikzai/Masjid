@@ -4,6 +4,8 @@ import type {
   ArticlesPage,
   ContentFeed,
   GeocodeResult,
+  Khutbah,
+  KhutbahsPage,
   LiveFeed,
   MonthGrid,
   Mosque,
@@ -56,6 +58,24 @@ export async function fetchArticles(page: number, signal?: AbortSignal): Promise
   if (!res.ok) throw new Error(`articles ${res.status}`);
   const data = (await res.json()) as ArticlesPage;
   rememberArticles(data.docs);
+  return data;
+}
+
+/* Khutbahs the app has seen this session — same pattern as articles, so the
+   detail page opens instantly from any archive page. */
+const khutbahRegistry = new Map<string, Khutbah>();
+export function rememberKhutbahs(list: Khutbah[] | undefined): void {
+  for (const k of list ?? []) if (k.slug) khutbahRegistry.set(k.slug, k);
+}
+export function recallKhutbah(slug: string | undefined): Khutbah | undefined {
+  return slug ? khutbahRegistry.get(slug) : undefined;
+}
+
+export async function fetchKhutbahs(page: number, signal?: AbortSignal): Promise<KhutbahsPage> {
+  const res = await fetch(`${apiBase}/app-api/khutbahs?page=${page}`, { signal });
+  if (!res.ok) throw new Error(`khutbahs ${res.status}`);
+  const data = (await res.json()) as KhutbahsPage;
+  rememberKhutbahs(data.docs);
   return data;
 }
 
