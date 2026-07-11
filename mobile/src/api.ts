@@ -1,5 +1,5 @@
 import Constants from "expo-constants";
-import type { ContentFeed, MonthGrid, Snapshot } from "./types";
+import type { ArticleContent, ArticlesPage, ContentFeed, MonthGrid, Snapshot } from "./types";
 
 // Base URL of the deployed website/CMS. Override per build with the env var
 // EXPO_PUBLIC_API_BASE, else falls back to app.json's extra.apiBase.
@@ -29,6 +29,25 @@ export async function fetchContent(signal?: AbortSignal): Promise<ContentFeed> {
   const res = await fetch(`${apiBase}/app-api/content`, { signal });
   if (!res.ok) throw new Error(`content ${res.status}`);
   return (await res.json()) as ContentFeed;
+}
+
+/* Articles the app has seen this session (from the paginated feed AND the
+   content feed) — lets the native reader open any article instantly even when
+   it's beyond the cached first page. */
+const articleRegistry = new Map<string, ArticleContent>();
+export function rememberArticles(list: ArticleContent[] | undefined): void {
+  for (const a of list ?? []) if (a.slug) articleRegistry.set(a.slug, a);
+}
+export function recallArticle(slug: string | undefined): ArticleContent | undefined {
+  return slug ? articleRegistry.get(slug) : undefined;
+}
+
+export async function fetchArticles(page: number, signal?: AbortSignal): Promise<ArticlesPage> {
+  const res = await fetch(`${apiBase}/app-api/articles?page=${page}`, { signal });
+  if (!res.ok) throw new Error(`articles ${res.status}`);
+  const data = (await res.json()) as ArticlesPage;
+  rememberArticles(data.docs);
+  return data;
 }
 
 export async function registerDevice(

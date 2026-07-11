@@ -18,13 +18,13 @@ const FEATURES = [
 ] as const;
 
 export default function Services() {
-  const { content, loading } = useContent();
+  const { content, loading, refresh } = useContent();
   const { data } = useSnapshot();
   const router = useRouter();
   const services = content?.services ?? [];
 
   return (
-    <Page eyebrow="Kingston Mosque" title="Services" subtitle="Everything the mosque offers" back>
+    <Page eyebrow="Kingston Mosque" title="Services" subtitle="Everything the mosque offers" back onRefresh={refresh}>
       {/* Feature tools */}
       <View style={s.grid}>
         {FEATURES.map((f) => (

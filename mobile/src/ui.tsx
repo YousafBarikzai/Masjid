@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import {
   View,
   Text,
@@ -269,20 +269,68 @@ export function ListRow({
   );
   if (!onPress) return content;
   return (
-    <Pressable
-      onPress={() => {
-        tap();
-        onPress();
-      }}
-      style={({ pressed }) => pressed && { opacity: 0.75 }}
-    >
+    <Press onPress={onPress} scaleTo={0.98}>
       {content}
-    </Pressable>
+    </Press>
   );
 }
 
 export function Divider() {
   return <View style={s.divider} />;
+}
+
+/** Entrance animation: fade + gentle rise, staggered via `delay`. Wrap cards
+ *  and sections so screens assemble softly instead of popping in flat. */
+export function Reveal({
+  children,
+  delay = 0,
+  style,
+}: {
+  children: ReactNode;
+  delay?: number;
+  style?: object;
+}) {
+  const v = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(v, { toValue: 1, duration: 460, delay, useNativeDriver: true }).start();
+  }, [v, delay]);
+  return (
+    <Animated.View
+      style={[
+        style,
+        {
+          opacity: v,
+          transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }],
+        },
+      ]}
+    >
+      {children}
+    </Animated.View>
+  );
+}
+
+/** Loading placeholder that breathes — calmer than a spinner, and it holds the
+ *  layout so content doesn't jump when it arrives. */
+export function Skeleton({ height = 16, width, radius: r = 10, style }: { height?: number; width?: number | `${number}%`; radius?: number; style?: object }) {
+  const v = useRef(new Animated.Value(0.4)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(v, { toValue: 1, duration: 800, useNativeDriver: true }),
+        Animated.timing(v, { toValue: 0.4, duration: 800, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [v]);
+  return (
+    <Animated.View
+      style={[
+        { height, width: width ?? "100%", borderRadius: r, backgroundColor: "rgba(244,239,226,0.09)", opacity: v },
+        style,
+      ]}
+    />
+  );
 }
 
 export function Empty({ text }: { text: string }) {

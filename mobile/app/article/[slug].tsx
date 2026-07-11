@@ -1,17 +1,18 @@
-import { Text, StyleSheet, Share } from "react-native";
+import { Text, StyleSheet, Share, Image } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { useContent } from "../../src/useContent";
-import { Page, Card, Sections, GoldButton, Empty } from "../../src/ui";
-import { apiBase } from "../../src/api";
-import { colors, space, type as t } from "../../src/theme";
+import { Page, Card, Sections, GoldButton, Empty, Reveal } from "../../src/ui";
+import { apiBase, absUrl, recallArticle } from "../../src/api";
+import { colors, radius, space } from "../../src/theme";
 
-/* Native news article reader — the full post, rendered from rich text into the
-   app's own typography. No web view. */
+/* Native news article reader — the full post rendered in the app's own
+   typography, with the lead image as a soft hero when the CMS has one. Works
+   for any article the app has seen (cached feed or any paginated page). */
 
 export default function Article() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const { content, loading } = useContent();
-  const a = content?.articles.find((x) => x.slug === slug);
+  const a = recallArticle(slug) ?? content?.articles.find((x) => x.slug === slug);
 
   if (!a) {
     return (
@@ -34,14 +35,24 @@ export default function Article() {
 
   return (
     <Page eyebrow={a.date} title={a.title} back>
-      <Card style={{ gap: space.md }}>
-        {sections.length ? <Sections sections={sections} /> : <Text style={s.body}>{a.excerpt}</Text>}
-      </Card>
-      <GoldButton compact label="Share this notice" onPress={share} />
+      {a.image ? (
+        <Reveal>
+          <Image source={{ uri: absUrl(a.image) }} style={s.hero} resizeMode="cover" onError={() => {}} />
+        </Reveal>
+      ) : null}
+      <Reveal delay={60}>
+        <Card style={{ gap: space.md }}>
+          {sections.length ? <Sections sections={sections} /> : <Text style={s.body}>{a.excerpt}</Text>}
+        </Card>
+      </Reveal>
+      <Reveal delay={120}>
+        <GoldButton compact label="Share this notice" onPress={share} />
+      </Reveal>
     </Page>
   );
 }
 
 const s = StyleSheet.create({
-  body: { color: colors.textDim, fontSize: t.body, lineHeight: 24 },
+  hero: { height: 190, borderRadius: radius.lg, backgroundColor: "rgba(255,255,255,0.05)" },
+  body: { color: colors.textDim, fontSize: 15, lineHeight: 24 },
 });

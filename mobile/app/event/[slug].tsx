@@ -1,11 +1,11 @@
-import { View, Text, StyleSheet, Share } from "react-native";
+import { View, Text, StyleSheet, Share, Image } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { useContent } from "../../src/useContent";
-import { Page, Card, Sections, GoldButton, Empty } from "../../src/ui";
+import { Page, Card, Sections, GoldButton, Empty, Reveal } from "../../src/ui";
 import { openInApp } from "../../src/actions";
 import { slugify } from "../../src/nav";
-import { apiBase } from "../../src/api";
-import { colors, space, type as t } from "../../src/theme";
+import { apiBase, absUrl } from "../../src/api";
+import { colors, radius, space, type as t } from "../../src/theme";
 
 /* Native event detail — Eid Prayer, Tarāwīḥ, Iʿtikāf and every other event
    opens here inside the app: tag, when & where, full description, and a
@@ -40,6 +40,11 @@ export default function EventDetail() {
 
   return (
     <Page eyebrow={ev.tag.toUpperCase()} title={ev.title} back>
+      {ev.image ? (
+        <Reveal>
+          <Image source={{ uri: absUrl(ev.image) }} style={s.hero} resizeMode="cover" onError={() => {}} />
+        </Reveal>
+      ) : null}
       {/* when & where */}
       <Card style={s.meta}>
         {ev.when ? (
@@ -75,6 +80,7 @@ export default function EventDetail() {
 }
 
 const s = StyleSheet.create({
+  hero: { height: 190, borderRadius: radius.lg, backgroundColor: "rgba(255,255,255,0.05)" },
   meta: { gap: space.md },
   metaRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   metaIcon: { fontSize: 22 },
