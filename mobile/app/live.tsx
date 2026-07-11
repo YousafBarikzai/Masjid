@@ -1,8 +1,8 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, Animated, ActivityIndicator } from "react-native";
-import { WebView } from "react-native-webview";
+import { View, Text, StyleSheet, Animated } from "react-native";
 import { fetchLive } from "../src/api";
 import type { LiveFeed } from "../src/types";
+import { YouTubePlayer } from "../src/YouTubePlayer";
 import { Page, Card, Section, ListRow, Divider, GoldButton, Reveal, Skeleton } from "../src/ui";
 import { openInApp } from "../src/actions";
 import { colors, radius, space, type as t } from "../src/theme";
@@ -17,28 +17,6 @@ import { colors, radius, space, type as t } from "../src/theme";
    you're reading appears by itself. */
 
 const CHECK_EVERY_MS = 60_000;
-
-/** 16:9 embedded player in a rounded glass frame. */
-function Player({ uri }: { uri: string }) {
-  return (
-    <View style={s.player}>
-      <WebView
-        source={{ uri }}
-        style={s.playerWeb}
-        allowsFullscreenVideo
-        allowsInlineMediaPlayback
-        mediaPlaybackRequiresUserAction
-        domStorageEnabled
-        startInLoadingState
-        renderLoading={() => (
-          <View style={s.playerLoading}>
-            <ActivityIndicator color={colors.gold} />
-          </View>
-        )}
-      />
-    </View>
-  );
-}
 
 /** Pulsing red LIVE badge. */
 function LiveBadge() {
@@ -116,7 +94,7 @@ export default function Live() {
                 {kingston?.title || "Kingston Masjid is live now"}
               </Text>
             </View>
-            <Player uri={kingston!.embedUrl} />
+            <YouTubePlayer embedUrl={kingston!.embedUrl} watchUrl={kingston?.channelUrl} />
           </Card>
         </Reveal>
       ) : (
@@ -168,7 +146,7 @@ export default function Live() {
               <LiveBadge />
               <Text style={s.liveTitle}>Live from the Ḥaram, around the clock</Text>
             </View>
-            <Player uri={feed.makkah.embedUrl} />
+            <YouTubePlayer embedUrl={feed.makkah.embedUrl} />
             <Text style={s.attribution}>{feed.makkah.attribution}</Text>
           </Card>
         </Reveal>
@@ -182,22 +160,6 @@ export default function Live() {
 }
 
 const s = StyleSheet.create({
-  player: {
-    aspectRatio: 16 / 9,
-    borderRadius: radius.md,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-    backgroundColor: "#000",
-  },
-  playerWeb: { flex: 1, backgroundColor: "#000" },
-  playerLoading: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#000",
-  },
-
   liveHead: { flexDirection: "row", alignItems: "center", gap: 10 },
   liveBadge: {
     flexDirection: "row",
