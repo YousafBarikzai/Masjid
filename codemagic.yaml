@@ -117,6 +117,15 @@ workflows:
         script: npm ci
       - name: Generate the native iOS project
         script: npx expo prebuild --platform ios --no-install
+      - name: Set an ever-increasing build number
+        script: |
+          # App Store Connect rejects an upload whose CFBundleVersion is not
+          # higher than the last one. Codemagic's BUILD_NUMBER increments every
+          # build, so use it (with an epoch fallback) as the bundle version.
+          BN="${BUILD_NUMBER:-$(date +%s)}"
+          PLIST=$(find ios -maxdepth 2 -name "Info.plist" -not -path "*Pods*" | head -1)
+          echo "Setting CFBundleVersion=$BN in $PLIST"
+          plutil -replace CFBundleVersion -string "$BN" "$PLIST"
       - name: Install CocoaPods
         script: |
           cd ios
