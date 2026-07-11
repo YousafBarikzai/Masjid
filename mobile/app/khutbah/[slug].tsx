@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, Share, ActivityIndicator, Platform } from "react-native";
-import { WebView } from "react-native-webview";
+import { View, Text, StyleSheet, Share, Platform } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Speech from "expo-speech";
 import { fetchKhutbahs, recallKhutbah, apiBase } from "../../src/api";
 import type { Khutbah } from "../../src/types";
+import { YouTubePlayer } from "../../src/YouTubePlayer";
 import { Page, Card, Section, Sections, GoldButton, Empty, Reveal, Press, tap } from "../../src/ui";
 import { colors, radius, space, type as t } from "../../src/theme";
 
@@ -15,28 +15,6 @@ import { colors, radius, space, type as t } from "../../src/theme";
    drive home), then the key lessons and topics. */
 
 const SPEEDS = [0.8, 1, 1.2, 1.5] as const;
-
-/** 16:9 embedded YouTube player in a rounded glass frame. */
-function Player({ uri }: { uri: string }) {
-  return (
-    <View style={s.player}>
-      <WebView
-        source={{ uri }}
-        style={s.playerWeb}
-        allowsFullscreenVideo
-        allowsInlineMediaPlayback
-        mediaPlaybackRequiresUserAction
-        domStorageEnabled
-        startInLoadingState
-        renderLoading={() => (
-          <View style={s.playerLoading}>
-            <ActivityIndicator color={colors.gold} />
-          </View>
-        )}
-      />
-    </View>
-  );
-}
 
 /* ------------------------------ Listen (TTS) ------------------------------ */
 
@@ -267,7 +245,7 @@ export default function KhutbahDetail() {
 
       {k.embedUrl ? (
         <Reveal delay={50}>
-          <Player uri={k.embedUrl} />
+          <YouTubePlayer embedUrl={k.embedUrl} watchUrl={k.watchUrl} style={{ borderRadius: radius.lg }} />
         </Reveal>
       ) : null}
 
@@ -332,22 +310,6 @@ const s = StyleSheet.create({
   },
   khatibLabel: { color: colors.textFaint, fontSize: t.tiny, fontWeight: "700" },
   khatibName: { color: colors.text, fontSize: t.body, fontWeight: "800" },
-
-  player: {
-    aspectRatio: 16 / 9,
-    borderRadius: radius.lg,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-    backgroundColor: "#000",
-  },
-  playerWeb: { flex: 1, backgroundColor: "#000" },
-  playerLoading: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#000",
-  },
 
   listen: { gap: space.md },
   listenRow: { flexDirection: "row", alignItems: "center", gap: space.md },

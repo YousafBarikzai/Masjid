@@ -136,6 +136,34 @@ function openDirections(m: Mosque) {
   );
 }
 
+/* -------------------------------- Marker ----------------------------------- */
+
+/* A custom-view marker MUST keep tracksViewChanges on until its content (the
+   emoji pin) has actually laid out — otherwise react-native-maps snapshots an
+   empty view and the pin never appears on iOS. So we render with tracking on,
+   then switch it off a beat later for smooth panning, and briefly turn it back
+   on whenever the selected state changes the pin's look. */
+function MosqueMarker({ mosque, selected, onPress }: { mosque: Mosque; selected: boolean; onPress: () => void }) {
+  const [tracks, setTracks] = useState(true);
+  useEffect(() => {
+    setTracks(true);
+    const timer = setTimeout(() => setTracks(false), 700);
+    return () => clearTimeout(timer);
+  }, [selected]);
+  return (
+    <Marker
+      coordinate={{ latitude: mosque.lat, longitude: mosque.lng }}
+      anchor={{ x: 0.5, y: 0.5 }}
+      tracksViewChanges={tracks}
+      onPress={onPress}
+    >
+      <View style={[s.pin, selected && s.pinSel]}>
+        <Text style={s.pinIcon}>🕌</Text>
+      </View>
+    </Marker>
+  );
+}
+
 /* -------------------------------- Screen ----------------------------------- */
 
 export default function Mosques() {
@@ -276,25 +304,17 @@ export default function Mosques() {
         toolbarEnabled={false}
         userInterfaceStyle="dark"
       >
-        {visible.map((m) => {
-          const sel = selected?.id === m.id;
-          return (
-            <Marker
-              key={`${m.id}${sel ? "-sel" : ""}`}
-              coordinate={{ latitude: m.lat, longitude: m.lng }}
-              anchor={{ x: 0.5, y: 0.5 }}
-              tracksViewChanges={false}
-              onPress={() => {
-                tap();
-                setSelected(m);
-              }}
-            >
-              <View style={[s.pin, sel && s.pinSel]}>
-                <Text style={s.pinIcon}>🕌</Text>
-              </View>
-            </Marker>
-          );
-        })}
+        {visible.map((m) => (
+          <MosqueMarker
+            key={m.id}
+            mosque={m}
+            selected={selected?.id === m.id}
+            onPress={() => {
+              tap();
+              setSelected(m);
+            }}
+          />
+        ))}
       </MapView>
 
       {/* ---- Floating header: back, search, filters ---- */}

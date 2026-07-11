@@ -18,9 +18,40 @@ const CORS = {
   "Cache-Control": "no-store",
 };
 
-const OVERPASS = "https://overpass-api.de/api/interpreter";
+// Several public Overpass instances — the main one is often overloaded (429/504),
+// so we try mirrors in turn until one answers. A descriptive User-Agent is
+// required by Overpass usage policy; without it some instances reject the call.
+const OVERPASS_ENDPOINTS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass.openstreetmap.fr/api/interpreter",
+];
+const UA = "KingstonMosqueApp/1.0 (https://kingstonmosque.org; info@kingstonmosque.org)";
 const cache = new Map<string, { at: number; body: unknown }>();
 const TTL = 60 * 60 * 1000;
+
+/** POST an Overpass query, trying each mirror until one returns data. */
+async function overpass(query: string): Promise<{ elements?: unknown[] }> {
+  let lastErr: unknown = null;
+  for (const url of OVERPASS_ENDPOINTS) {
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": UA },
+        body: `data=${encodeURIComponent(query)}`,
+        signal: AbortSignal.timeout(20000),
+      });
+      if (!res.ok) {
+        lastErr = new Error(`${url} → ${res.status}`);
+        continue;
+      }
+      return (await res.json()) as { elements?: unknown[] };
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr ?? new Error("all overpass endpoints failed");
+}
 
 function addressOf(t: Record<string, string>): string {
   const parts = [
@@ -46,20 +77,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(hit.body, { headers: CORS });
   }
 
-  const q = `[out:json][timeout:12];(
+  const q = `[out:json][timeout:20];(
     node["amenity"="place_of_worship"]["religion"="muslim"](around:${radius},${lat},${lng});
     way["amenity"="place_of_worship"]["religion"="muslim"](around:${radius},${lat},${lng});
-  );out center tags 80;`;
+    node["building"="mosque"](around:${radius},${lat},${lng});
+    way["building"="mosque"](around:${radius},${lat},${lng});
+  );out center tags 120;`;
 
   try {
-    const res = await fetch(OVERPASS, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `data=${encodeURIComponent(q)}`,
-    });
-    if (!res.ok) throw new Error(`overpass ${res.status}`);
-    const data = (await res.json()) as { elements?: any[] };
-    const mosques = (data.elements ?? [])
+    const data = await overpass(q);
+    const mosques = ((data.elements as any[]) ?? [])
       .map((e) => {
         const t: Record<string, string> = e.tags ?? {};
         const la = e.lat ?? e.center?.lat;
