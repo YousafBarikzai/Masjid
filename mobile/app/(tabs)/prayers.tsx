@@ -1,21 +1,50 @@
-import { useCallback, useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Pressable, Alert, ActionSheetIOS, Platform } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  Alert,
+  ActionSheetIOS,
+  Platform,
+  Animated,
+  Easing,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSnapshot } from "../../src/useSnapshot";
 import { fetchMonth } from "../../src/api";
-import type { MonthGrid } from "../../src/types";
-import { Page, Card, GoldButton, tap, Empty } from "../../src/ui";
+import type { MonthDay, MonthGrid } from "../../src/types";
+import { Page, Card, GoldButton, Press, tap, Empty } from "../../src/ui";
 import { colors, radius, space, type as t } from "../../src/theme";
 import { shareTimetablePdf, printTimetable, emailTimetablePdf } from "../../src/pdf";
 
-/* Prayers — today at a glance plus the FULL monthly timetable (begins + iqāmah
-   per salah), with share + PDF download. Months are cached on-device so the
-   timetable works offline. */
+/* Prayers — a browsable day view (← previous / next → with a smooth slide),
+   plus the FULL monthly timetable (begins + iqāmah per salah) and the on-device
+   PDF (save / share / email). Months are cached so everything works offline. */
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function monthKey(y: number, m: number) {
   return `${y}-${String(m).padStart(2, "0")}`;
+}
+
+/** The five rows (plus sunrise) for a browsed day, from the month grid. */
+function dayRowsOf(d: MonthDay) {
+  return [
+    { key: "fajr", en: "Fajr", ar: "الفجر", begins: d.fajrBegins, jamaah: d.fajrJamaah },
+    { key: "sunrise", en: "Sunrise", ar: "الشروق", begins: d.sunrise, jamaah: null as string | null, isInfo: true },
+    { key: "dhuhr", en: "Dhuhr", ar: "الظهر", begins: d.dhuhrBegins, jamaah: d.dhuhrJamaah },
+    { key: "asr", en: "ʿAsr", ar: "العصر", begins: d.asrBegins, jamaah: d.asrJamaah },
+    { key: "maghrib", en: "Maghrib", ar: "المغرب", begins: d.maghrib, jamaah: d.maghrib },
+    { key: "isha", en: "ʿIshā", ar: "العشاء", begins: d.ishaBegins, jamaah: d.ishaJamaah },
+  ];
+}
+
+function prettyDate(iso: string) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
 }
 
 export default function Prayers() {
@@ -57,6 +86,57 @@ export default function Prayers() {
 
   const year = grid?.year ?? now.getFullYear();
   const todayISO = data?.date.iso;
+
+  /* ── Day browser: ← / → across days (and month boundaries) ─────────────── */
+  const [dayISO, setDayISO] = useState<string | null>(null);
+  const slide = useRef(new Animated.Value(0)).current;
+  const selectedISO = dayISO ?? todayISO ?? grid?.days[0]?.date ?? null;
+  const selectedDay = grid?.days.find((d) => d.date === selectedISO) ?? null;
+
+  function animateDay(dir: 1 | -1, apply: () => void) {
+    Animated.timing(slide, {
+      toValue: -dir,
+      duration: 110,
+      easing: Easing.in(Easing.quad),
+      useNativeDriver: true,
+    }).start(() => {
+      apply();
+      slide.setValue(dir);
+      Animated.timing(slide, { toValue: 0, duration: 170, easing: Easing.out(Easing.quad), useNativeDriver: true }).start();
+    });
+  }
+
+  function stepDay(dir: 1 | -1) {
+    if (!grid || !selectedISO) return;
+    tap();
+    const idx = grid.days.findIndex((d) => d.date === selectedISO);
+    const nextIdx = idx + dir;
+    if (idx === -1) return;
+    if (nextIdx >= 0 && nextIdx < grid.days.length) {
+      animateDay(dir, () => setDayISO(grid.days[nextIdx].date));
+      return;
+    }
+    // Cross a month boundary: jump month, then land on its first/last day.
+    const m = parseInt(month.slice(5), 10) + dir;
+    if (m < 1 || m > 12) return;
+    const targetMonth = monthKey(year, m);
+    animateDay(dir, () => {
+      setDayISO(dir === 1 ? `${targetMonth}-01` : `${targetMonth}-31`);
+      setMonth(targetMonth);
+    });
+  }
+
+  // When the month data arrives after a boundary jump, snap "-31" to the real
+  // last day of the month.
+  useEffect(() => {
+    if (!grid || !dayISO) return;
+    if (dayISO.endsWith("-31") && !grid.days.some((d) => d.date === dayISO)) {
+      const inMonth = grid.days.filter((d) => d.date.startsWith(grid.month));
+      if (inMonth.length) setDayISO(inMonth[inMonth.length - 1].date);
+    }
+  }, [grid, dayISO]);
+
+  const isToday = selectedISO === todayISO;
 
   // All three PDF actions build the same branded PDF on-device from `grid`.
   async function doShare() {
@@ -125,34 +205,59 @@ export default function Prayers() {
         load(month);
       }}
     >
-      {/* Today */}
-      {data ? (
+      {/* Day browser: ← date → with a smooth slide between days */}
+      {selectedDay || data ? (
         <Card style={{ gap: 2 }}>
-          <Text style={s.todayLabel}>TODAY · {data.date.hijri}</Text>
-          <View style={s.headRow}>
-            <Text style={[s.hCell, { flex: 1.2, textAlign: "left" }]}>Prayer</Text>
-            <Text style={s.hCell}>Begins</Text>
-            <Text style={s.hCell}>Iqāmah</Text>
-          </View>
-          {data.prayers.map((p) => {
-            const isNext = !data.nextPrayer.tomorrow && p.en === data.nextPrayer.name;
-            return (
-              <View key={p.key} style={[s.tRow, isNext && s.tRowNext, p.isInfo && { opacity: 0.55 }]}>
-                <View style={{ flex: 1.2, flexDirection: "row", alignItems: "baseline", gap: 6 }}>
-                  <Text style={[s.tName, isNext && { color: colors.onGold }]}>{p.en}</Text>
-                  <Text style={[s.tAr, isNext && { color: "rgba(12,51,34,0.65)" }]}>{p.ar}</Text>
+          <View style={s.dayNav}>
+            <Press onPress={() => stepDay(-1)} style={s.dayBtn} scaleTo={0.9}>
+              <Ionicons name="chevron-back" size={20} color={colors.goldSoft} />
+            </Press>
+            <View style={{ flex: 1, alignItems: "center", gap: 2 }}>
+              <Text style={s.dayTitle}>{selectedISO ? prettyDate(selectedISO) : "Today"}</Text>
+              {isToday ? (
+                <View style={s.todayChip}>
+                  <Text style={s.todayChipText}>TODAY · {data?.date.hijri ?? ""}</Text>
                 </View>
-                <Text style={[s.tCell, isNext && { color: colors.onGold }]}>{p.begins}</Text>
-                <Text style={[s.tCell, s.tCellBold, isNext && { color: colors.onGold }]}>
-                  {p.jamaah ?? "—"}
-                </Text>
-              </View>
-            );
-          })}
+              ) : (
+                <Pressable onPress={() => { tap(); setDayISO(todayISO ?? null); }} hitSlop={8}>
+                  <Text style={s.backToToday}>Back to today</Text>
+                </Pressable>
+              )}
+            </View>
+            <Press onPress={() => stepDay(1)} style={s.dayBtn} scaleTo={0.9}>
+              <Ionicons name="chevron-forward" size={20} color={colors.goldSoft} />
+            </Press>
+          </View>
+
+          <Animated.View
+            style={{
+              opacity: slide.interpolate({ inputRange: [-1, 0, 1], outputRange: [0, 1, 0] }),
+              transform: [{ translateX: slide.interpolate({ inputRange: [-1, 1], outputRange: [-36, 36] }) }],
+            }}
+          >
+            <View style={s.headRow}>
+              <Text style={[s.hCell, { flex: 1.2, textAlign: "left" }]}>Prayer</Text>
+              <Text style={s.hCell}>Begins</Text>
+              <Text style={s.hCell}>Iqāmah</Text>
+            </View>
+            {(selectedDay ? dayRowsOf(selectedDay) : data?.prayers ?? []).map((p) => {
+              const isNext = !!data && isToday && !data.nextPrayer.tomorrow && p.en === data.nextPrayer.name;
+              return (
+                <View key={p.key} style={[s.tRow, isNext && s.tRowNext, p.isInfo && { opacity: 0.55 }]}>
+                  <View style={{ flex: 1.2, flexDirection: "row", alignItems: "baseline", gap: 6 }}>
+                    <Text style={[s.tName, isNext && { color: colors.onGold }]}>{p.en}</Text>
+                    <Text style={[s.tAr, isNext && { color: "rgba(12,51,34,0.65)" }]}>{p.ar}</Text>
+                  </View>
+                  <Text style={[s.tCell, isNext && { color: colors.onGold }]}>{p.begins}</Text>
+                  <Text style={[s.tCell, s.tCellBold, isNext && { color: colors.onGold }]}>{p.jamaah ?? "—"}</Text>
+                </View>
+              );
+            })}
+          </Animated.View>
         </Card>
       ) : (
         <Card>
-          <Empty text="Loading today's times…" />
+          <Empty text="Loading prayer times…" />
         </Card>
       )}
 
@@ -226,13 +331,26 @@ export default function Prayers() {
 }
 
 const s = StyleSheet.create({
-  todayLabel: {
-    color: colors.goldSoft,
-    fontSize: t.tiny,
-    fontWeight: "800",
-    letterSpacing: 1.6,
-    marginBottom: 8,
+  dayNav: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
+  dayBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(201,162,39,0.12)",
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    alignItems: "center",
+    justifyContent: "center",
   },
+  dayTitle: { color: colors.text, fontSize: t.body, fontWeight: "800", letterSpacing: -0.2 },
+  todayChip: {
+    backgroundColor: "rgba(201,162,39,0.16)",
+    borderRadius: radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+  },
+  todayChipText: { color: colors.goldSoft, fontSize: t.tiny, fontWeight: "800", letterSpacing: 1 },
+  backToToday: { color: colors.mint, fontSize: t.tiny, fontWeight: "800", letterSpacing: 0.4 },
   headRow: { flexDirection: "row", paddingVertical: 6, borderBottomWidth: 1, borderColor: colors.line },
   hCell: {
     flex: 1,

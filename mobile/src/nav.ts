@@ -1,6 +1,18 @@
 import type { Router } from "expo-router";
 import { openInApp } from "./actions";
 
+/** Diacritic-stripping slugify — MUST match the server's (app-api/content),
+ *  so "Tarāwīḥ Prayers" → "tarawih-prayers" on both sides. */
+export function slugify(s: string): string {
+  let out = s.toLowerCase();
+  try {
+    out = out.normalize("NFD").replace(/[̀-ͯ]/g, "");
+  } catch {
+    /* very old runtimes: fall through */
+  }
+  return out.replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 /* Routes any CMS link, quick-action or content href to the right NATIVE screen.
    Known mosque destinations open as native screens; a genuinely external link
    (a full http(s) URL that isn't our own site) opens in the in-app browser
@@ -14,6 +26,7 @@ const NATIVE: { test: RegExp; to: (m: RegExpMatchArray) => string }[] = [
   { test: /^\/?(education|madrasah|classes|learn)\/?$/i, to: () => "/service/madrasah" },
   { test: /^\/?services\/?$/i, to: () => "/services" },
   { test: /^\/?service[s]?\/([\w-]+)\/?$/i, to: (m) => `/service/${m[1]}` },
+  { test: /^\/?events?\/([\w-]+)\/?$/i, to: (m) => `/event/${m[1]}` },
   { test: /^\/?news\/([\w-]+)\/?$/i, to: (m) => `/article/${m[1]}` },
   { test: /^\/?(news|posts)\/?$/i, to: () => "/news" },
   { test: /^\/?media\/?$/i, to: () => "/media" },

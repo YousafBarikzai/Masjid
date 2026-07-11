@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { servicePages, donationCategories, type PageSection } from "@/lib/site-content";
+import { servicePages, donationCategories, eventsSeed, type PageSection } from "@/lib/site-content";
 import { getDonation, getJummah, getSite } from "@/lib/cms";
 import { getPayloadClient } from "@/lib/payloadClient";
 
@@ -100,10 +100,60 @@ export async function GET() {
     articles = [];
   }
 
+  // Events with full native detail (Eid Prayer, Tarāwīḥ, Iʿtikāf…): rich-text
+  // description → sections, plus when/where/registration for the detail screen.
+  const slugify = (s: string) =>
+    s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  type EventOut = {
+    slug: string;
+    title: string;
+    tag: string;
+    when: string;
+    where: string;
+    summary: string;
+    sections: Section[];
+    registrationUrl: string;
+  };
+  let events: EventOut[] = [];
+  try {
+    const p = await getPayloadClient();
+    const res = await p.find({ collection: "events", sort: "-start", limit: 10, depth: 0 });
+    events = res.docs.map((e: any) => ({
+      slug: String(e.slug || slugify(String(e.title || "event"))),
+      title: String(e.title || ""),
+      tag: String(e.category || "Event"),
+      when: e.start
+        ? new Date(e.start).toLocaleString("en-GB", {
+            weekday: "short", day: "numeric", month: "short",
+            hour: "2-digit", minute: "2-digit",
+          })
+        : "",
+      where: String(e.location || ""),
+      summary: String(e.summary || ""),
+      sections: e.description ? lexicalToSections(e.description) : [],
+      registrationUrl: typeof e.registrationUrl === "string" ? e.registrationUrl : "",
+    }));
+  } catch {
+    events = [];
+  }
+  if (!events.length) {
+    events = eventsSeed.map((e) => ({
+      slug: slugify(e.title),
+      title: e.title,
+      tag: e.tag,
+      when: [e.date, e.time].filter(Boolean).join(" · "),
+      where: "Kingston Mosque",
+      summary: e.body,
+      sections: [{ body: [e.body] }],
+      registrationUrl: "",
+    }));
+  }
+
   const body = {
     generatedAt: new Date().toISOString(),
     services,
     articles,
+    events,
     donation: {
       heading: donation.heading,
       body: donation.body,

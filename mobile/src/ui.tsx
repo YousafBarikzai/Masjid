@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   RefreshControl,
   Pressable,
+  Animated,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,10 +16,67 @@ import * as Haptics from "expo-haptics";
 import { colors, radius, space, type as t, aurora, shadowCard } from "./theme";
 
 /* Shared UI kit — every screen composes these so the whole app feels like one
-   product: aurora headers, glass cards, gold pills, quiet dividers. */
+   product: aurora headers, layered glass cards, gold pills, spring micro-
+   interactions and quiet dividers. */
 
 export function tap() {
   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+}
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+/** Pressable with an iOS-feel spring scale + haptic. The base interaction for
+ *  every tappable card, tile and button in the app. Layout styles (flex,
+ *  width…) apply to the pressable itself, so it drops into rows and grids. */
+export function Press({
+  onPress,
+  children,
+  style,
+  scaleTo = 0.97,
+  haptic = true,
+  disabled,
+}: {
+  onPress?: () => void;
+  children: ReactNode;
+  style?: object;
+  scaleTo?: number;
+  haptic?: boolean;
+  disabled?: boolean;
+}) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const to = (v: number) =>
+    Animated.spring(scale, { toValue: v, useNativeDriver: true, speed: 40, bounciness: 6 }).start();
+  return (
+    <AnimatedPressable
+      disabled={disabled}
+      onPressIn={() => to(scaleTo)}
+      onPressOut={() => to(1)}
+      onPress={() => {
+        if (haptic) tap();
+        onPress?.();
+      }}
+      style={[style, { transform: [{ scale }] }]}
+    >
+      {children}
+    </AnimatedPressable>
+  );
+}
+
+/** A tappable glass card — Card's look with the spring press interaction. */
+export function PressCard({
+  onPress,
+  children,
+  style,
+}: {
+  onPress?: () => void;
+  children: ReactNode;
+  style?: object;
+}) {
+  return (
+    <Press onPress={onPress} style={[s.card, style]}>
+      {children}
+    </Press>
+  );
 }
 
 /** Screen scaffold: aurora gradient header + scrollable dark body.
@@ -91,7 +149,8 @@ export function Page({
         }
       >
         {children}
-        <View style={{ height: 36 }} />
+        {/* clearance for the floating glass tab bar */}
+        <View style={{ height: 118 }} />
       </ScrollView>
     </View>
   );
@@ -159,7 +218,7 @@ export function Section({
   );
 }
 
-/** Gold pill button. */
+/** Gold pill button with a soft gold glow and spring press. */
 export function GoldButton({
   label,
   onPress,
@@ -170,15 +229,9 @@ export function GoldButton({
   compact?: boolean;
 }) {
   return (
-    <Pressable
-      onPress={() => {
-        tap();
-        onPress();
-      }}
-      style={({ pressed }) => [s.goldBtn, compact && s.goldBtnCompact, pressed && { transform: [{ scale: 0.97 }] }]}
-    >
+    <Press onPress={onPress} scaleTo={0.96} style={[s.goldBtn, compact && s.goldBtnCompact]}>
       <Text style={[s.goldBtnText, compact && { fontSize: t.small }]}>{label}</Text>
-    </Pressable>
+    </Press>
   );
 }
 
@@ -296,6 +349,11 @@ const s = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 22,
     alignItems: "center",
+    shadowColor: colors.gold,
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 6,
   },
   goldBtnCompact: { paddingVertical: 9, paddingHorizontal: 16 },
   goldBtnText: { color: colors.onGold, fontWeight: "800", fontSize: t.body },

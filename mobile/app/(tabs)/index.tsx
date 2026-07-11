@@ -1,9 +1,9 @@
 import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
 import { useSnapshot } from "../../src/useSnapshot";
-import { Page, Card, Section, tap, Empty } from "../../src/ui";
+import { Page, Card, Section, Press, tap, Empty } from "../../src/ui";
 import { CountdownRing } from "../../src/CountdownRing";
 import { colors, radius, space, type as t } from "../../src/theme";
-import { goTo } from "../../src/nav";
+import { goTo, slugify } from "../../src/nav";
 import { useRouter } from "expo-router";
 
 /* Home — the daily glance: greeting, live next-prayer ring, today's times,
@@ -88,45 +88,40 @@ export default function Home() {
       {/* Quick actions (CMS-managed) */}
       <View style={s.quickRow}>
         {quick.map((q) => (
-          <Pressable
-            key={q.label}
-            style={({ pressed }) => [s.quick, pressed && { transform: [{ scale: 0.95 }] }]}
-            onPress={() => {
-              tap();
-              openLink(q.url);
-            }}
-          >
+          <Press key={q.label} style={s.quick} scaleTo={0.93} onPress={() => openLink(q.url)}>
             <Text style={s.quickIcon}>{q.icon}</Text>
             <Text style={s.quickLabel} numberOfLines={1}>
               {q.label}
             </Text>
-          </Pressable>
+          </Press>
         ))}
       </View>
 
-      {/* Upcoming events */}
+      {/* Upcoming events — each opens its native detail page */}
       {data?.events?.length ? (
         <>
           <Section title="Upcoming events" />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
-            {data.events.slice(0, 6).map((e, i) => (
-              <Pressable
-                key={`${e.title}-${i}`}
-                style={({ pressed }) => [s.eventCard, pressed && { opacity: 0.8 }]}
-                onPress={() => {
-                  tap();
-                  openLink(e.href || "/events");
-                }}
-              >
-                {e.tag ? <Text style={s.eventTag}>{e.tag.toUpperCase()}</Text> : null}
-                <Text style={s.eventTitle} numberOfLines={2}>
-                  {e.title}
-                </Text>
-                <Text style={s.eventBody} numberOfLines={2}>
-                  {e.body}
-                </Text>
-              </Pressable>
-            ))}
+            {data.events.slice(0, 6).map((e, i) => {
+              const m = (e.href || "").match(/\/events?\/([\w-]+)/i);
+              const slug = m ? m[1] : slugify(e.title);
+              return (
+                <Press
+                  key={`${e.title}-${i}`}
+                  style={s.eventCard}
+                  onPress={() => router.push(`/event/${slug}` as never)}
+                >
+                  {e.tag ? <Text style={s.eventTag}>{e.tag.toUpperCase()}</Text> : null}
+                  <Text style={s.eventTitle} numberOfLines={2}>
+                    {e.title}
+                  </Text>
+                  <Text style={s.eventBody} numberOfLines={2}>
+                    {e.body}
+                  </Text>
+                  <Text style={s.eventMore}>Details ›</Text>
+                </Press>
+              );
+            })}
           </ScrollView>
         </>
       ) : null}
@@ -218,6 +213,7 @@ const s = StyleSheet.create({
   eventTag: { color: colors.mint, fontSize: t.tiny, fontWeight: "800", letterSpacing: 1 },
   eventTitle: { color: colors.text, fontSize: t.body, fontWeight: "800" },
   eventBody: { color: colors.textFaint, fontSize: t.small, lineHeight: 18 },
+  eventMore: { color: colors.goldSoft, fontSize: t.tiny, fontWeight: "800", marginTop: 2 },
   newsDate: { color: colors.goldSoft, fontSize: t.tiny, fontWeight: "700" },
   newsTitle: { color: colors.text, fontSize: t.body, fontWeight: "800" },
   newsBody: { color: colors.textFaint, fontSize: t.small, lineHeight: 19 },
