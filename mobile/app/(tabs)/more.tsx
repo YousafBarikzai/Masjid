@@ -164,6 +164,23 @@ export default function More() {
       <Section title="Tasbīḥ counter" />
       <Tasbih />
 
+      <Section title="Watch & explore" />
+      <Card style={{ paddingVertical: 4 }}>
+        <ListRow
+          icon="📡"
+          title="Live broadcast"
+          sub="Makkah 24/7 and Kingston Masjid when streaming"
+          onPress={() => router.push("/live" as never)}
+        />
+        <Divider />
+        <ListRow
+          icon="🗺️"
+          title="Nearby mosques"
+          sub="Find mosques around you, anywhere in the UK"
+          onPress={() => router.push("/mosques" as never)}
+        />
+      </Card>
+
       <Section title="Support your masjid" />
       <Card style={{ gap: space.md }}>
         <Text style={s.giveText}>

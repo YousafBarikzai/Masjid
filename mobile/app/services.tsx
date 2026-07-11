@@ -15,6 +15,8 @@ const FEATURES = [
   { icon: "🧭", label: "Qibla", route: "/qibla" },
   { icon: "🕌", label: "Jumuʿah", route: "/jummah" },
   { icon: "🗓️", label: "Timetable", route: "/prayers" },
+  { icon: "📡", label: "Live broadcast", route: "/live" },
+  { icon: "🗺️", label: "Nearby mosques", route: "/mosques" },
 ] as const;
 
 export default function Services() {

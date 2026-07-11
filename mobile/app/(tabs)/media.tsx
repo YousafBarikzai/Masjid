@@ -1,8 +1,10 @@
 import { Fragment } from "react";
-import { Text } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
+import { useRouter } from "expo-router";
 import { useSnapshot } from "../../src/useSnapshot";
-import { Page, Card, ListRow, Divider, Empty } from "../../src/ui";
+import { Page, Card, ListRow, Divider, Empty, PressCard } from "../../src/ui";
 import { openInApp } from "../../src/actions";
+import { colors, space, type as t } from "../../src/theme";
 
 /* Media — khutbahs, lectures and multimedia links, managed entirely from the
    CMS (admin → Mobile App → Media links). Video/audio are third-party (YouTube,
@@ -18,6 +20,7 @@ const KIND_ICON: Record<string, string> = {
 
 export default function Media() {
   const { data, offline, refresh } = useSnapshot();
+  const router = useRouter();
   const links = data?.app?.mediaLinks ?? [];
   const youtube = data?.app?.youtube;
 
@@ -27,6 +30,20 @@ export default function Media() {
 
   return (
     <Page eyebrow="Watch & listen" title="Media" offline={offline} onRefresh={refresh}>
+      {/* Live streams — the in-app player page */}
+      <PressCard onPress={() => router.push("/live" as never)} style={s.liveCard}>
+        <View style={s.liveRow}>
+          <View style={s.liveIcon}>
+            <Text style={{ fontSize: 22 }}>📡</Text>
+          </View>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={s.liveTitle}>Live broadcast</Text>
+            <Text style={s.liveSub}>Makkah live 24/7 · Kingston Masjid when streaming</Text>
+          </View>
+          <Text style={s.liveChev}>›</Text>
+        </View>
+      </PressCard>
+
       <Card style={{ paddingVertical: 4 }}>
         {youtube ? (
           <>
@@ -59,3 +76,23 @@ export default function Media() {
     </Page>
   );
 }
+
+const s = StyleSheet.create({
+  liveCard: {
+    borderColor: "rgba(224,83,61,0.4)",
+    backgroundColor: "rgba(224,83,61,0.08)",
+    paddingVertical: space.md,
+  },
+  liveRow: { flexDirection: "row", alignItems: "center", gap: space.md },
+  liveIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 13,
+    backgroundColor: "rgba(224,83,61,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  liveTitle: { color: colors.text, fontSize: t.body, fontWeight: "800" },
+  liveSub: { color: colors.textDim, fontSize: t.small, marginTop: 1 },
+  liveChev: { color: colors.textFaint, fontSize: 22, fontWeight: "300" },
+});
