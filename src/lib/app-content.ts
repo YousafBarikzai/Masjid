@@ -53,6 +53,57 @@ export function imageUrlOf(rel: unknown): string {
   return m.sizes?.card?.url || m.url || "";
 }
 
+/** YouTube video id from any common URL form (watch?v=, youtu.be/, /live/,
+ *  /embed/, /shorts/) — empty string when none is found. */
+export function youtubeId(url: string): string {
+  const u = String(url || "");
+  const m =
+    u.match(/[?&]v=([\w-]{6,})/) ||
+    u.match(/youtu\.be\/([\w-]{6,})/) ||
+    u.match(/youtube\.com\/(?:live|embed|shorts)\/([\w-]{6,})/);
+  return m ? m[1] : "";
+}
+
+/** Uniform khutbah shape for the app (archive cards + detail page). */
+export function mapKhutbah(d: any): {
+  slug: string;
+  title: string;
+  date: string;
+  dateISO: string;
+  khatib: string;
+  videoId: string;
+  watchUrl: string;
+  embedUrl: string;
+  thumbnail: string;
+  excerpt: string;
+  sections: AppSection[];
+  lessons: string[];
+  tags: string[];
+} {
+  const videoId = youtubeId(d.youtubeUrl);
+  const sections = d.synopsis ? lexicalToSections(d.synopsis) : [];
+  const firstPara = sections.flatMap((s) => s.body ?? [])[0] || "";
+  const excerpt = firstPara.length > 180 ? `${firstPara.slice(0, 177).trimEnd()}…` : firstPara;
+  return {
+    slug: String(d.slug || ""),
+    title: String(d.title || ""),
+    date: d.date
+      ? new Date(d.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+      : "",
+    dateISO: String(d.date || ""),
+    khatib: String(d.khatib || ""),
+    videoId,
+    watchUrl: videoId ? `https://www.youtube.com/watch?v=${videoId}` : String(d.youtubeUrl || ""),
+    embedUrl: videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=0&playsinline=1` : "",
+    // Editors rarely upload a thumbnail — fall back to YouTube's own.
+    thumbnail: imageUrlOf(d.thumbnail) || (videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : ""),
+    excerpt,
+    sections,
+    lessons: Array.isArray(d.lessons) ? d.lessons.map((l: any) => String(l?.lesson || "")).filter(Boolean) : [],
+    tags: Array.isArray(d.tags) ? d.tags.map((x: any) => String(x?.tag || "")).filter(Boolean) : [],
+  };
+}
+
 /** Uniform article shape for the app (list + native reader). */
 export function mapPost(d: any): {
   slug: string;

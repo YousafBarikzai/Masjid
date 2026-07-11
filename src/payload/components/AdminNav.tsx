@@ -80,6 +80,7 @@ const GROUPS: Group[] = [
     view: CONTENT_EDIT,
     items: [
       { label: "News & articles", href: col("posts"), addHref: add("posts"), create: CONTENT_CREATE },
+      { label: "Khutbah archive", href: col("khutbahs"), addHref: add("khutbahs"), create: EDITORS },
       { label: "Events", href: col("events"), addHref: add("events"), create: EDITORS },
       { label: "Classes & education", href: col("classes"), addHref: add("classes"), create: EDITORS },
       { label: "Services", href: col("services"), addHref: add("services"), create: EDITORS },

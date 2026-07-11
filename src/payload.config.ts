@@ -15,6 +15,7 @@ import {
   Media,
   Pages,
   Posts,
+  Khutbahs,
   Events,
   Classes,
   Services,
@@ -124,6 +125,7 @@ export default buildConfig({
     // in-CMS "how to use this page" panel (slug-driven, no-op without content).
     withHelp(withAudit(Pages)),
     withHelp(withAudit(Posts)),
+    withHelp(withAudit(Khutbahs)),
     withHelp(withAudit(Events)),
     withHelp(withAudit(Classes)),
     withHelp(withAudit(Services)),

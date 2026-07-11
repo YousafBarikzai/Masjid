@@ -172,6 +172,31 @@ export interface GeocodeResult {
   lng: number;
 }
 
+/* Khutbah Archive (app-api/khutbahs) */
+export interface Khutbah {
+  slug: string;
+  title: string;
+  date: string;
+  dateISO: string;
+  khatib: string;
+  videoId: string;
+  watchUrl: string;
+  embedUrl: string;
+  thumbnail: string;
+  excerpt: string;
+  sections: ContentSection[];
+  lessons: string[];
+  tags: string[];
+}
+
+export interface KhutbahsPage {
+  docs: Khutbah[];
+  page: number;
+  totalPages: number;
+  totalDocs: number;
+  hasMore: boolean;
+}
+
 /* Live broadcast feed (app-api/live) */
 export interface LiveFeed {
   kingston: { live: boolean; embedUrl: string; title: string; channelUrl: string };
