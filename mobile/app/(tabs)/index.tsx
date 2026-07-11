@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
 import { useSnapshot } from "../../src/useSnapshot";
-import { Page, Card, Section, Press, tap, Empty } from "../../src/ui";
+import { Page, Card, Section, Press, Reveal, Skeleton, tap, Empty } from "../../src/ui";
 import { CountdownRing } from "../../src/CountdownRing";
 import { colors, radius, space, type as t } from "../../src/theme";
 import { goTo, slugify } from "../../src/nav";
@@ -36,10 +36,12 @@ export default function Home() {
     >
       {/* Announcement banner */}
       {data?.announcement?.enabled && data.announcement.message ? (
-        <View style={s.notice}>
-          <Text style={s.noticeTag}>{data.announcement.label || "Notice"}</Text>
-          <Text style={s.noticeText}>{data.announcement.message}</Text>
-        </View>
+        <Reveal>
+          <View style={s.notice}>
+            <Text style={s.noticeTag}>{data.announcement.label || "Notice"}</Text>
+            <Text style={s.noticeText}>{data.announcement.message}</Text>
+          </View>
+        </Reveal>
       ) : null}
 
       {/* Live countdown hero */}
@@ -47,7 +49,11 @@ export default function Home() {
         {data ? (
           <CountdownRing rows={data.prayers} fallback={data.nextPrayer} />
         ) : (
-          <Empty text="Loading prayer times…" />
+          <View style={{ alignSelf: "stretch", alignItems: "center", gap: 12, paddingVertical: 8 }}>
+            <Skeleton height={200} width={200} radius={100} />
+            <Skeleton height={14} width="60%" />
+            <Skeleton height={14} width="80%" />
+          </View>
         )}
 
         {/* Today's rows */}

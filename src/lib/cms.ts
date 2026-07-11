@@ -229,10 +229,31 @@ export interface NewsItem {
   body: string;
   slug?: string;
 }
+/** Only live articles: published (not draft) and not scheduled for the future. */
+export function livePostsWhere(now: Date = new Date()) {
+  return {
+    and: [
+      { _status: { equals: "published" } },
+      {
+        or: [
+          { publishedDate: { less_than_equal: now.toISOString() } },
+          { publishedDate: { exists: false } },
+        ],
+      },
+    ],
+  } as never;
+}
+
 export const getPosts = cache(async (): Promise<NewsItem[]> => {
   try {
     const p = await getPayloadClient();
-    const res = await p.find({ collection: "posts", sort: "-publishedDate", limit: 9, depth: 0 });
+    const res = await p.find({
+      collection: "posts",
+      sort: "-publishedDate",
+      limit: 9,
+      depth: 0,
+      where: livePostsWhere(),
+    });
     if (!res.docs.length) return [];
     return res.docs.map((d: any) => ({
       date: d.publishedDate

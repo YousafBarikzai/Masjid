@@ -117,7 +117,16 @@ export interface ArticleContent {
   title: string;
   date: string;
   excerpt: string;
+  image?: string;
   sections: ContentSection[];
+}
+
+export interface ArticlesPage {
+  docs: ArticleContent[];
+  page: number;
+  totalPages: number;
+  totalDocs: number;
+  hasMore: boolean;
 }
 
 export interface EventContent {
@@ -127,6 +136,7 @@ export interface EventContent {
   when: string;
   where: string;
   summary: string;
+  image?: string;
   sections: ContentSection[];
   registrationUrl: string;
 }

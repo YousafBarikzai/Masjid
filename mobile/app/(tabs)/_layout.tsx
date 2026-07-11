@@ -2,15 +2,22 @@ import { Tabs } from "expo-router";
 import { Platform, StyleSheet } from "react-native";
 import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { colors } from "../../src/theme";
 
 /* Floating glass tab bar: translucent blur on iOS (content scrolls beneath it),
-   solid raised surface on Android. Gold active state, outline→filled icons. */
+   solid raised surface on Android. Gold active state, outline→filled icons,
+   and a soft haptic on every tab change. */
 
 export default function TabsLayout() {
   const ios = Platform.OS === "ios";
   return (
     <Tabs
+      screenListeners={{
+        tabPress: () => {
+          Haptics.selectionAsync().catch(() => {});
+        },
+      }}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.goldSoft,

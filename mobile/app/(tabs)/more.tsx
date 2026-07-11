@@ -132,7 +132,7 @@ function Tasbih() {
 
 export default function More() {
   const { data, offline, refresh } = useSnapshot();
-  const { content } = useContent();
+  const { content, refresh: refreshContent } = useContent();
   const router = useRouter();
   const c = data?.contact ?? content?.contact;
   const services = content?.services ?? [];
@@ -149,7 +149,15 @@ export default function More() {
   }
 
   return (
-    <Page eyebrow="Settings & tools" title="More" offline={offline} onRefresh={refresh}>
+    <Page
+      eyebrow="Settings & tools"
+      title="More"
+      offline={offline}
+      onRefresh={() => {
+        refresh();
+        refreshContent();
+      }}
+    >
       <Section title="Notifications" />
       <NotificationPrefs />
 

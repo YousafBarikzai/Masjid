@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { servicePages, donationCategories, eventsSeed, type PageSection } from "@/lib/site-content";
-import { getDonation, getJummah, getSite } from "@/lib/cms";
+import { getDonation, getJummah, getSite, livePostsWhere } from "@/lib/cms";
+import { lexicalToSections, imageUrlOf, mapPost } from "@/lib/app-content";
 import { getPayloadClient } from "@/lib/payloadClient";
 
 /**
@@ -18,47 +19,11 @@ const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
+  // Admin edits must reach phones on the next poll — never serve a stale copy.
+  "Cache-Control": "no-store",
 };
 
 type Section = { heading?: string; body?: string[]; bullets?: string[] };
-
-/** Flatten a Lexical rich-text tree into plain-text sections (paragraphs,
- *  headings and lists), defensively — any unknown node is walked for text. */
-function lexicalToSections(node: unknown): Section[] {
-  const root = (node as { root?: { children?: unknown[] } })?.root;
-  const children = Array.isArray(root?.children) ? root!.children! : [];
-  const out: Section[] = [];
-  let current: Section = { body: [] };
-  const pushCurrent = () => {
-    if ((current.body && current.body.length) || (current.bullets && current.bullets.length)) out.push(current);
-    current = { body: [] };
-  };
-  const textOf = (n: any): string => {
-    if (!n) return "";
-    if (typeof n.text === "string") return n.text;
-    if (Array.isArray(n.children)) return n.children.map(textOf).join("");
-    return "";
-  };
-  for (const raw of children) {
-    const n = raw as any;
-    const type = n?.type;
-    if (type === "heading") {
-      pushCurrent();
-      current.heading = textOf(n).trim();
-    } else if (type === "list") {
-      const items = Array.isArray(n.children) ? n.children.map((li: any) => textOf(li).trim()).filter(Boolean) : [];
-      if (items.length) (current.bullets ||= []).push(...items);
-    } else if (type === "quote" || type === "paragraph") {
-      const t = textOf(n).trim();
-      if (t) (current.body ||= []).push(t);
-    } else {
-      const t = textOf(n).trim();
-      if (t) (current.body ||= []).push(t);
-    }
-  }
-  pushCurrent();
-  return out.filter((s) => s.heading || (s.body && s.body.length) || (s.bullets && s.bullets.length));
-}
 
 function normSections(sections: PageSection[]): Section[] {
   return sections.map((s) => ({
@@ -82,20 +47,19 @@ export async function GET() {
     cta: p.ctaHeading || p.ctaBody ? { heading: p.ctaHeading || "", body: p.ctaBody || "" } : null,
   }));
 
-  // News articles with full native body (rich text → sections).
-  let articles: { slug: string; title: string; date: string; excerpt: string; sections: Section[] }[] = [];
+  // News articles with full native body (rich text → sections) + lead image.
+  // Live only: never drafts, never posts scheduled for a future date.
+  let articles: ReturnType<typeof mapPost>[] = [];
   try {
     const p = await getPayloadClient();
-    const res = await p.find({ collection: "posts", sort: "-publishedDate", limit: 12, depth: 0 });
-    articles = res.docs.map((d: any) => ({
-      slug: String(d.slug || ""),
-      title: String(d.title || ""),
-      date: d.publishedDate
-        ? new Date(d.publishedDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
-        : "News",
-      excerpt: String(d.excerpt || ""),
-      sections: d.content ? lexicalToSections(d.content) : [],
-    }));
+    const res = await p.find({
+      collection: "posts",
+      sort: "-publishedDate",
+      limit: 12,
+      depth: 1,
+      where: livePostsWhere(),
+    });
+    articles = res.docs.map(mapPost);
   } catch {
     articles = [];
   }
@@ -111,13 +75,14 @@ export async function GET() {
     when: string;
     where: string;
     summary: string;
+    image: string;
     sections: Section[];
     registrationUrl: string;
   };
   let events: EventOut[] = [];
   try {
     const p = await getPayloadClient();
-    const res = await p.find({ collection: "events", sort: "-start", limit: 10, depth: 0 });
+    const res = await p.find({ collection: "events", sort: "-start", limit: 20, depth: 1 });
     events = res.docs.map((e: any) => ({
       slug: String(e.slug || slugify(String(e.title || "event"))),
       title: String(e.title || ""),
@@ -130,6 +95,7 @@ export async function GET() {
         : "",
       where: String(e.location || ""),
       summary: String(e.summary || ""),
+      image: imageUrlOf(e.image),
       sections: e.description ? lexicalToSections(e.description) : [],
       registrationUrl: typeof e.registrationUrl === "string" ? e.registrationUrl : "",
     }));
@@ -144,6 +110,7 @@ export async function GET() {
       when: [e.date, e.time].filter(Boolean).join(" · "),
       where: "Kingston Mosque",
       summary: e.body,
+      image: "",
       sections: [{ body: [e.body] }],
       registrationUrl: "",
     }));
