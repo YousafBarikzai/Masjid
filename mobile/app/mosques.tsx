@@ -16,7 +16,7 @@ import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { fetchMosques, geocode } from "../src/api";
+import { fetchMosques, fetchMosquesDirect, geocode } from "../src/api";
 import type { GeocodeResult, Mosque } from "../src/types";
 import { Press, Reveal, tap } from "../src/ui";
 import { openSheet } from "../src/actions";
@@ -175,6 +175,7 @@ export default function Mosques() {
   const [selected, setSelected] = useState<Mosque | null>(null);
   const [filters, setFilters] = useState<FilterKey[]>([]);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
   const [q, setQ] = useState("");
   const [results, setResults] = useState<GeocodeResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -185,12 +186,20 @@ export default function Mosques() {
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /* Fetch pins for a region, merging with what we've already seen so pins
-     don't vanish while panning. Prune the farthest when the set grows big. */
+     don't vanish while panning. Prune the farthest when the set grows big.
+     The server proxy is tried first (it's cached), but if it comes back empty
+     — most often because Overpass has rate-limited Railway's shared IP — we
+     query OpenStreetMap directly from the phone, which is far more reliable. */
   const load = useCallback(async (region: Region) => {
     setLoading(true);
+    setFailed(false);
+    // A generous floor so mosques reliably appear even when zoomed right in.
+    const radius = Math.min(30000, Math.max(6000, (region.latitudeDelta * 111320) / 2));
     try {
-      const radius = Math.min(30000, Math.max(1500, (region.latitudeDelta * 111320) / 2));
-      const found = await fetchMosques(region.latitude, region.longitude, radius);
+      let found = await fetchMosques(region.latitude, region.longitude, radius).catch(() => [] as Mosque[]);
+      if (!found.length) {
+        found = await fetchMosquesDirect(region.latitude, region.longitude, radius);
+      }
       for (const m of found) seen.current.set(m.id, m);
       if (seen.current.size > MAX_PINS) {
         const sorted = [...seen.current.values()].sort(
@@ -201,8 +210,10 @@ export default function Mosques() {
         seen.current = new Map(sorted.slice(0, MAX_PINS).map((m) => [m.id, m]));
       }
       setMosques([...seen.current.values()]);
+      // Nothing anywhere and nothing cached → surface a retry.
+      if (!seen.current.size) setFailed(true);
     } catch {
-      /* offline / rate-limited — keep whatever pins we already have */
+      if (!seen.current.size) setFailed(true);
     } finally {
       setLoading(false);
     }
@@ -461,6 +472,13 @@ export default function Mosques() {
             ) : null}
           </View>
         </Reveal>
+      ) : failed && !loading && !visible.length ? (
+        <View style={[s.countWrap, { bottom: insets.bottom + 34 }]}>
+          <Press style={s.retry} scaleTo={0.96} onPress={() => load(regionRef.current)}>
+            <Ionicons name="refresh" size={15} color={colors.onGold} />
+            <Text style={s.retryText}>Couldn't load mosques — tap to retry</Text>
+          </Press>
+        </View>
       ) : (
         <View style={[s.countWrap, { bottom: insets.bottom + 34 }]} pointerEvents="none">
           <View style={s.count}>
@@ -635,6 +653,21 @@ const s = StyleSheet.create({
     paddingVertical: 8,
   },
   countText: { color: colors.textDim, fontSize: t.tiny, fontWeight: "700" },
+  retry: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    backgroundColor: colors.gold,
+    borderRadius: radius.pill,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 6,
+  },
+  retryText: { color: colors.onGold, fontSize: t.small, fontWeight: "800" },
 
   attribution: {
     position: "absolute",
