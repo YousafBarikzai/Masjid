@@ -1,9 +1,9 @@
 import { Fragment } from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useContent } from "../src/useContent";
 import { useSnapshot } from "../src/useSnapshot";
-import { Page, Card, Section, ListRow, Divider, Empty, tap } from "../src/ui";
+import { Page, Card, Section, ListRow, Divider, Empty, Press } from "../src/ui";
 import { colors, radius, space, type as t } from "../src/theme";
 
 /* Services — the native directory. Every service and information page opens
@@ -28,17 +28,10 @@ export default function Services() {
       {/* Feature tools */}
       <View style={s.grid}>
         {FEATURES.map((f) => (
-          <Pressable
-            key={f.label}
-            onPress={() => {
-              tap();
-              router.push(f.route as never);
-            }}
-            style={({ pressed }) => [s.tile, pressed && { transform: [{ scale: 0.96 }] }]}
-          >
+          <Press key={f.label} style={s.tile} scaleTo={0.94} onPress={() => router.push(f.route as never)}>
             <Text style={s.tileIcon}>{f.icon}</Text>
             <Text style={s.tileLabel}>{f.label}</Text>
-          </Pressable>
+          </Press>
         ))}
       </View>
 

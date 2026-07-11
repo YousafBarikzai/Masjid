@@ -120,10 +120,22 @@ export interface ArticleContent {
   sections: ContentSection[];
 }
 
+export interface EventContent {
+  slug: string;
+  title: string;
+  tag: string;
+  when: string;
+  where: string;
+  summary: string;
+  sections: ContentSection[];
+  registrationUrl: string;
+}
+
 export interface ContentFeed {
   generatedAt: string;
   services: ServiceContent[];
   articles: ArticleContent[];
+  events: EventContent[];
   donation: {
     heading: string;
     body: string;

@@ -1,9 +1,14 @@
 import { Tabs } from "expo-router";
-import { Platform } from "react-native";
+import { Platform, StyleSheet } from "react-native";
+import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../src/theme";
 
+/* Floating glass tab bar: translucent blur on iOS (content scrolls beneath it),
+   solid raised surface on Android. Gold active state, outline→filled icons. */
+
 export default function TabsLayout() {
+  const ios = Platform.OS === "ios";
   return (
     <Tabs
       screenOptions={{
@@ -11,12 +16,25 @@ export default function TabsLayout() {
         tabBarActiveTintColor: colors.goldSoft,
         tabBarInactiveTintColor: "rgba(244,239,226,0.45)",
         tabBarStyle: {
-          backgroundColor: colors.bgRaised,
-          borderTopColor: colors.line,
-          borderTopWidth: 1,
-          height: Platform.OS === "ios" ? 86 : 64,
-          paddingTop: 6,
+          position: "absolute",
+          borderTopWidth: 0,
+          backgroundColor: ios ? "transparent" : colors.bgRaised,
+          height: ios ? 84 : 66,
+          paddingTop: 8,
+          elevation: 12,
         },
+        tabBarBackground: ios
+          ? () => (
+              <BlurView
+                tint="dark"
+                intensity={50}
+                style={[
+                  StyleSheet.absoluteFill,
+                  { backgroundColor: "rgba(8,31,21,0.72)", borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line },
+                ]}
+              />
+            )
+          : undefined,
         tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
       }}
     >

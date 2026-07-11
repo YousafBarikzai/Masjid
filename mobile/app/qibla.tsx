@@ -1,110 +1,125 @@
 import { useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, Animated, Easing, Platform } from "react-native";
+import { View, Text, StyleSheet, Animated, Easing } from "react-native";
 import Svg, { Circle, Line, Path, G, Text as SvgText } from "react-native-svg";
-import { Magnetometer } from "expo-sensors";
 import * as Location from "expo-location";
-import { useContent } from "../src/useContent";
+import * as Haptics from "expo-haptics";
 import { Page, Card, GoldButton } from "../src/ui";
-import { colors, radius, space, type as t } from "../src/theme";
+import { colors, space, type as t } from "../src/theme";
 
-/* Native Qibla compass. Uses the device magnetometer for heading and GPS for
-   the great-circle bearing to the Kaʿbah — computed entirely on-device, works
-   anywhere, no web view. The dial rotates so the gold marker always points to
-   the qiblah; a haptic-free "aligned" state confirms when you're facing it. */
+/* Qibla compass.
+
+   Heading: expo-location's watchHeadingAsync — the platform's own fused,
+   tilt-compensated compass (Core Location on iOS), far more reliable than raw
+   magnetometer math. We use trueHeading (declination-corrected) when the OS
+   provides it, falling back to magnetic heading (the ~1° difference in the UK
+   is immaterial for prayer direction).
+
+   Bearing: the great-circle bearing to the Kaʿbah (21.4225°N, 39.8262°E),
+   computed from the device's location. If location is unavailable we use
+   Kingston upon Thames (51.4123°N, 0.3007°W) → 119° from true north, clearly
+   labelled — correct for anyone at or near the mosque. */
 
 const RAD = Math.PI / 180;
 const DEG = 180 / Math.PI;
+const KAABA = { lat: 21.4225, lng: 39.8262 };
+const KINGSTON = { lat: 51.4123, lng: -0.3007 };
 
-function qiblaBearing(lat: number, lng: number, kLat: number, kLng: number) {
+function qiblaBearing(lat: number, lng: number): number {
   const φ1 = lat * RAD;
-  const φ2 = kLat * RAD;
-  const Δλ = (kLng - lng) * RAD;
+  const φ2 = KAABA.lat * RAD;
+  const Δλ = (KAABA.lng - lng) * RAD;
   const y = Math.sin(Δλ) * Math.cos(φ2);
   const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
   return (Math.atan2(y, x) * DEG + 360) % 360;
 }
 
+const KINGSTON_BEARING = qiblaBearing(KINGSTON.lat, KINGSTON.lng); // ≈ 118.9°
+
 export default function Qibla() {
-  const { content } = useContent();
   const [heading, setHeading] = useState<number | null>(null);
-  const [qibla, setQibla] = useState<number | null>(null);
-  const [status, setStatus] = useState<"init" | "denied" | "ready" | "nolocation">("init");
+  const [accuracy, setAccuracy] = useState(0);
+  const [bearing, setBearing] = useState(KINGSTON_BEARING);
+  const [usingDefault, setUsingDefault] = useState(true);
+  const [denied, setDenied] = useState(false);
   const rot = useRef(new Animated.Value(0)).current;
-  const lastDeg = useRef(0);
+  const last = useRef(0);
+  const wasAligned = useRef(false);
 
-  // Magnetometer → compass heading (0 = North).
+  // Platform compass heading + best-effort precise location.
   useEffect(() => {
-    Magnetometer.setUpdateInterval(90);
-    const sub = Magnetometer.addListener((m) => {
-      let angle = Math.atan2(m.y, m.x) * DEG;
-      angle = (angle + 360) % 360;
-      // Device x/y axes → map so 0° points North (approx; good enough for qiblah).
-      const h = (360 - angle + 90) % 360;
-      setHeading(h);
-    });
-    return () => sub.remove();
-  }, []);
-
-  // Location → qiblah bearing.
-  useEffect(() => {
+    let sub: Location.LocationSubscription | null = null;
     let active = true;
     (async () => {
-      try {
-        const { status: perm } = await Location.requestForegroundPermissionsAsync();
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (!active) return;
+      if (status !== "granted") {
+        setDenied(true);
+        return;
+      }
+      sub = await Location.watchHeadingAsync((h) => {
         if (!active) return;
-        if (perm !== "granted") return setStatus("denied");
+        const deg = h.trueHeading >= 0 ? h.trueHeading : h.magHeading;
+        setHeading(deg);
+        setAccuracy(h.accuracy);
+      });
+      try {
         const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
         if (!active) return;
-        const k = content?.qibla ?? { kaabaLat: 21.4225, kaabaLng: 39.8262 };
-        setQibla(qiblaBearing(loc.coords.latitude, loc.coords.longitude, k.kaabaLat, k.kaabaLng));
-        setStatus("ready");
+        setBearing(qiblaBearing(loc.coords.latitude, loc.coords.longitude));
+        setUsingDefault(false);
       } catch {
-        if (active) setStatus("nolocation");
+        /* keep the Kingston default, clearly labelled */
       }
     })();
     return () => {
       active = false;
+      sub?.remove();
     };
-  }, [content]);
+  }, []);
 
-  // Rotate the dial so the qiblah marker points up when the phone faces it.
-  const dialTarget = heading == null ? 0 : -heading;
+  // Smooth shortest-path dial rotation (dial turns so its N follows the world).
   useEffect(() => {
-    // shortest-path rotation to avoid a 359°→0° spin
-    let next = dialTarget;
-    const diff = next - lastDeg.current;
+    if (heading == null) return;
+    let next = -heading;
+    const diff = next - last.current;
     if (diff > 180) next -= 360;
     else if (diff < -180) next += 360;
-    lastDeg.current = next;
-    Animated.timing(rot, { toValue: next, duration: 120, easing: Easing.linear, useNativeDriver: true }).start();
-  }, [dialTarget, rot]);
+    last.current = next;
+    Animated.timing(rot, { toValue: next, duration: 140, easing: Easing.linear, useNativeDriver: true }).start();
+  }, [heading, rot]);
 
   const spin = rot.interpolate({ inputRange: [-360, 360], outputRange: ["-360deg", "360deg"] });
-  const diff = heading != null && qibla != null ? Math.abs(((qibla - heading + 540) % 360) - 180) : null;
-  const aligned = diff != null && diff < 4;
+  const delta = heading == null ? null : Math.abs(((bearing - heading + 540) % 360) - 180);
+  const aligned = delta != null && delta < 5;
+
+  // A single success haptic the moment alignment is reached.
+  useEffect(() => {
+    if (aligned && !wasAligned.current) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    }
+    wasAligned.current = aligned;
+  }, [aligned]);
 
   return (
-    <Page eyebrow="Facing the Kaʿbah" title="Qibla" subtitle="Point the top of your phone" back>
+    <Page eyebrow="Facing the Kaʿbah" title="Qibla" subtitle="Hold your phone flat, top edge forward" back>
       <Card style={s.card}>
         <View style={s.compassWrap}>
-          {/* rotating dial */}
           <Animated.View style={{ transform: [{ rotate: spin }] }}>
-            <Svg width={260} height={260} viewBox="0 0 260 260">
-              <Circle cx="130" cy="130" r="122" stroke={colors.glassBorder} strokeWidth="2" fill="none" />
-              <Circle cx="130" cy="130" r="122" stroke={aligned ? colors.mint : "transparent"} strokeWidth="3" fill="none" />
-              {/* tick marks */}
+            <Svg width={272} height={272} viewBox="0 0 272 272">
+              {/* dial */}
+              <Circle cx="136" cy="136" r="128" stroke={colors.glassBorder} strokeWidth="2" fill="rgba(255,255,255,0.03)" />
               {Array.from({ length: 72 }).map((_, i) => {
                 const major = i % 9 === 0;
                 const a = i * 5 * RAD;
-                const r1 = 122;
-                const r2 = major ? 108 : 116;
+                const r1 = 128;
+                const r2 = major ? 114 : 121;
                 return (
                   <Line
                     key={i}
-                    x1={130 + r1 * Math.sin(a)}
-                    y1={130 - r1 * Math.cos(a)}
-                    x2={130 + r2 * Math.sin(a)}
-                    y2={130 - r2 * Math.cos(a)}
+                    x1={136 + r1 * Math.sin(a)}
+                    y1={136 - r1 * Math.cos(a)}
+                    x2={136 + r2 * Math.sin(a)}
+                    y2={136 - r2 * Math.cos(a)}
                     stroke={major ? colors.goldSoft : colors.line}
                     strokeWidth={major ? 2 : 1}
                   />
@@ -115,10 +130,10 @@ export default function Qibla() {
                 return (
                   <SvgText
                     key={d}
-                    x={130 + 92 * Math.sin(a)}
-                    y={130 - 92 * Math.cos(a) + 6}
+                    x={136 + 97 * Math.sin(a)}
+                    y={136 - 97 * Math.cos(a) + 6}
                     fill={d === "N" ? colors.gold : colors.textFaint}
-                    fontSize="15"
+                    fontSize="16"
                     fontWeight="800"
                     textAnchor="middle"
                   >
@@ -126,46 +141,51 @@ export default function Qibla() {
                   </SvgText>
                 );
               })}
-              {/* qiblah marker (Kaʿbah) at the bearing angle on the dial */}
-              {qibla != null ? (
-                <G rotation={qibla} origin="130, 130">
-                  <Line x1="130" y1="130" x2="130" y2="24" stroke={colors.gold} strokeWidth="3" />
-                  <Path d="M130 12 l11 20 h-22 z" fill={colors.gold} />
-                  <SvgText x="130" y="52" fill={colors.onGold} fontSize="13" fontWeight="800" textAnchor="middle">
-                    🕋
-                  </SvgText>
-                </G>
-              ) : null}
+              {/* qiblah needle at the bearing */}
+              <G rotation={bearing} origin="136, 136">
+                <Line x1="136" y1="136" x2="136" y2="34" stroke={aligned ? colors.mint : colors.gold} strokeWidth="4" strokeLinecap="round" />
+                <Path d="M136 18 l13 24 h-26 z" fill={aligned ? colors.mint : colors.gold} />
+                <Circle cx="136" cy="136" r="7" fill={aligned ? colors.mint : colors.gold} />
+              </G>
             </Svg>
           </Animated.View>
-          {/* fixed phone-forward indicator */}
+          {/* fixed forward marker (where the phone points) */}
           <View style={s.forward} pointerEvents="none">
             <View style={[s.forwardTip, aligned && { borderBottomColor: colors.mint }]} />
           </View>
+          <Text style={s.kaaba}>🕋</Text>
         </View>
 
-        {status === "ready" && qibla != null ? (
-          <>
-            <Text style={[s.deg, aligned && { color: colors.mint }]}>{Math.round(qibla)}°</Text>
+        {denied ? (
+          <View style={{ gap: 12, alignItems: "center" }}>
             <Text style={s.hint}>
-              {aligned ? "Aligned — you are facing the qiblah" : "Turn until the gold marker points to the top"}
+              The compass needs location access (it's how iOS provides the heading). From Kingston Mosque the
+              qiblah is {Math.round(KINGSTON_BEARING)}° from north — roughly south-east.
             </Text>
-          </>
-        ) : status === "denied" ? (
-          <View style={{ gap: 10, alignItems: "center" }}>
-            <Text style={s.hint}>Location access is needed to find the qiblah direction from where you are.</Text>
-            <GoldButton compact label="Allow location" onPress={() => Location.requestForegroundPermissionsAsync()} />
+            <GoldButton compact label="Allow location access" onPress={() => Location.requestForegroundPermissionsAsync()} />
           </View>
-        ) : status === "nolocation" ? (
-          <Text style={s.hint}>Couldn't read your location. Move somewhere with a clearer signal and reopen Qibla.</Text>
+        ) : heading == null ? (
+          <Text style={s.hint}>Starting the compass…</Text>
         ) : (
-          <Text style={s.hint}>Finding your location…</Text>
+          <>
+            <Text style={[s.deg, aligned && { color: colors.mint }]}>
+              {aligned ? "Facing the qiblah ✓" : `${Math.round(bearing)}° ${usingDefault ? "· Kingston" : ""}`}
+            </Text>
+            <Text style={s.hint}>
+              {aligned
+                ? "You are aligned with the Kaʿbah"
+                : "Turn until the needle meets the marker at the top"}
+            </Text>
+            {accuracy > 25 ? (
+              <Text style={s.cal}>Compass needs calibrating — move your phone in a figure-of-8</Text>
+            ) : null}
+          </>
         )}
       </Card>
 
       <Text style={s.note}>
-        Hold the phone flat and away from metal or magnets. Calibrate by moving it in a figure-8 if the compass drifts.
-        {Platform.OS === "android" ? " Accuracy depends on your device's magnetometer." : ""}
+        Keep away from magnets, metal and cases with magnetic clasps. The bearing is calculated for your exact
+        location{usingDefault ? " (currently using Kingston upon Thames: 119° from north)" : ""}.
       </Text>
     </Page>
   );
@@ -173,19 +193,21 @@ export default function Qibla() {
 
 const s = StyleSheet.create({
   card: { alignItems: "center", gap: space.md, paddingVertical: space.xl },
-  compassWrap: { width: 260, height: 260, alignItems: "center", justifyContent: "center" },
-  forward: { position: "absolute", top: -2, alignItems: "center" },
+  compassWrap: { width: 272, height: 272, alignItems: "center", justifyContent: "center" },
+  forward: { position: "absolute", top: -4, alignItems: "center" },
   forwardTip: {
     width: 0,
     height: 0,
-    borderLeftWidth: 9,
-    borderRightWidth: 9,
-    borderBottomWidth: 16,
+    borderLeftWidth: 10,
+    borderRightWidth: 10,
+    borderBottomWidth: 18,
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
     borderBottomColor: colors.text,
   },
-  deg: { color: colors.gold, fontSize: 40, fontWeight: "800", fontVariant: ["tabular-nums"], letterSpacing: -1 },
+  kaaba: { position: "absolute", fontSize: 30 },
+  deg: { color: colors.gold, fontSize: 30, fontWeight: "800", fontVariant: ["tabular-nums"], letterSpacing: -0.5 },
   hint: { color: colors.textDim, fontSize: t.small, textAlign: "center", paddingHorizontal: space.lg, lineHeight: 20 },
+  cal: { color: colors.danger, fontSize: t.tiny, fontWeight: "700", textAlign: "center" },
   note: { color: colors.textFaint, fontSize: t.tiny, textAlign: "center", lineHeight: 17, paddingHorizontal: space.md },
 });
