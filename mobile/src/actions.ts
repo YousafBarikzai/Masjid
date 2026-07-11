@@ -29,11 +29,21 @@ export function openMaps(query: string) {
 
 /** In-app browser sheet for a payment checkout or external media link. */
 export function openInApp(url: string) {
+  openSheet(url).catch(() => {});
+}
+
+/** Awaitable sheet — resolves when the user dismisses it (used by the donation
+ *  flow to confirm the payment outcome natively afterwards). */
+export async function openSheet(url: string): Promise<void> {
   const abs = absUrl(url);
-  WebBrowser.openBrowserAsync(abs, {
-    presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
-    controlsColor: "#c9a227",
-    toolbarColor: "#0e3d29",
-    dismissButtonStyle: "close",
-  }).catch(() => Linking.openURL(abs).catch(() => {}));
+  try {
+    await WebBrowser.openBrowserAsync(abs, {
+      presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
+      controlsColor: "#c9a227",
+      toolbarColor: "#0e3d29",
+      dismissButtonStyle: "close",
+    });
+  } catch {
+    await Linking.openURL(abs).catch(() => {});
+  }
 }
