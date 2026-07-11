@@ -50,6 +50,28 @@ export async function fetchArticles(page: number, signal?: AbortSignal): Promise
   return data;
 }
 
+/* In-app donation checkout (Stripe). configured:false ⇒ key not set on the
+   server yet; the Donate screen falls back to the external link / bank card. */
+export async function createDonationSession(
+  amount: number,
+  interval: "one_off" | "month",
+  campaign: string,
+): Promise<{ configured: boolean; id?: string; url?: string }> {
+  const res = await fetch(`${apiBase}/app-api/donate/session`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ amount, interval, campaign }),
+  });
+  if (!res.ok) throw new Error(`donate-session ${res.status}`);
+  return (await res.json()) as { configured: boolean; id?: string; url?: string };
+}
+
+export async function donationStatus(id: string): Promise<{ paid: boolean; status: string }> {
+  const res = await fetch(`${apiBase}/app-api/donate/status?id=${encodeURIComponent(id)}`);
+  if (!res.ok) return { paid: false, status: "error" };
+  return (await res.json()) as { paid: boolean; status: string };
+}
+
 export async function registerDevice(
   token: string,
   platform: "ios" | "android",

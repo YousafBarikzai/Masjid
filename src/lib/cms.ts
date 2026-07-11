@@ -83,6 +83,9 @@ export const getJummah = cache(async (): Promise<typeof seed.jummah> => {
 /* -------------------------------- Donation -------------------------------- */
 export type Campaign = {
   title: string;
+  description?: string;
+  icon?: string;
+  featured?: boolean;
   goal: number;
   raised: number;
   imageUrl?: string;
@@ -107,10 +110,15 @@ export const getDonation = cache(async (): Promise<DonationData> => {
           .filter((c: any) => c?.active !== false && c?.title)
           .map((c: any) => ({
             title: val(c.title, ""),
+            description: val(c.description, ""),
+            icon: val(c.icon, ""),
+            featured: c?.featured === true,
             goal: Number(c.goal) || 0,
             raised: Number(c.raised) || 0,
             imageUrl:
-              c.image && typeof c.image === "object" ? (c.image.url as string | undefined) : undefined,
+              c.image && typeof c.image === "object"
+                ? ((c.image.sizes?.card?.url || c.image.url) as string | undefined)
+                : undefined,
             link: typeof c.link === "string" ? c.link : undefined,
           }))
       : [];

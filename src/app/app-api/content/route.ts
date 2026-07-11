@@ -2,7 +2,22 @@ import { NextResponse } from "next/server";
 import { servicePages, donationCategories, eventsSeed, type PageSection } from "@/lib/site-content";
 import { getDonation, getJummah, getSite, livePostsWhere } from "@/lib/cms";
 import { lexicalToSections, imageUrlOf, mapPost } from "@/lib/app-content";
+import { stripeEnabled } from "@/lib/stripe";
 import { getPayloadClient } from "@/lib/payloadClient";
+
+/* Default campaign set shown until the mosque curates its own in the admin
+   (Donations → Campaigns). CMS campaigns replace this list entirely. */
+const DEFAULT_CAMPAIGNS = [
+  { icon: "🏗️", title: "Masjid Expansion Project", description: "Help us grow the masjid to serve our growing community for generations.", featured: true, goal: 0, raised: 0, imageUrl: "", link: "" },
+  { icon: "🕌", title: "Daily Running Costs", description: "Keep the doors open — utilities, upkeep and the daily running of your masjid.", featured: false, goal: 0, raised: 0, imageUrl: "", link: "" },
+  { icon: "🤲", title: "General Sadaqah", description: "An ongoing charity — given wherever the need is greatest.", featured: false, goal: 0, raised: 0, imageUrl: "", link: "" },
+  { icon: "⚖️", title: "Zakat", description: "Fulfil your obligatory Zakat through your local masjid.", featured: false, goal: 0, raised: 0, imageUrl: "", link: "" },
+  { icon: "🌙", title: "Lillah", description: "Voluntary giving purely for the sake of Allah.", featured: false, goal: 0, raised: 0, imageUrl: "", link: "" },
+  { icon: "🔧", title: "Mosque Maintenance", description: "Repairs, renewal and care of the masjid building and facilities.", featured: false, goal: 0, raised: 0, imageUrl: "", link: "" },
+  { icon: "📖", title: "Education & Madrasah", description: "Support Qur'an classes and Islamic education for our children.", featured: false, goal: 0, raised: 0, imageUrl: "", link: "" },
+  { icon: "🌱", title: "New Muslim Support", description: "Welcome packs, classes and support for those embracing Islam.", featured: false, goal: 0, raised: 0, imageUrl: "", link: "" },
+  { icon: "🤝", title: "Community Projects", description: "Youth clubs, sisters' programmes and community welfare.", featured: false, goal: 0, raised: 0, imageUrl: "", link: "" },
+];
 
 /**
  * Everything the mobile app needs to render its service, information, donation
@@ -130,6 +145,19 @@ export async function GET() {
       monthly: donation.monthly,
       bank: donation.bank,
       categories: donationCategories,
+      // In-app Stripe checkout (Apple Pay / Google Pay / cards, one-off &
+      // monthly) switches on the moment STRIPE_SECRET_KEY is configured.
+      stripeEnabled: stripeEnabled(),
+      campaigns: (donation.campaigns?.length ? donation.campaigns : DEFAULT_CAMPAIGNS).map((c) => ({
+        icon: c.icon || "💛",
+        title: c.title,
+        description: c.description || "",
+        featured: c.featured === true,
+        goal: c.goal || 0,
+        raised: c.raised || 0,
+        imageUrl: c.imageUrl || "",
+        link: c.link || "",
+      })),
     },
     jummah: {
       intro: jummah.intro || "",

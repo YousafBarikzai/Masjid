@@ -141,6 +141,17 @@ export interface EventContent {
   registrationUrl: string;
 }
 
+export interface DonationCampaign {
+  icon: string;
+  title: string;
+  description: string;
+  featured: boolean;
+  goal: number;
+  raised: number;
+  imageUrl: string;
+  link: string;
+}
+
 export interface ContentFeed {
   generatedAt: string;
   services: ServiceContent[];
@@ -155,6 +166,8 @@ export interface ContentFeed {
     monthly: boolean;
     bank: { label: string; value: string }[];
     categories: { icon: string; title: string; body: string }[];
+    stripeEnabled: boolean;
+    campaigns: DonationCampaign[];
   };
   jummah: { intro: string; congregations: JummahCongregation[] };
   contact: {

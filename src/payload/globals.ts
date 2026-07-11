@@ -187,13 +187,35 @@ export const DonationSettings: GlobalConfig = {
     {
       name: "campaigns",
       type: "array",
+      labels: { singular: "Campaign", plural: "Campaigns" },
+      admin: {
+        description:
+          "Donation campaigns shown in the app and on the website — e.g. Masjid Expansion, Zakat, an emergency appeal. Add temporary appeals here (Ramadan, Eid, emergencies) and untick Active to retire them. The app updates within a minute; no app release needed.",
+      },
       fields: [
-        { name: "title", type: "text" },
-        { name: "goal", type: "number" },
-        { name: "raised", type: "number" },
-        { name: "image", type: "upload", relationTo: "media" },
-        { name: "link", type: "text" },
-        { name: "active", type: "checkbox", defaultValue: true },
+        {
+          type: "row",
+          fields: [
+            { name: "icon", type: "text", admin: { width: "15%", description: "Emoji, e.g. 🕌" } },
+            { name: "title", type: "text", required: true, admin: { width: "55%" } },
+            { name: "featured", type: "checkbox", label: "Featured", admin: { width: "15%", description: "Show first, large" } },
+            { name: "active", type: "checkbox", defaultValue: true, admin: { width: "15%" } },
+          ],
+        },
+        {
+          name: "description",
+          type: "textarea",
+          admin: { description: "One or two short sentences shown on the campaign card." },
+        },
+        {
+          type: "row",
+          fields: [
+            { name: "goal", type: "number", admin: { width: "50%", description: "Target £ (optional — shows a progress bar)" } },
+            { name: "raised", type: "number", admin: { width: "50%", description: "Raised so far £" } },
+          ],
+        },
+        { name: "image", type: "upload", relationTo: "media", admin: { description: "Optional photo for the campaign card." } },
+        { name: "link", type: "text", admin: { description: "Optional external appeal link (overrides the in-app checkout for this campaign)." } },
       ],
     },
   ],
