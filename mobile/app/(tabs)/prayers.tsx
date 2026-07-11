@@ -12,6 +12,7 @@ import {
   Easing,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as Speech from "expo-speech";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSnapshot } from "../../src/useSnapshot";
 import { fetchMonth } from "../../src/api";
@@ -19,6 +20,7 @@ import type { MonthDay, MonthGrid } from "../../src/types";
 import { Page, Card, GoldButton, Press, tap, Empty } from "../../src/ui";
 import { colors, radius, space, type as t } from "../../src/theme";
 import { shareTimetablePdf, printTimetable, emailTimetablePdf } from "../../src/pdf";
+import { getAdhan, setAdhan, playTakbir, scheduleAdhan, cancelAdhan, type DaySchedule } from "../../src/adhan";
 
 /* Prayers — a browsable day view (← previous / next → with a smooth slide),
    plus the FULL monthly timetable (begins + iqāmah per salah) and the on-device
@@ -45,6 +47,45 @@ function dayRowsOf(d: MonthDay) {
 function prettyDate(iso: string) {
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(y, m - 1, d).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+}
+
+/** The five adhan (begin) times for a day, for scheduling the prayer cue. */
+function adhanRowsOf(d: MonthDay) {
+  return [
+    { name: "Fajr", begins: d.fajrBegins },
+    { name: "Dhuhr", begins: d.dhuhrBegins },
+    { name: "ʿAsr", begins: d.asrBegins },
+    { name: "Maghrib", begins: d.maghrib },
+    { name: "ʿIshā", begins: d.ishaBegins },
+  ];
+}
+
+/** A polished, iOS-feel switch — the track fills gold and the knob springs
+ *  across when the adhan cue is on. Controlled: the parent card handles taps. */
+function AdhanSwitch({ on }: { on: boolean }) {
+  const v = useRef(new Animated.Value(on ? 1 : 0)).current;
+  useEffect(() => {
+    Animated.spring(v, { toValue: on ? 1 : 0, useNativeDriver: false, speed: 15, bounciness: 9 }).start();
+  }, [on, v]);
+  return (
+    <Animated.View
+      style={[
+        sw.track,
+        {
+          backgroundColor: v.interpolate({
+            inputRange: [0, 1],
+            outputRange: ["rgba(244,239,226,0.16)", colors.gold],
+          }),
+          borderColor: v.interpolate({
+            inputRange: [0, 1],
+            outputRange: [colors.glassBorder, colors.gold],
+          }),
+        },
+      ]}
+    >
+      <Animated.View style={[sw.knob, { transform: [{ translateX: v.interpolate({ inputRange: [0, 1], outputRange: [2, 24] }) }] }]} />
+    </Animated.View>
+  );
 }
 
 export default function Prayers() {
@@ -137,6 +178,84 @@ export default function Prayers() {
   }, [grid, dayISO]);
 
   const isToday = selectedISO === todayISO;
+
+  /* ── Adhan cue: an opt-in short takbīr at prayer times ─────────────────── */
+  const [adhanOn, setAdhanOn] = useState(false);
+  const [adhanBusy, setAdhanBusy] = useState(false);
+
+  useEffect(() => {
+    getAdhan().then(setAdhanOn);
+  }, []);
+
+  // Gather the coming days' begin times from the cached current + next month,
+  // independent of whichever month is being viewed, so the cue schedule is
+  // always anchored to today going forward.
+  const collectDays = useCallback(async (): Promise<DaySchedule[]> => {
+    const days: DaySchedule[] = [];
+    const d0 = new Date();
+    const thisMonth = monthKey(d0.getFullYear(), d0.getMonth() + 1);
+    const nextY = d0.getMonth() + 1 === 12 ? d0.getFullYear() + 1 : d0.getFullYear();
+    const nextM = d0.getMonth() + 1 === 12 ? 1 : d0.getMonth() + 2;
+    for (const k of [thisMonth, monthKey(nextY, nextM)]) {
+      try {
+        const raw = await AsyncStorage.getItem(`kma-month-${k}`);
+        if (raw) {
+          const g = JSON.parse(raw) as MonthGrid;
+          for (const d of g.days) days.push({ dateISO: d.date, prayers: adhanRowsOf(d) });
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+    // Fallback: at least today's five, from the snapshot.
+    if (!days.length && data?.date.iso) {
+      days.push({
+        dateISO: data.date.iso,
+        prayers: data.prayers.filter((p) => !p.isInfo).map((p) => ({ name: p.en, begins: p.begins })),
+      });
+    }
+    return days;
+  }, [data]);
+
+  // Keep the rolling schedule fresh whenever new month data lands, if enabled.
+  useEffect(() => {
+    (async () => {
+      if (await getAdhan()) {
+        const days = await collectDays();
+        if (days.length) scheduleAdhan(days).catch(() => {});
+      }
+    })();
+  }, [grid, collectDays]);
+
+  async function toggleAdhan() {
+    if (adhanBusy) return;
+    tap();
+    const next = !adhanOn;
+    setAdhanOn(next); // optimistic
+    setAdhanBusy(true);
+    try {
+      await setAdhan(next);
+      if (next) {
+        playTakbir(); // instant, delightful confirmation of what it sounds like
+        const days = await collectDays();
+        const ok = await scheduleAdhan(days);
+        if (!ok) {
+          // Permission denied — revert and guide the user.
+          setAdhanOn(false);
+          await setAdhan(false);
+          Alert.alert(
+            "Turn on notifications",
+            "To hear the takbīr at prayer times, allow notifications for Kingston Masjid in your device Settings.",
+          );
+        }
+      } else {
+        Speech.stop();
+        await cancelAdhan();
+      }
+    } finally {
+      setAdhanBusy(false);
+    }
+  }
 
   // All three PDF actions build the same branded PDF on-device from `grid`.
   async function doShare() {
@@ -261,6 +380,26 @@ export default function Prayers() {
         </Card>
       )}
 
+      {/* Adhan cue — an elegant opt-in toggle (default: Mute) */}
+      <Press onPress={toggleAdhan} scaleTo={0.99} style={[s.adhanCard, adhanOn && s.adhanCardOn]}>
+        <View style={[s.adhanIcon, adhanOn && s.adhanIconOn]}>
+          <Ionicons
+            name={adhanOn ? "notifications" : "notifications-off-outline"}
+            size={20}
+            color={adhanOn ? colors.onGold : colors.goldSoft}
+          />
+        </View>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={s.adhanTitle}>Adhan at prayer times</Text>
+          <Text style={s.adhanSub} numberOfLines={2}>
+            {adhanOn
+              ? "On — a short takbīr, “Allāhu Akbar”, plays at each prayer time"
+              : "Muted — tap to hear the takbīr, “Allāhu Akbar”, at prayer times"}
+          </Text>
+        </View>
+        <AdhanSwitch on={adhanOn} />
+      </Press>
+
       {/* Actions — the timetable PDF is generated inside the app */}
       <View style={{ flexDirection: "row", gap: 10 }}>
         <View style={{ flex: 1 }}>
@@ -374,6 +513,31 @@ const s = StyleSheet.create({
   tAr: { color: colors.textFaint, fontSize: t.small },
   tCell: { flex: 1, textAlign: "right", color: colors.textDim, fontSize: t.body, fontVariant: ["tabular-nums"] },
   tCellBold: { color: colors.text, fontWeight: "800" },
+  adhanCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.md,
+    backgroundColor: colors.glass,
+    borderColor: colors.glassBorder,
+    borderWidth: 1,
+    borderRadius: radius.lg,
+    padding: 14,
+  },
+  adhanCardOn: {
+    backgroundColor: "rgba(201,162,39,0.10)",
+    borderColor: "rgba(201,162,39,0.45)",
+  },
+  adhanIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 13,
+    backgroundColor: "rgba(201,162,39,0.14)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  adhanIconOn: { backgroundColor: colors.gold },
+  adhanTitle: { color: colors.text, fontSize: t.body, fontWeight: "800", letterSpacing: -0.2 },
+  adhanSub: { color: colors.textDim, fontSize: t.small, marginTop: 2, lineHeight: 18 },
   outlineBtn: {
     borderColor: colors.glassBorder,
     borderWidth: 1,
@@ -407,4 +571,25 @@ const s = StyleSheet.create({
   gDay: { width: 52, color: colors.textDim, fontSize: t.small, fontWeight: "700" },
   gCell: { flex: 1, textAlign: "center", color: colors.text, fontSize: t.small, fontVariant: ["tabular-nums"] },
   gNote: { color: colors.textFaint, fontSize: t.tiny, textAlign: "center", paddingVertical: 8 },
+});
+
+const sw = StyleSheet.create({
+  track: {
+    width: 48,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1,
+    justifyContent: "center",
+  },
+  knob: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 2,
+  },
 });
