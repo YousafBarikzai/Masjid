@@ -1,12 +1,13 @@
 import { Fragment } from "react";
 import { Text } from "react-native";
-import * as WebBrowser from "expo-web-browser";
 import { useSnapshot } from "../../src/useSnapshot";
 import { Page, Card, ListRow, Divider, Empty } from "../../src/ui";
-import { absUrl } from "../../src/api";
+import { openInApp } from "../../src/actions";
 
 /* Media — khutbahs, lectures and multimedia links, managed entirely from the
-   CMS (admin → Mobile App → Media links). Everything opens in-app. */
+   CMS (admin → Mobile App → Media links). Video/audio are third-party (YouTube,
+   podcasts) so they play in the in-app browser sheet, which presents over the
+   app without leaving it. */
 
 const KIND_ICON: Record<string, string> = {
   video: "▶️",
@@ -21,7 +22,7 @@ export default function Media() {
   const youtube = data?.app?.youtube;
 
   function open(url: string) {
-    WebBrowser.openBrowserAsync(absUrl(url)).catch(() => {});
+    openInApp(url);
   }
 
   return (

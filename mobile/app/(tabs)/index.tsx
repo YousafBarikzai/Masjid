@@ -1,32 +1,27 @@
-import { View, Text, StyleSheet, Pressable, ScrollView, Linking } from "react-native";
-import * as WebBrowser from "expo-web-browser";
+import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
 import { useSnapshot } from "../../src/useSnapshot";
 import { Page, Card, Section, tap, Empty } from "../../src/ui";
 import { CountdownRing } from "../../src/CountdownRing";
 import { colors, radius, space, type as t } from "../../src/theme";
-import { absUrl } from "../../src/api";
+import { goTo } from "../../src/nav";
 import { useRouter } from "expo-router";
 
 /* Home — the daily glance: greeting, live next-prayer ring, today's times,
-   the mosque announcement, CMS-managed quick actions, events & news. */
-
-function openLink(url: string) {
-  const abs = absUrl(url);
-  if (/^https?:\/\//i.test(abs)) WebBrowser.openBrowserAsync(abs).catch(() => Linking.openURL(abs));
-  else Linking.openURL(abs).catch(() => {});
-}
+   the mosque announcement, CMS-managed quick actions, events & news. Every
+   action opens a native screen inside the app. */
 
 export default function Home() {
   const { data, offline, refresh } = useSnapshot();
   const router = useRouter();
+  const openLink = (url: string) => goTo(router, url);
 
   const quick = (data?.app?.quickLinks?.length
     ? data.app.quickLinks
     : [
-        { icon: "💛", label: "Donate", url: data?.app?.donateUrl || "/donate" },
+        { icon: "💛", label: "Donate", url: "/donate" },
         { icon: "🕌", label: "Jumuʿah", url: "/jummah" },
         { icon: "🧭", label: "Qibla", url: "/qibla" },
-        { icon: "📖", label: "Education", url: "/education" },
+        { icon: "🗂️", label: "Services", url: "/services" },
       ]
   ).slice(0, 4);
 

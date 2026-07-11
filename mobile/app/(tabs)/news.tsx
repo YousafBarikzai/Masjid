@@ -1,15 +1,15 @@
 import { View, Text, StyleSheet, Pressable } from "react-native";
-import * as WebBrowser from "expo-web-browser";
+import { useRouter } from "expo-router";
 import { useSnapshot } from "../../src/useSnapshot";
 import { Page, Card, tap, Empty } from "../../src/ui";
 import { colors, radius, space, type as t } from "../../src/theme";
-import { absUrl } from "../../src/api";
 
 /* News — the mosque announcement pinned on top, then the latest articles.
-   Tapping opens the full article in the in-app browser. */
+   Tapping opens the full article on a native screen inside the app. */
 
 export default function News() {
   const { data, offline, refresh } = useSnapshot();
+  const router = useRouter();
 
   return (
     <Page eyebrow="Kingston Mosque" title="News & notices" offline={offline} onRefresh={refresh}>
@@ -26,7 +26,7 @@ export default function News() {
             key={n.slug ?? i}
             onPress={() => {
               tap();
-              WebBrowser.openBrowserAsync(absUrl(n.slug ? `/news/${n.slug}` : "/news")).catch(() => {});
+              if (n.slug) router.push(`/article/${n.slug}` as never);
             }}
           >
             <Card style={{ gap: 5 }}>

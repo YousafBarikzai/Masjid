@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Pressable, Share } from "react-native";
-import * as WebBrowser from "expo-web-browser";
+import { View, Text, StyleSheet, ScrollView, Pressable, Alert, ActionSheetIOS, Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSnapshot } from "../../src/useSnapshot";
-import { fetchMonth, absUrl } from "../../src/api";
+import { fetchMonth } from "../../src/api";
 import type { MonthGrid } from "../../src/types";
 import { Page, Card, GoldButton, tap, Empty } from "../../src/ui";
 import { colors, radius, space, type as t } from "../../src/theme";
+import { shareTimetablePdf, printTimetable, emailTimetablePdf } from "../../src/pdf";
 
 /* Prayers — today at a glance plus the FULL monthly timetable (begins + iqāmah
    per salah), with share + PDF download. Months are cached on-device so the
@@ -58,22 +58,60 @@ export default function Prayers() {
   const year = grid?.year ?? now.getFullYear();
   const todayISO = data?.date.iso;
 
-  async function shareMonth() {
+  // All three PDF actions build the same branded PDF on-device from `grid`.
+  async function doShare() {
     if (!grid) return;
-    const name = `${MONTHS[parseInt(month.slice(5), 10) - 1]} ${year}`;
-    const lines = grid.days.map(
-      (d) =>
-        `${d.date.slice(8)} ${d.weekday}  F ${d.fajrJamaah}  D ${d.dhuhrJamaah}  A ${d.asrJamaah}  M ${d.maghrib}  I ${d.ishaJamaah}`,
-    );
-    await Share.share({
-      title: `Kingston Mosque — ${name}`,
-      message: `Kingston Mosque jamāʿah times — ${name}\n(F=Fajr D=Dhuhr A=ʿAsr M=Maghrib I=ʿIshā)\n\n${lines.join("\n")}\n\nFull timetable: ${absUrl("/prayer-times")}`,
-    }).catch(() => {});
+    try {
+      await shareTimetablePdf(grid);
+    } catch {
+      Alert.alert("Couldn't create the PDF", "Please try again in a moment.");
+    }
+  }
+  async function doPrint() {
+    if (!grid) return;
+    try {
+      await printTimetable(grid);
+    } catch {
+      /* user cancelled */
+    }
+  }
+  async function doEmail() {
+    if (!grid) return;
+    try {
+      const ok = await emailTimetablePdf(grid);
+      if (!ok) {
+        Alert.alert(
+          "No email set up",
+          "Add an email account in your device settings, or use “Share PDF” and pick Mail.",
+        );
+      }
+    } catch {
+      Alert.alert("Couldn't create the PDF", "Please try again in a moment.");
+    }
   }
 
-  function downloadPdf() {
-    const url = data?.app?.timetablePdfUrl || absUrl("/prayer-times");
-    WebBrowser.openBrowserAsync(absUrl(url)).catch(() => {});
+  // A single "PDF" button opens the native options: save/print, share, email.
+  function openPdfMenu() {
+    tap();
+    if (!grid) return;
+    const options = ["Save / Print PDF", "Share PDF", "Email me the PDF", "Cancel"];
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        { options, cancelButtonIndex: 3, title: "Prayer timetable PDF" },
+        (i) => {
+          if (i === 0) doPrint();
+          else if (i === 1) doShare();
+          else if (i === 2) doEmail();
+        },
+      );
+    } else {
+      Alert.alert("Prayer timetable PDF", undefined, [
+        { text: "Save / Print PDF", onPress: doPrint },
+        { text: "Share PDF", onPress: doShare },
+        { text: "Email me the PDF", onPress: doEmail },
+        { text: "Cancel", style: "cancel" },
+      ]);
+    }
   }
 
   return (
@@ -118,19 +156,16 @@ export default function Prayers() {
         </Card>
       )}
 
-      {/* Actions */}
+      {/* Actions — the timetable PDF is generated inside the app */}
       <View style={{ flexDirection: "row", gap: 10 }}>
         <View style={{ flex: 1 }}>
-          <GoldButton compact label="Share this month" onPress={shareMonth} />
+          <GoldButton compact label="⬇︎  Get PDF" onPress={openPdfMenu} />
         </View>
         <Pressable
           style={({ pressed }) => [s.outlineBtn, pressed && { opacity: 0.8 }]}
-          onPress={() => {
-            tap();
-            downloadPdf();
-          }}
+          onPress={doEmail}
         >
-          <Text style={s.outlineBtnText}>Download PDF</Text>
+          <Text style={s.outlineBtnText}>Email me the PDF</Text>
         </Pressable>
       </View>
 
