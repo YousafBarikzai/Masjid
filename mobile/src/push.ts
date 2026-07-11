@@ -4,13 +4,18 @@ import * as Notifications from "expo-notifications";
 import { registerDevice } from "./api";
 import { getTopics } from "./prefs";
 
-// Show notifications while the app is foregrounded too.
+// Show notifications while the app is foregrounded too. For the adhan cue we
+// suppress the default sound here because the app speaks the takbīr instead
+// (see the received-listener in the root layout); its banner still shows.
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
+  handleNotification: async (n) => {
+    const isAdhan = (n.request.content.data as { type?: string } | undefined)?.type === "adhan";
+    return {
+      shouldShowAlert: true,
+      shouldPlaySound: !isAdhan,
+      shouldSetBadge: false,
+    };
+  },
 });
 
 /**
