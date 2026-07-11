@@ -218,9 +218,10 @@ export default buildConfig({
     // Make every website page editable: seed the Pages collection with the
     // site's built-in text once (never overwrites staff edits — see seed-pages.ts).
     try {
-      const { seedWebsitePages, seedScreens } = await import("./payload/seed-pages");
+      const { seedWebsitePages, seedScreens, seedSampleKhutbahs } = await import("./payload/seed-pages");
       await seedWebsitePages(payload);
       await seedScreens(payload);
+      await seedSampleKhutbahs(payload);
     } catch (err) {
       payload.logger.warn("Website page seeding failed: " + (err as Error).message);
     }
