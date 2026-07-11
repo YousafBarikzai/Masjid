@@ -21,7 +21,7 @@
       "infoPlist": {
         "UIBackgroundModes": ["remote-notification"],
         "ITSAppUsesNonExemptEncryption": false,
-        "NSLocationWhenInUseUsageDescription": "Your location is used only on your device to point the Qibla compass towards the Kaʿbah. It is never stored or shared."
+        "NSLocationWhenInUseUsageDescription": "Your location is used only on your device to point the Qibla compass towards the Kaʿbah and to show mosques near you on the map. It is never stored or shared."
       }
     },
     "android": {
@@ -49,7 +49,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Your location is used only on your device to point the Qibla compass towards the Kaʿbah. It is never stored or shared."
+          "locationWhenInUsePermission": "Your location is used only on your device to point the Qibla compass towards the Kaʿbah and to show mosques near you on the map. It is never stored or shared."
         }
       ]
     ],

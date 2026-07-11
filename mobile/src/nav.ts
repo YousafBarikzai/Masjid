@@ -29,6 +29,8 @@ const NATIVE: { test: RegExp; to: (m: RegExpMatchArray) => string }[] = [
   { test: /^\/?events?\/([\w-]+)\/?$/i, to: (m) => `/event/${m[1]}` },
   { test: /^\/?news\/([\w-]+)\/?$/i, to: (m) => `/article/${m[1]}` },
   { test: /^\/?(news|posts)\/?$/i, to: () => "/news" },
+  { test: /^\/?(live|broadcast|watch|stream)\/?$/i, to: () => "/live" },
+  { test: /^\/?(mosques|nearby-mosques|find-a-mosque|nearby)\/?$/i, to: () => "/mosques" },
   { test: /^\/?media\/?$/i, to: () => "/media" },
   { test: /^\/?(more|settings|about)\/?$/i, to: () => "/more" },
   { test: /^\/?(home|)\/?$/i, to: () => "/" },

@@ -305,6 +305,35 @@ export const AppSettings: GlobalConfig = {
       ],
     },
     {
+      type: "collapsible",
+      label: "Live broadcast",
+      admin: {
+        description:
+          "The app's Live page. Paste your YouTube link here when you go live (khutbah, Eid, Tarāwīḥ, lectures) and clear it afterwards — the app updates within a minute.",
+      },
+      fields: [
+        {
+          name: "kingstonLiveUrl",
+          type: "text",
+          label: "Kingston Masjid live link",
+          admin: {
+            description:
+              "Paste the YouTube live URL while broadcasting (e.g. https://youtube.com/watch?v=…). Leave EMPTY when not live — the app then shows a friendly 'no broadcast' message. With a YouTube API key configured on the server this is detected automatically instead.",
+          },
+        },
+        {
+          name: "makkahLiveUrl",
+          type: "text",
+          label: "Makkah live stream",
+          defaultValue: "https://www.youtube.com/embed/live_stream?channel=UCos52azQNBgW63_9uDJoPDA",
+          admin: {
+            description:
+              "The Masjid al-Haram stream shown on the Live page. Default: the official KSA Qur'an TV channel's live stream (Saudi Broadcasting Authority) via YouTube's own embed.",
+          },
+        },
+      ],
+    },
+    {
       name: "mediaLinks",
       type: "array",
       labels: { singular: "Media link", plural: "Media links" },

@@ -152,6 +152,33 @@ export interface DonationCampaign {
   link: string;
 }
 
+/* Nearby mosques (app-api/mosques — OpenStreetMap via Overpass) */
+export interface Mosque {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  address: string;
+  phone: string;
+  website: string;
+  wheelchair: boolean;
+  openingHours: string;
+  tags: Record<string, string>;
+}
+
+export interface GeocodeResult {
+  name: string;
+  lat: number;
+  lng: number;
+}
+
+/* Live broadcast feed (app-api/live) */
+export interface LiveFeed {
+  kingston: { live: boolean; embedUrl: string; title: string; channelUrl: string };
+  makkah: { embedUrl: string; attribution: string };
+  recent: { title: string; videoId: string; published: string }[];
+}
+
 export interface ContentFeed {
   generatedAt: string;
   services: ServiceContent[];

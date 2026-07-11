@@ -1,5 +1,14 @@
 import Constants from "expo-constants";
-import type { ArticleContent, ArticlesPage, ContentFeed, MonthGrid, Snapshot } from "./types";
+import type {
+  ArticleContent,
+  ArticlesPage,
+  ContentFeed,
+  GeocodeResult,
+  LiveFeed,
+  MonthGrid,
+  Mosque,
+  Snapshot,
+} from "./types";
 
 // Base URL of the deployed website/CMS. Override per build with the env var
 // EXPO_PUBLIC_API_BASE, else falls back to app.json's extra.apiBase.
@@ -70,6 +79,37 @@ export async function donationStatus(id: string): Promise<{ paid: boolean; statu
   const res = await fetch(`${apiBase}/app-api/donate/status?id=${encodeURIComponent(id)}`);
   if (!res.ok) return { paid: false, status: "error" };
   return (await res.json()) as { paid: boolean; status: string };
+}
+
+/** Mosques near a point, from OpenStreetMap (server-proxied + cached). */
+export async function fetchMosques(
+  lat: number,
+  lng: number,
+  radius: number,
+  signal?: AbortSignal,
+): Promise<Mosque[]> {
+  const res = await fetch(
+    `${apiBase}/app-api/mosques?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}&radius=${Math.round(radius)}`,
+    { signal },
+  );
+  if (!res.ok) throw new Error(`mosques ${res.status}`);
+  const data = (await res.json()) as { mosques?: Mosque[] };
+  return data.mosques ?? [];
+}
+
+/** UK place search for the map's search bar. */
+export async function geocode(q: string, signal?: AbortSignal): Promise<GeocodeResult[]> {
+  const res = await fetch(`${apiBase}/app-api/geocode?q=${encodeURIComponent(q)}`, { signal });
+  if (!res.ok) return [];
+  const data = (await res.json()) as { results?: GeocodeResult[] };
+  return data.results ?? [];
+}
+
+/** Live-broadcast state: Makkah stream + Kingston live/recent recordings. */
+export async function fetchLive(signal?: AbortSignal): Promise<LiveFeed> {
+  const res = await fetch(`${apiBase}/app-api/live`, { signal });
+  if (!res.ok) throw new Error(`live ${res.status}`);
+  return (await res.json()) as LiveFeed;
 }
 
 export async function registerDevice(
