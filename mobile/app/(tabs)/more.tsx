@@ -1,13 +1,12 @@
 import { Fragment, useEffect, useState } from "react";
-import { Text, View, StyleSheet, Pressable, Switch, Share } from "react-native";
-import * as Haptics from "expo-haptics";
+import { Text, StyleSheet, Switch, Share } from "react-native";
 import { useRouter } from "expo-router";
 import { useSnapshot } from "../../src/useSnapshot";
 import { useContent } from "../../src/useContent";
 import { apiBase } from "../../src/api";
 import { Page, Card, Section, ListRow, Divider, GoldButton, tap } from "../../src/ui";
-import { colors, radius, space, type as t } from "../../src/theme";
-import { ALL_TOPICS, getTopics, setTopics, getTasbih, setTasbih, type Topic, type TasbihState } from "../../src/prefs";
+import { colors, space, type as t } from "../../src/theme";
+import { ALL_TOPICS, getTopics, setTopics, type Topic } from "../../src/prefs";
 import { registerForPush } from "../../src/push";
 import { callMosque, emailMosque, openMaps } from "../../src/actions";
 import { goTo } from "../../src/nav";
@@ -20,12 +19,6 @@ const TOPIC_META: Record<Topic, { icon: string; title: string; sub: string }> = 
   events: { icon: "📅", title: "Events & programmes", sub: "Talks, classes and gatherings" },
   prayer: { icon: "🕌", title: "Prayer reminders", sub: "A nudge shortly before jamāʿah" },
 };
-
-const DHIKR = [
-  { ar: "سُبْحَانَ الله", en: "SubḥānAllāh" },
-  { ar: "الْحَمْدُ لِلَّه", en: "Alḥamdulillāh" },
-  { ar: "اللَّهُ أَكْبَر", en: "Allāhu Akbar" },
-];
 
 /* ------------------------------ Notifications ----------------------------- */
 
@@ -71,63 +64,6 @@ function NotificationPrefs() {
   );
 }
 
-/* --------------------------------- Tasbīḥ --------------------------------- */
-
-function Tasbih() {
-  const [st, setSt] = useState<TasbihState>({ idx: 0, count: 0, rounds: 0 });
-
-  useEffect(() => {
-    getTasbih().then(setSt);
-  }, []);
-
-  function save(next: TasbihState) {
-    setSt(next);
-    setTasbih(next).catch(() => {});
-  }
-
-  function press() {
-    const count = st.count + 1;
-    if (count >= 33) {
-      // Round complete — heavier pulse, move to the next phrase.
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-      save({ idx: (st.idx + 1) % DHIKR.length, count: 0, rounds: st.rounds + 1 });
-    } else {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-      save({ ...st, count });
-    }
-  }
-
-  function reset() {
-    tap();
-    save({ idx: 0, count: 0, rounds: 0 });
-  }
-
-  const d = DHIKR[st.idx % DHIKR.length];
-
-  return (
-    <Card style={s.tasbihCard}>
-      <Text style={s.tasbihAr}>{d.ar}</Text>
-      <Text style={s.tasbihEn}>{d.en}</Text>
-      <Pressable
-        onPress={press}
-        style={({ pressed }) => [s.tasbihBtn, pressed && { transform: [{ scale: 0.96 }] }]}
-        accessibilityLabel="Count dhikr"
-      >
-        <Text style={s.tasbihCount}>{st.count}</Text>
-        <Text style={s.tasbihOf}>of 33</Text>
-      </Pressable>
-      <View style={s.tasbihFoot}>
-        <Text style={s.tasbihRounds}>
-          {st.rounds} round{st.rounds === 1 ? "" : "s"} completed
-        </Text>
-        <Pressable onPress={reset} hitSlop={10}>
-          <Text style={s.tasbihReset}>Reset</Text>
-        </Pressable>
-      </View>
-    </Card>
-  );
-}
-
 /* ---------------------------------- Screen --------------------------------- */
 
 export default function More() {
@@ -162,7 +98,14 @@ export default function More() {
       <NotificationPrefs />
 
       <Section title="Tasbīḥ counter" />
-      <Tasbih />
+      <Card style={{ paddingVertical: 4 }}>
+        <ListRow
+          icon="📿"
+          title="Tasbīḥ counter"
+          sub="Six adhkar to choose from — each keeps its own count"
+          onPress={() => router.push("/tasbih" as never)}
+        />
+      </Card>
 
       <Section title="Watch & explore" />
       <Card style={{ paddingVertical: 4 }}>
@@ -241,31 +184,4 @@ export default function More() {
 
 const s = StyleSheet.create({
   giveText: { color: colors.textDim, fontSize: t.body, lineHeight: 22 },
-  tasbihCard: { alignItems: "center", paddingVertical: space.xl },
-  tasbihAr: { color: colors.goldSoft, fontSize: 30, fontWeight: "600" },
-  tasbihEn: { color: colors.textDim, fontSize: t.small, marginTop: 4, marginBottom: space.lg },
-  tasbihBtn: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: colors.surface,
-    borderWidth: 2,
-    borderColor: colors.gold,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  tasbihCount: { color: colors.text, fontSize: 44, fontWeight: "800", letterSpacing: -1 },
-  tasbihOf: { color: colors.textFaint, fontSize: t.tiny, marginTop: -2 },
-  tasbihFoot: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.lg,
-    marginTop: space.lg,
-  },
-  tasbihRounds: { color: colors.textDim, fontSize: t.small },
-  tasbihReset: {
-    color: colors.goldSoft,
-    fontSize: t.small,
-    fontWeight: "700",
-  },
 });

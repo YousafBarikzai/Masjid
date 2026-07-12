@@ -27,25 +27,31 @@ export async function setTopics(topics: Topic[]): Promise<void> {
   }
 }
 
-export interface TasbihState {
-  idx: number;
-  count: number;
-  rounds: number;
+/* Tasbīḥ: each dhikr keeps its own running count, and the last-selected
+   dhikr is remembered so the screen opens where the user left off. */
+export interface TasbihPrefs {
+  sel: string;
+  counts: Record<string, number>;
 }
 
-export async function getTasbih(): Promise<TasbihState> {
+export async function getTasbihPrefs(): Promise<TasbihPrefs> {
   try {
     const raw = await AsyncStorage.getItem(TASBIH_KEY);
-    if (raw) return JSON.parse(raw) as TasbihState;
+    if (raw) {
+      const p = JSON.parse(raw) as Partial<TasbihPrefs>;
+      if (p && typeof p.sel === "string" && p.counts && typeof p.counts === "object") {
+        return { sel: p.sel, counts: p.counts as Record<string, number> };
+      }
+    }
   } catch {
     /* ignore */
   }
-  return { idx: 0, count: 0, rounds: 0 };
+  return { sel: "tasbih", counts: {} };
 }
 
-export async function setTasbih(state: TasbihState): Promise<void> {
+export async function setTasbihPrefs(prefs: TasbihPrefs): Promise<void> {
   try {
-    await AsyncStorage.setItem(TASBIH_KEY, JSON.stringify(state));
+    await AsyncStorage.setItem(TASBIH_KEY, JSON.stringify(prefs));
   } catch {
     /* ignore */
   }
