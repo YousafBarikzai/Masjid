@@ -60,11 +60,6 @@ export const BroadcastSettings: GlobalConfig = {
       type: "textarea",
       admin: { description: "Optional sign-off appended to broadcasts, e.g. “— Kingston Mosque”." },
     },
-    {
-      name: "whatsappJoinUrl",
-      type: "text",
-      admin: { description: "Public “join our WhatsApp updates” link/QR target shown to the community." },
-    },
     { name: "telegramJoinUrl", type: "text", admin: { description: "Public Telegram channel/group link." } },
   ],
 };

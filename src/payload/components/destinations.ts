@@ -15,7 +15,7 @@ export interface Destination {
   slug: string;
   label: string;
   href: string;
-  group: "Content" | "Communication" | "Configuration" | "People" | "Media" | "Forms";
+  group: "Content" | "Communication" | "Configuration" | "People" | "Media";
 }
 
 /** Collections worth navigating to / pinning. */
@@ -54,13 +54,6 @@ export const COLLECTIONS: Destination[] = [
     label: "Contact submissions",
     href: collectionHref("contact-submissions"),
     group: "Communication",
-  },
-  { slug: "forms", label: "Forms", href: collectionHref("forms"), group: "Forms" },
-  {
-    slug: "form-submissions",
-    label: "Form submissions",
-    href: collectionHref("form-submissions"),
-    group: "Forms",
   },
   { slug: "media", label: "Media library", href: collectionHref("media"), group: "Media" },
   { slug: "users", label: "Staff & users", href: collectionHref("users"), group: "People" },

@@ -212,6 +212,38 @@ const DownloadBlock: Block = {
 // The full set of layout blocks shared by Pages and News posts.
 const layoutBlocks = [RichTextBlock, ColumnsBlock, MediaBlock, CallToActionBlock, DownloadBlock];
 
+/* -------------------------- Per-surface targeting -------------------------- */
+// "Show on" checkboxes shared by posts, events and announcements: publish once,
+// choose where it appears. Everything is ticked by default (publish everywhere);
+// untick a surface to target the rest. Older items with no choice saved behave
+// as "everywhere".
+const showOnField: Field = {
+  name: "showOn",
+  type: "group",
+  label: "Show on",
+  admin: {
+    description:
+      "Where this appears. All ticked (the default) = website, mobile apps and mosque screens together. Untick a surface to leave it out.",
+  },
+  fields: [
+    {
+      type: "row",
+      fields: [
+        { name: "website", type: "checkbox", defaultValue: true, label: "Website", admin: { width: "33%" } },
+        { name: "app", type: "checkbox", defaultValue: true, label: "Mobile apps", admin: { width: "33%" } },
+        { name: "screens", type: "checkbox", defaultValue: true, label: "Mosque screens", admin: { width: "34%" } },
+      ],
+    },
+  ],
+};
+
+/** True when a doc should appear on the given surface (missing/legacy = yes). */
+export type Surface = "website" | "app" | "screens";
+export function showsOn(doc: unknown, surface: Surface): boolean {
+  const flags = (doc as { showOn?: Record<string, boolean | null> } | null)?.showOn;
+  return flags?.[surface] !== false;
+}
+
 /* ---------------------------------- Pages --------------------------------- */
 export const Pages: CollectionConfig = {
   slug: "pages",
@@ -285,6 +317,7 @@ export const Posts: CollectionConfig = {
     { name: "publishedDate", type: "date" },
     { name: "image", type: "upload", relationTo: "media", admin: { description: "Lead image shown on the card and at the top of the article." } },
     { name: "excerpt", type: "textarea", admin: { description: "Short summary shown on the news card." } },
+    showOnField,
     {
       name: "content",
       type: "richText",
@@ -436,6 +469,7 @@ export const Events: CollectionConfig = {
     { name: "image", type: "upload", relationTo: "media" },
     { name: "description", type: "richText" },
     { name: "registrationUrl", type: "text" },
+    showOnField,
   ],
 };
 
@@ -507,6 +541,7 @@ export const Announcements: CollectionConfig = {
     { name: "enabled", type: "checkbox", defaultValue: true },
     { name: "startDate", type: "date" },
     { name: "endDate", type: "date" },
+    showOnField,
     {
       name: "sendPush",
       type: "checkbox",
@@ -808,26 +843,67 @@ export const DeviceTokens: CollectionConfig = {
 };
 
 /* ------------------------------- Subscribers ------------------------------ */
-// Opt-in contacts for the Broadcast Center (email + WhatsApp). The public can
-// self-subscribe via a form; staff manage the list in the admin.
+// The mosque's CENTRAL mailing list. Everyone who signs up — on the website,
+// in the iOS app, in the Android app, or added by staff — lands here, and each
+// entry is mirrored to Mailchimp automatically (when MAILCHIMP_API_KEY +
+// MAILCHIMP_AUDIENCE_ID are set), so newsletters are sent from Mailchimp
+// against an always-current audience.
 export const Subscribers: CollectionConfig = {
   slug: "subscribers",
-  labels: { singular: "Subscriber", plural: "Subscribers (Broadcast)" },
+  labels: { singular: "Subscriber", plural: "Subscribers (Mailing list)" },
   admin: {
     useAsTitle: "email",
-    defaultColumns: ["name", "email", "whatsapp", "emailOptIn", "whatsappOptIn", "unsubscribed"],
+    defaultColumns: ["name", "email", "source", "unsubscribed", "updatedAt"],
     group: "Broadcast",
-    description: "People who opted in to email / WhatsApp updates.",
+    description:
+      "The central mailing list. Sign-ups from the website and the mobile apps land here automatically, and every entry syncs to Mailchimp (when configured) — manage campaigns and newsletters in Mailchimp itself.",
   },
   access: { create: () => true, read: isStaff, update: isStaff, delete: isAdmin },
+  hooks: {
+    afterChange: [
+      async ({ doc }) => {
+        // Mirror to Mailchimp — best-effort, never blocks the save.
+        try {
+          const { upsertMailchimpMember } = await import("../lib/mailchimp");
+          await upsertMailchimpMember({
+            email: (doc as { email?: string }).email || "",
+            name: (doc as { name?: string }).name || "",
+            subscribed:
+              (doc as { unsubscribed?: boolean }).unsubscribed !== true &&
+              (doc as { emailOptIn?: boolean }).emailOptIn !== false,
+          });
+        } catch {
+          /* Mailchimp not configured or unreachable — the CMS list is still the record */
+        }
+        return doc;
+      },
+    ],
+    afterDelete: [
+      async ({ doc }) => {
+        try {
+          const { archiveMailchimpMember } = await import("../lib/mailchimp");
+          await archiveMailchimpMember((doc as { email?: string }).email || "");
+        } catch {
+          /* best-effort */
+        }
+      },
+    ],
+  },
   fields: [
     { name: "name", type: "text" },
-    { name: "email", type: "email" },
-    { name: "whatsapp", type: "text", admin: { description: "International format, e.g. 447700900000" } },
+    { name: "email", type: "email", required: true },
     { name: "emailOptIn", type: "checkbox", defaultValue: true, label: "Wants email updates" },
-    { name: "whatsappOptIn", type: "checkbox", defaultValue: false, label: "Wants WhatsApp updates" },
-    { name: "unsubscribed", type: "checkbox", defaultValue: false },
-    { name: "source", type: "text", admin: { description: "How they joined (e.g. website form, QR)" } },
+    {
+      name: "unsubscribed",
+      type: "checkbox",
+      defaultValue: false,
+      admin: { description: "Tick to stop all emails to this person (also marks them unsubscribed in Mailchimp)." },
+    },
+    {
+      name: "source",
+      type: "text",
+      admin: { description: "How they joined — website, ios-app, android-app, or added by staff." },
+    },
   ],
 };
 
@@ -851,7 +927,7 @@ export const Broadcasts: CollectionConfig = {
       name: "image",
       type: "upload",
       relationTo: "media",
-      admin: { description: "Optional. Required for Instagram; used by Facebook/Telegram/WhatsApp if set." },
+      admin: { description: "Optional. Required for Instagram; used by Facebook/Telegram if set." },
     },
     {
       name: "channels",
@@ -862,7 +938,6 @@ export const Broadcasts: CollectionConfig = {
         { label: "App notification (push)", value: "push" },
         { label: "Email", value: "email" },
         { label: "Telegram", value: "telegram" },
-        { label: "WhatsApp", value: "whatsapp" },
         { label: "Facebook", value: "facebook" },
         { label: "Instagram", value: "instagram" },
       ],

@@ -31,6 +31,6 @@ export default async function ScreenPage({ params }: Args) {
 
   if (!doc) notFound();
 
-  const initial = await buildSnapshot();
+  const initial = await buildSnapshot(new Date(), "screens");
   return <ScreenPlayer slug={screen} initialScreen={doc as never} initialSnapshot={initial} />;
 }

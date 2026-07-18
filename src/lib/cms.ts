@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { getPayloadClient } from "./payloadClient";
+import { showsOn, type Surface } from "../payload/collections";
 import * as seed from "./content";
 import type { CardItem } from "@/components/sections/CardGrid";
 import type { PrayerDay } from "./prayer";
@@ -139,7 +140,7 @@ export const getDonation = cache(async (): Promise<DonationData> => {
 
 /* ------------------------------ Announcement ------------------------------ */
 export const getAnnouncement = cache(
-  async (): Promise<{ enabled: boolean; label: string; message: string; href?: string }> => {
+  async (surface: Surface = "website"): Promise<{ enabled: boolean; label: string; message: string; href?: string }> => {
     try {
       const p = await getPayloadClient();
       const now = new Date().toISOString();
@@ -153,7 +154,7 @@ export const getAnnouncement = cache(
       const active = res.docs.find((d: any) => {
         const startOk = !d.startDate || d.startDate <= now;
         const endOk = !d.endDate || d.endDate >= now;
-        return startOk && endOk;
+        return startOk && endOk && showsOn(d, surface);
       });
       if (!active) return seed.alert;
       const rel = (active as any).relatedPage;
@@ -172,12 +173,12 @@ export const getAnnouncement = cache(
 );
 
 /* --------------------------------- Events --------------------------------- */
-export const getEvents = cache(async (): Promise<CardItem[]> => {
+export const getEvents = cache(async (surface: Surface = "website"): Promise<CardItem[]> => {
   try {
     const p = await getPayloadClient();
-    const res = await p.find({ collection: "events", sort: "-start", limit: 6, depth: 0 });
+    const res = await p.find({ collection: "events", sort: "-start", limit: 12, depth: 0 });
     if (!res.docs.length) return seed.events;
-    return res.docs.map((e: any) => ({
+    return res.docs.filter((e: any) => showsOn(e, surface)).slice(0, 6).map((e: any) => ({
       tag: e.category ?? "Event",
       title: e.title,
       body: val(e.summary, val(e.location ? `At ${e.location}` : "", "Details to follow.")),
@@ -252,18 +253,18 @@ export function livePostsWhere(now: Date = new Date()) {
   } as never;
 }
 
-export const getPosts = cache(async (): Promise<NewsItem[]> => {
+export const getPosts = cache(async (surface: Surface = "website"): Promise<NewsItem[]> => {
   try {
     const p = await getPayloadClient();
     const res = await p.find({
       collection: "posts",
       sort: "-publishedDate",
-      limit: 9,
+      limit: 18,
       depth: 0,
       where: livePostsWhere(),
     });
     if (!res.docs.length) return [];
-    return res.docs.map((d: any) => ({
+    return res.docs.filter((d: any) => showsOn(d, surface)).slice(0, 9).map((d: any) => ({
       date: d.publishedDate
         ? new Date(d.publishedDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
         : "News",

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { servicePages, donationCategories, eventsSeed, type PageSection } from "@/lib/site-content";
 import { getDonation, getJummah, getSite, livePostsWhere } from "@/lib/cms";
+import { showsOn } from "@/payload/collections";
 import { lexicalToSections, imageUrlOf, mapPost } from "@/lib/app-content";
 import { stripeEnabled } from "@/lib/stripe";
 import { getPayloadClient } from "@/lib/payloadClient";
@@ -74,7 +75,7 @@ export async function GET() {
       depth: 1,
       where: livePostsWhere(),
     });
-    articles = res.docs.map(mapPost);
+    articles = res.docs.filter((d) => showsOn(d, "app")).map(mapPost);
   } catch {
     articles = [];
   }
@@ -98,7 +99,7 @@ export async function GET() {
   try {
     const p = await getPayloadClient();
     const res = await p.find({ collection: "events", sort: "-start", limit: 20, depth: 1 });
-    events = res.docs.map((e: any) => ({
+    events = res.docs.filter((e) => showsOn(e, "app")).map((e: any) => ({
       slug: String(e.slug || slugify(String(e.title || "event"))),
       title: String(e.title || ""),
       tag: String(e.category || "Event"),

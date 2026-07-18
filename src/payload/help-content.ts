@@ -159,11 +159,11 @@ export const HELP_CONTENT: Record<string, HelpEntry> = {
   },
   "broadcasts": {
     title: "Broadcasts",
-    intro: "Write a notice once and send it out to your chosen channels (email, Telegram, WhatsApp, Facebook, Instagram). You compose a single message and it goes everywhere you tick.",
+    intro: "Write a notice once and send it out to your chosen channels (app push, email, Telegram, Facebook, Instagram). You compose a single message and it goes everywhere you tick.",
     steps: [
       "Click Create, then type a short Title and write your message in the Body box.",
-      "Optionally attach an Image (note: Instagram needs an image; Facebook, Telegram and WhatsApp will use it if you add one).",
-      "Under Channels, tick every place you want this to go (Email, Telegram, WhatsApp, Facebook, Instagram). You compose once and it fans out to all of them.",
+      "Optionally attach an Image (note: Instagram needs an image; Facebook and Telegram will use it if you add one).",
+      "Under Channels, tick every place you want this to go (App push, Email, Telegram, Facebook, Instagram). You compose once and it fans out to all of them.",
       "When you're ready to send, tick the 'Send now' box and click Save. It dispatches just once.",
       "After saving, the Status changes to 'Sent', the Sent At date is filled in, and the Report box shows a line for each channel telling you whether it worked.",
       "To send the same thing again later, create a new Broadcast rather than re-saving an old one.",
@@ -172,12 +172,11 @@ export const HELP_CONTENT: Record<string, HelpEntry> = {
   },
   "subscribers": {
     title: "Subscribers (Broadcast)",
-    intro: "Your list of people who have opted in to receive email or WhatsApp updates. These are the contacts your Broadcasts can reach.",
+    intro: "The mosque's central mailing list. Sign-ups from the website and the mobile apps land here automatically, and every entry syncs to Mailchimp (when configured) — newsletters and campaigns are then managed and sent from Mailchimp.",
     steps: [
       "People usually add themselves through the website sign-up form, so this list often fills up on its own.",
-      "To add someone by hand, click Create and fill in their Name, Email and/or WhatsApp number.",
-      "Enter WhatsApp numbers in international format with no spaces or plus sign, e.g. 447700900000.",
-      "Tick 'Wants email updates' and/or 'Wants WhatsApp updates' to set how they'd like to hear from you.",
+      "To add someone by hand, click Create and fill in their Name and Email — they sync to Mailchimp automatically.",
+      "Tick Unsubscribed to stop all emails to someone — Mailchimp is updated too.",
       "Use the Source field to note how they joined (e.g. 'website form' or 'QR code') so you can keep track.",
       "If someone asks to stop receiving messages, tick the 'Unsubscribed' box rather than deleting them.",
     ],
@@ -194,32 +193,6 @@ export const HELP_CONTENT: Record<string, HelpEntry> = {
       "Leave the Handled box unticked for anything still needing a reply, so nothing slips through the cracks.",
     ],
     tip: "The 'Handled' tick box is your to-do marker. Get into the habit of ticking it the moment a message is resolved, so untouched messages are easy to spot.",
-  },
-  "forms": {
-    title: "Forms",
-    intro: "A no-code form builder for things like membership sign-ups, enquiries or bookings. You drag in the fields you want, no coding needed, and the form can be placed on a website page.",
-    steps: [
-      "Click Create and give the form a clear name (e.g. 'Membership Application').",
-      "Add the fields you need by choosing field types: text, email, textarea, number, select (dropdown), checkbox, a message/instruction block, country or state.",
-      "Set who receives each submission by entering the recipient email address(es) for this form, so the right person gets notified.",
-      "Write a confirmation message to thank people after they submit, or choose a page to redirect them to instead.",
-      "Save the form, then ask whoever manages the website to add it to the relevant page.",
-      "Submissions are stored under Form Submissions and emailed to the recipients you set.",
-    ],
-    tip: "Each form has its own recipient list, so make sure you set it, otherwise notifications fall back to the mosque's default inbox. You can view and export collected responses to CSV from Form Submissions for spreadsheets or record-keeping.",
-  },
-  "form-submissions": {
-    title: "Form Submissions",
-    intro: "Every response people send through your custom Forms is collected here, so you have a complete record you can read or export.",
-    steps: [
-      "Open the list to see all responses; click any row to read the full set of answers a person submitted.",
-      "Each submission is linked to the Form it came from, so you can tell which form each response belongs to.",
-      "Use the date columns to find recent submissions or work through them in order.",
-      "To get the data into a spreadsheet, use the CSV export so you can sort, filter or share the responses offline.",
-      "Recipients also receive each submission by email automatically, so this list is your backup and full archive.",
-      "If you no longer need old responses, an admin can remove them; editors can read but not change submissions.",
-    ],
-    tip: "Spam is filtered out automatically before it reaches you, so what you see here should be genuine. Export to CSV regularly if you want a long-term record outside the CMS.",
   },
   "users": {
     title: "Team & Roles",
@@ -300,10 +273,9 @@ export const HELP_CONTENT: Record<string, HelpEntry> = {
   },
   "broadcast-settings": {
     title: "Broadcast",
-    intro: "This holds the public-facing settings for your community messaging channels, the optional sign-off added to messages and the \"join us\" links for WhatsApp and Telegram. It only stores the public channel targets and join links; the secret login keys and tokens live safely in the server's environment variables, not here, so there is nothing sensitive for you to enter.",
+    intro: "This holds the public-facing settings for your community messaging channels, the optional sign-off added to messages and the \"join us\" link for Telegram. It only stores the public channel targets and join links; the secret login keys and tokens live safely in the server's environment variables, not here, so there is nothing sensitive for you to enter.",
     steps: [
       "In \"Signature\", optionally type a sign-off that gets added to the end of broadcasts, for example \"— Kingston Mosque\".",
-      "In \"WhatsApp join URL\", paste the public link or QR target where people can join your WhatsApp updates.",
       "In \"Telegram join URL\", paste the public link to your Telegram channel or group.",
       "Leave any field blank if you do not use that channel, blank links simply will not be shown.",
       "Open the links yourself in a browser first to confirm they actually let someone join, then click Save.",

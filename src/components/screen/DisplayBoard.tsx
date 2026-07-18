@@ -67,7 +67,7 @@ export default function DisplayBoard({ initial }: { initial: Snapshot }) {
     let active = true;
     const poll = async () => {
       try {
-        const res = await fetch("/app-api/snapshot", { cache: "no-store" });
+        const res = await fetch("/app-api/snapshot?surface=screens", { cache: "no-store" });
         if (!res.ok) throw new Error(String(res.status));
         const fresh = (await res.json()) as Snapshot;
         if (!active) return;

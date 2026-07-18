@@ -8,7 +8,6 @@ import { textStates } from "./payload/richtext";
 import { s3Storage } from "@payloadcms/storage-s3";
 import { nodemailerAdapter } from "@payloadcms/email-nodemailer";
 import sharp from "sharp";
-import { formsPlugin } from "./payload/forms";
 
 import {
   Users,
@@ -74,8 +73,6 @@ const db = /^postgres(ql)?:\/\//i.test(dbUri)
 // only when S3_BUCKET is set, so it never blocks a deploy. Uses server-side
 // uploads (no client component) to keep the admin bundle clean.
 const plugins = [
-  // No-code form builder (forms + form-submissions collections).
-  formsPlugin,
   ...(process.env.S3_BUCKET
     ? [
         s3Storage({
@@ -227,9 +224,13 @@ export default buildConfig({
     }
 
     // Optional: provision a Super Admin login from env vars, so there's a
-    // guaranteed admin account without the first-time setup screen. Created once
-    // (only if that email doesn't already exist), never overwritten — so a
-    // password you later change in the admin is preserved.
+    // guaranteed admin account without the first-time setup screen. Created
+    // once; the password is never overwritten. Crucially, the account's ROLE
+    // is also repaired on every boot: if the ADMIN_EMAIL account exists but
+    // has somehow lost its admin role (e.g. it was edited, or created before
+    // roles were assigned), Super Admin is restored — this is the safety net
+    // that guarantees the named administrator can always approve, publish and
+    // manage users.
     if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
       try {
         const existing = await payload.find({
@@ -249,6 +250,23 @@ export default buildConfig({
             },
           });
           payload.logger.info("✓ Super Admin provisioned from ADMIN_EMAIL.");
+        } else {
+          const account = existing.docs[0] as { id: string | number; roles?: string[] };
+          const roles = Array.isArray(account.roles) ? account.roles : [];
+          payload.logger.info(
+            `Admin account ${process.env.ADMIN_EMAIL} roles: [${roles.join(", ") || "none"}]`,
+          );
+          if (!roles.includes("super-admin") && !roles.includes("admin")) {
+            await payload.update({
+              collection: "users",
+              id: account.id,
+              data: { roles: [...roles, "super-admin"] },
+              overrideAccess: true,
+            });
+            payload.logger.warn(
+              `⚠ ADMIN_EMAIL account was missing its admin role (had: ${roles.join(", ") || "none"}) — Super Admin restored.`,
+            );
+          }
         }
       } catch (err) {
         payload.logger.error("Admin bootstrap failed: " + (err as Error).message);

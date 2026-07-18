@@ -1,3 +1,8 @@
+> **Note (July 2026):** WhatsApp broadcasting has been REMOVED from the platform.
+> Email is the primary outbound channel, powered by the central Subscribers
+> mailing list which syncs to Mailchimp (MAILCHIMP_API_KEY + MAILCHIMP_AUDIENCE_ID).
+> Sections below mentioning WhatsApp are retained for history only.
+
 # Broadcast Center
 
 Write a notice once in the admin (**Broadcast → Broadcasts**), pick the channels,
