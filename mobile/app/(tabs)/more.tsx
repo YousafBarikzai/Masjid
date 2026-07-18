@@ -107,6 +107,16 @@ export default function More() {
         />
       </Card>
 
+      <Section title="Stay in touch" />
+      <Card style={{ paddingVertical: 4 }}>
+        <ListRow
+          icon="💌"
+          title="Email updates"
+          sub="Join the mosque's mailing list — news, events & Ramadan"
+          onPress={() => router.push("/newsletter" as never)}
+        />
+      </Card>
+
       <Section title="Watch & explore" />
       <Card style={{ paddingVertical: 4 }}>
         <ListRow

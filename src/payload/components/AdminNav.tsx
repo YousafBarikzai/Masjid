@@ -13,7 +13,7 @@ import { usePathname } from "next/navigation";
      ▸ Website Pages        → Main menu, every page (edit directly), + new page
      ▸ Content              → News, Events, Classes, Announcements, Media …
      ▸ Prayer Times         → Timetable, uploads, Jumu'ah, Ramadan & Eid
-     ▸ Community & Forms    → Forms, submissions, subscribers
+     ▸ Community            → Contact messages, subscribers
      ▸ Broadcast            → Broadcasts + settings
      ▸ Site Settings        → Site settings, donations
      ▸ Administration       → Users, devices, audit log
@@ -102,14 +102,12 @@ const GROUPS: Group[] = [
   },
   {
     key: "community",
-    label: "Community & Forms",
+    label: "Community",
     icon: "💬",
     view: EDITORS,
     items: [
-      { label: "Forms (builder)", href: col("forms"), addHref: add("forms") },
-      { label: "Form submissions", href: col("form-submissions") },
       { label: "Contact messages", href: col("contact-submissions") },
-      { label: "Subscribers", href: col("subscribers"), addHref: add("subscribers") },
+      { label: "Subscribers (mailing list)", href: col("subscribers"), addHref: add("subscribers"), hint: "The central email list — syncs to Mailchimp" },
     ],
   },
   {

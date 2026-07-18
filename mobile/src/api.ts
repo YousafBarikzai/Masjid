@@ -213,6 +213,20 @@ export async function fetchLive(signal?: AbortSignal): Promise<LiveFeed> {
   return (await res.json()) as LiveFeed;
 }
 
+/** Join the mosque's central mailing list (managed in the CMS + Mailchimp). */
+export async function subscribeToMailingList(
+  email: string,
+  name: string,
+  platform: "ios" | "android",
+): Promise<boolean> {
+  const res = await fetch(`${apiBase}/app-api/subscribe`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, name, source: `${platform}-app` }),
+  });
+  return res.ok;
+}
+
 export async function registerDevice(
   token: string,
   platform: "ios" | "android",

@@ -34,7 +34,7 @@ import { youtubeChannelUrl } from "./site-content";
  * Built entirely from the existing website helpers so there is one source of
  * truth and one set of business rules across every surface.
  */
-export async function buildSnapshot(now: Date = new Date()) {
+export async function buildSnapshot(now: Date = new Date(), surface: "app" | "screens" = "app") {
   const todayISO = londonTodayISO(now);
 
   // CMS per-day override (Prayer Timetable) wins over the static annual JSON.
@@ -47,11 +47,11 @@ export async function buildSnapshot(now: Date = new Date()) {
 
   const [announcement, events, services, classes, news, site, jummah, donation, appCfg] =
     await Promise.all([
-      getAnnouncement(),
-      getEvents(),
+      getAnnouncement(surface),
+      getEvents(surface),
       getServices(),
       getClasses(),
-      getPosts(),
+      getPosts(surface),
       getSite(),
       getJummah(),
       getDonation(),

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { livePostsWhere } from "@/lib/cms";
+import { showsOn } from "@/payload/collections";
 import { mapPost } from "@/lib/app-content";
 import { getPayloadClient } from "@/lib/payloadClient";
 
@@ -36,7 +37,8 @@ export async function GET(req: NextRequest) {
     });
     return NextResponse.json(
       {
-        docs: res.docs.map(mapPost),
+        // Per-item "Show on" targeting: keep only app-facing posts.
+        docs: res.docs.filter((d) => showsOn(d, "app")).map(mapPost),
         page: res.page ?? page,
         totalPages: res.totalPages ?? 1,
         totalDocs: res.totalDocs ?? res.docs.length,

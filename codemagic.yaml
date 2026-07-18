@@ -28,6 +28,17 @@ workflows:
     scripts:
       - name: Install dependencies
         script: npm ci
+      - name: Set an ever-increasing versionCode
+        script: |
+          # Google Play refuses a duplicate versionCode; stamp it from the CI
+          # build number (same pattern as the iOS CFBundleVersion step).
+          node -e "
+            const fs = require('fs');
+            const j = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+            j.expo.android.versionCode = parseInt(process.env.BUILD_NUMBER || String(Math.floor(Date.now()/1000)), 10);
+            fs.writeFileSync('app.json', JSON.stringify(j, null, 2));
+            console.log('versionCode =', j.expo.android.versionCode);
+          "
       - name: Generate the native Android project
         script: npx expo prebuild --platform android --no-install
       - name: Build debug APK
@@ -53,6 +64,17 @@ workflows:
     scripts:
       - name: Install dependencies
         script: npm ci
+      - name: Set an ever-increasing versionCode
+        script: |
+          # Google Play refuses a duplicate versionCode; stamp it from the CI
+          # build number (same pattern as the iOS CFBundleVersion step).
+          node -e "
+            const fs = require('fs');
+            const j = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+            j.expo.android.versionCode = parseInt(process.env.BUILD_NUMBER || String(Math.floor(Date.now()/1000)), 10);
+            fs.writeFileSync('app.json', JSON.stringify(j, null, 2));
+            console.log('versionCode =', j.expo.android.versionCode);
+          "
       - name: Generate the native Android project
         script: npx expo prebuild --platform android --no-install
       - name: Point Gradle at the CI keystore
