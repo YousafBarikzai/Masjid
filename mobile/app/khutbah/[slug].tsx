@@ -227,8 +227,16 @@ export default function KhutbahDetail() {
     }).catch(() => {});
   }
 
+  // "Friday 17 July" reads better than a bare date, and matches the archive rows.
+  const fridayDate = (() => {
+    const d = new Date(k.dateISO);
+    return Number.isNaN(d.getTime())
+      ? k.date
+      : d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  })();
+
   return (
-    <Page eyebrow={k.date} title={k.title} back>
+    <Page eyebrow={fridayDate} title={k.title} back>
       {k.khatib ? (
         <Reveal>
           <View style={s.khatib}>

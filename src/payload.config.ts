@@ -204,8 +204,36 @@ export default buildConfig({
     }
     if (process.env.NODE_ENV === "production" && process.env.PAYLOAD_MIGRATING !== "true") {
       try {
-        const { pushDevSchema } = await import("@payloadcms/drizzle");
-        await pushDevSchema(payload.db as never);
+        // Push the schema WITHOUT the interactive confirm that pushDevSchema
+        // uses. On a headless server that prompt cannot be answered and its
+        // fallback is process.exit(0) — which would kill the boot the first
+        // time a change involves a data-loss warning (e.g. dropping a removed
+        // feature's columns). We call drizzle-kit's pushSchema directly and
+        // auto-accept, logging exactly what was accepted.
+        const adapter = payload.db as unknown as {
+          requireDrizzleKit: () => {
+            pushSchema: (
+              schema: unknown,
+              drizzle: unknown,
+              schemaName?: string[],
+            ) => Promise<{ apply: () => Promise<void>; hasDataLoss: boolean; warnings: string[] }>;
+          };
+          schema: unknown;
+          drizzle: unknown;
+          schemaName?: string;
+        };
+        const { pushSchema } = adapter.requireDrizzleKit();
+        const { apply, hasDataLoss, warnings } = await pushSchema(
+          adapter.schema,
+          adapter.drizzle,
+          adapter.schemaName ? [adapter.schemaName] : undefined,
+        );
+        if (warnings?.length) {
+          payload.logger.warn(
+            `Schema push warnings (auto-accepted on boot${hasDataLoss ? ", includes data loss" : ""}): ${warnings.join(" | ")}`,
+          );
+        }
+        await apply();
         payload.logger.info("✓ Database schema synced on boot.");
       } catch (err) {
         payload.logger.error("Schema sync on boot failed: " + (err as Error).message);
