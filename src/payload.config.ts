@@ -243,6 +243,7 @@ export default buildConfig({
           // Fast path: apply everything at once.
           await apply();
           payload.logger.info("✓ Database schema synced on boot.");
+          (globalThis as Record<string, unknown>).__schemaSync = { status: "ok", at: new Date().toISOString() };
         } catch (applyErr) {
           // apply() is all-or-nothing: one failing statement (typically a
           // destructive DROP that the driver refuses) blocks EVERY other
@@ -269,9 +270,17 @@ export default buildConfig({
           payload.logger.info(
             `✓ Database schema synced statement-by-statement: ${applied} applied, ${skipped} skipped.`,
           );
+          (globalThis as Record<string, unknown>).__schemaSync = {
+            status: `fallback: ${applied} applied, ${skipped} skipped`,
+            at: new Date().toISOString(),
+          };
         }
       } catch (err) {
         payload.logger.error("Schema sync on boot failed: " + (err as Error).message);
+        (globalThis as Record<string, unknown>).__schemaSync = {
+          status: `failed: ${(err as Error).message.slice(0, 160)}`,
+          at: new Date().toISOString(),
+        };
       }
     }
 
