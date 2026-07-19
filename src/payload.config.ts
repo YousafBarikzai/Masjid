@@ -216,14 +216,20 @@ export default buildConfig({
               schema: unknown,
               drizzle: unknown,
               schemaName?: string[],
-            ) => Promise<{ apply: () => Promise<void>; hasDataLoss: boolean; warnings: string[] }>;
+            ) => Promise<{
+              apply: () => Promise<void>;
+              hasDataLoss: boolean;
+              warnings: string[];
+              statementsToExecute: string[];
+            }>;
           };
           schema: unknown;
           drizzle: unknown;
           schemaName?: string;
+          execute: (args: { drizzle: unknown; raw: string }) => Promise<unknown>;
         };
         const { pushSchema } = adapter.requireDrizzleKit();
-        const { apply, hasDataLoss, warnings } = await pushSchema(
+        const { apply, hasDataLoss, warnings, statementsToExecute } = await pushSchema(
           adapter.schema,
           adapter.drizzle,
           adapter.schemaName ? [adapter.schemaName] : undefined,
@@ -233,8 +239,37 @@ export default buildConfig({
             `Schema push warnings (auto-accepted on boot${hasDataLoss ? ", includes data loss" : ""}): ${warnings.join(" | ")}`,
           );
         }
-        await apply();
-        payload.logger.info("✓ Database schema synced on boot.");
+        try {
+          // Fast path: apply everything at once.
+          await apply();
+          payload.logger.info("✓ Database schema synced on boot.");
+        } catch (applyErr) {
+          // apply() is all-or-nothing: one failing statement (typically a
+          // destructive DROP that the driver refuses) blocks EVERY other
+          // change — including the additive ADD COLUMNs new features need,
+          // which then makes saving those records fail. Re-run each statement
+          // individually so the additive changes always land even when a drop
+          // can't complete.
+          payload.logger.warn(
+            "Batch schema apply failed — applying statements individually: " + (applyErr as Error).message,
+          );
+          let applied = 0;
+          let skipped = 0;
+          for (const stmt of statementsToExecute ?? []) {
+            try {
+              await adapter.execute({ drizzle: adapter.drizzle, raw: stmt });
+              applied += 1;
+            } catch (stmtErr) {
+              skipped += 1;
+              payload.logger.warn(
+                `  · schema statement skipped: ${stmt.slice(0, 90)} … (${(stmtErr as Error).message.slice(0, 140)})`,
+              );
+            }
+          }
+          payload.logger.info(
+            `✓ Database schema synced statement-by-statement: ${applied} applied, ${skipped} skipped.`,
+          );
+        }
       } catch (err) {
         payload.logger.error("Schema sync on boot failed: " + (err as Error).message);
       }
