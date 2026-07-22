@@ -16,11 +16,21 @@ export default function RootLayout() {
     // Hide the static native splash the moment the animated intro is mounted —
     // same ground + same monogram, so the hand-off is seamless.
     SplashScreen.hideAsync().catch(() => {});
-    // Register for announcement push notifications (no-op on simulator/declined).
-    registerForPush().catch(() => {});
   }, []);
 
-  const done = useCallback(() => setIntro(false), []);
+  // Defer push registration until the intro is finished, so a slow/broken
+  // native module can never keep the splash on screen. Also delayed by 500ms
+  // to keep it off the busy first-render frame.
+  const done = useCallback(() => {
+    setIntro(false);
+    setTimeout(() => {
+      try {
+        registerForPush().catch(() => {});
+      } catch {
+        /* never let this reach the crash boundary */
+      }
+    }, 500);
+  }, []);
 
   return (
     <SafeAreaProvider>
