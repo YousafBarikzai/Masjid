@@ -26,6 +26,14 @@ export function BrandIntro({ onDone }: { onDone: () => void }) {
   const lift = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      setGone(true);
+      onDone();
+    };
+
     const rise = (v: Animated.Value, delay: number) =>
       Animated.timing(v, { toValue: 1, duration: 420, delay, easing: Easing.out(Easing.cubic), useNativeDriver: true });
     Animated.sequence([
@@ -36,10 +44,14 @@ export function BrandIntro({ onDone }: { onDone: () => void }) {
       ]),
       Animated.delay(240),
       Animated.timing(lift, { toValue: 1, duration: 520, easing: Easing.in(Easing.cubic), useNativeDriver: true }),
-    ]).start(() => {
-      setGone(true);
-      onDone();
-    });
+    ]).start(finish);
+
+    // Safety net: if the animation is ever preempted (Android release builds
+    // occasionally do this if the JS thread stutters on a first cold start),
+    // finish the intro after 3.5s no matter what — the user should never be
+    // stuck on the splash.
+    const safety = setTimeout(finish, 3500);
+    return () => clearTimeout(safety);
   }, [p1, p2, p3, lintel, word, sweep, lift, onDone]);
 
   if (gone) return null;

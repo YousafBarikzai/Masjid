@@ -20,31 +20,41 @@ Notifications.setNotificationHandler({
  * Best-effort: returns null on simulators or if permission is declined.
  */
 export async function registerForPush(topics?: string[]): Promise<string | null> {
-  if (!Device.isDevice) return null;
-
-  const existing = await Notifications.getPermissionsAsync();
-  let status = existing.status;
-  if (status !== "granted") {
-    const req = await Notifications.requestPermissionsAsync();
-    status = req.status;
-  }
-  if (status !== "granted") return null;
-
-  if (Platform.OS === "android") {
-    await Notifications.setNotificationChannelAsync("default", {
-      name: "Mosque announcements",
-      importance: Notifications.AndroidImportance.HIGH,
-      vibrationPattern: [0, 200, 120, 200],
-      lightColor: "#c9a227",
-    });
-  }
-
+  // A single outer try/catch — a broken native module or a missing EAS
+  // projectId must never take the app down. Reporting null just means no
+  // push token; the app still works.
   try {
-    const tokenResponse = await Notifications.getExpoPushTokenAsync();
-    const token = tokenResponse.data;
-    const chosen = topics ?? (await getTopics());
-    await registerDevice(token, Platform.OS === "android" ? "android" : "ios", chosen);
-    return token;
+    if (!Device.isDevice) return null;
+
+    const existing = await Notifications.getPermissionsAsync();
+    let status = existing.status;
+    if (status !== "granted") {
+      const req = await Notifications.requestPermissionsAsync();
+      status = req.status;
+    }
+    if (status !== "granted") return null;
+
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("default", {
+        name: "Mosque announcements",
+        importance: Notifications.AndroidImportance.HIGH,
+        vibrationPattern: [0, 200, 120, 200],
+        lightColor: "#c9a227",
+      }).catch(() => {});
+    }
+
+    // On Android without a configured EAS projectId the token fetch throws;
+    // this is expected and the caller has already deferred us off the first
+    // render, so a null return is harmless.
+    try {
+      const tokenResponse = await Notifications.getExpoPushTokenAsync();
+      const token = tokenResponse.data;
+      const chosen = topics ?? (await getTopics());
+      await registerDevice(token, Platform.OS === "android" ? "android" : "ios", chosen);
+      return token;
+    } catch {
+      return null;
+    }
   } catch {
     return null;
   }
