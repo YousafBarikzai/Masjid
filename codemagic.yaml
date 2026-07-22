@@ -1,0 +1,200 @@
+# Codemagic CI — builds the Kingston Mosque mobile apps (mobile/) in the cloud.
+# iOS is built on Codemagic's Macs, so no Mac is needed locally.
+#
+# One-time setup in the Codemagic dashboard (https://codemagic.io):
+#   1. Add this repository as an application ("Other" → codemagic.yaml).
+#   2. iOS release: Teams → Integrations → App Store Connect → add an API key
+#      named "kma-appstore" (Users & Access → Integrations in App Store Connect).
+#      Codemagic then creates/fetches the signing certificate + profile itself.
+#   3. Android release: create an upload keystore once
+#        keytool -genkey -v -keystore kma.keystore -alias kma -keyalg RSA -keysize 2048 -validity 10000
+#      and upload it under Teams → Code signing identities → Android, referenced
+#      below as "kma_keystore".
+#   4. The "android-preview" workflow needs NO credentials — run it first to get
+#      an installable APK for testing on any Android phone.
+
+workflows:
+  # ── Android test build — zero setup, installable .apk ─────────────────────
+  android-preview:
+    name: Android preview (APK, no signing setup)
+    # mac_mini_m2 is the machine included in Codemagic's free plan (500 min/month);
+    # Linux instances (linux_x2) need a paid billing plan. Android builds fine on macOS.
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    working_directory: mobile
+    environment:
+      node: 20.18.1
+      java: 17
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Set an ever-increasing versionCode
+        script: |
+          # Google Play refuses a duplicate versionCode; stamp it from the CI
+          # build number (same pattern as the iOS CFBundleVersion step).
+          node -e "
+            const fs = require('fs');
+            const j = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+            j.expo.android.versionCode = parseInt(process.env.BUILD_NUMBER || String(Math.floor(Date.now()/1000)), 10);
+            fs.writeFileSync('app.json', JSON.stringify(j, null, 2));
+            console.log('versionCode =', j.expo.android.versionCode);
+          "
+      - name: Generate the native Android project
+        script: npx expo prebuild --platform android --no-install
+      - name: Build debug APK
+        script: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - name: Show where the APK actually is
+        script: |
+          # Prints every .apk Gradle produced with its absolute path so the
+          # matcher globs below can't miss (and future debugging is easy).
+          echo "CM_BUILD_DIR=$CM_BUILD_DIR  pwd=$(pwd)"
+          find "$CM_BUILD_DIR" -name '*.apk' -print 2>/dev/null || true
+          find "$CM_BUILD_DIR" -name '*.apk' -exec ls -la {} + 2>/dev/null || true
+    artifacts:
+      # The artifact matcher searches from CM_BUILD_DIR (the clone root),
+      # regardless of the workflow's working_directory. A broad recursive
+      # glob is more forgiving than the exact debug/*.apk path.
+      - "**/*.apk"
+
+  # ── Android release — signed .aab for Google Play ─────────────────────────
+  android-release:
+    name: Android release (Google Play)
+    # Same as android-preview: the free plan includes mac_mini_m2, not Linux.
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    working_directory: mobile
+    environment:
+      android_signing:
+        - kma_keystore
+      node: 20.18.1
+      java: 17
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Set an ever-increasing versionCode
+        script: |
+          # Google Play refuses a duplicate versionCode; stamp it from the CI
+          # build number (same pattern as the iOS CFBundleVersion step).
+          node -e "
+            const fs = require('fs');
+            const j = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+            j.expo.android.versionCode = parseInt(process.env.BUILD_NUMBER || String(Math.floor(Date.now()/1000)), 10);
+            fs.writeFileSync('app.json', JSON.stringify(j, null, 2));
+            console.log('versionCode =', j.expo.android.versionCode);
+          "
+      - name: Generate the native Android project
+        script: npx expo prebuild --platform android --no-install
+      - name: Point Gradle at the CI keystore
+        script: |
+          cat >> android/gradle.properties <<EOF
+          MYAPP_UPLOAD_STORE_FILE=$CM_KEYSTORE_PATH
+          MYAPP_UPLOAD_STORE_PASSWORD=$CM_KEYSTORE_PASSWORD
+          MYAPP_UPLOAD_KEY_ALIAS=$CM_KEY_ALIAS
+          MYAPP_UPLOAD_KEY_PASSWORD=$CM_KEY_PASSWORD
+          EOF
+          cat >> android/app/build.gradle <<'EOF'
+          android {
+              signingConfigs {
+                  release {
+                      storeFile file(MYAPP_UPLOAD_STORE_FILE)
+                      storePassword MYAPP_UPLOAD_STORE_PASSWORD
+                      keyAlias MYAPP_UPLOAD_KEY_ALIAS
+                      keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+                  }
+              }
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.release
+                  }
+              }
+          }
+          EOF
+      - name: Build release bundle
+        script: |
+          cd android
+          chmod +x gradlew
+          ./gradlew bundleRelease
+      - name: Show where the AAB actually is
+        script: |
+          # Prints every .aab Gradle produced with its absolute path so the
+          # matcher globs below can't miss (and future debugging is easy).
+          echo "CM_BUILD_DIR=$CM_BUILD_DIR  pwd=$(pwd)"
+          find "$CM_BUILD_DIR" -name '*.aab' -print 2>/dev/null || true
+          find "$CM_BUILD_DIR" -name '*.aab' -exec ls -la {} + 2>/dev/null || true
+    artifacts:
+      # The artifact matcher searches from CM_BUILD_DIR (the clone root),
+      # regardless of the workflow's working_directory. A broad recursive
+      # glob is more forgiving than a fixed path.
+      - "**/*.aab"
+
+  # ── iOS release — signed .ipa for TestFlight / App Store ──────────────────
+  ios-release:
+    name: iOS release (TestFlight)
+    instance_type: mac_mini_m2
+    max_build_duration: 90
+    working_directory: mobile
+    integrations:
+      app_store_connect: kma-appstore
+    environment:
+      # Signing via SAVED code signing identities (Codemagic → Personal
+      # Account → Code signing identities). The Apple Distribution certificate
+      # and the "Kingston Masjid App Store" provisioning profile are stored
+      # there under these EXACT reference names. This pins the build to
+      # known-good files instead of automatic portal matching, which kept
+      # failing with "No matching profiles found" despite the profile
+      # existing.
+      ios_signing:
+        certificates:
+          - kma_distribution
+        provisioning_profiles:
+          - Kingston Masjid App Store
+      node: 20.18.1
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Generate the native iOS project
+        script: npx expo prebuild --platform ios --no-install
+      - name: Set an ever-increasing build number
+        script: |
+          # App Store Connect rejects an upload whose CFBundleVersion is not
+          # higher than the last one. Codemagic's BUILD_NUMBER increments every
+          # build, so use it (with an epoch fallback) as the bundle version.
+          BN="${BUILD_NUMBER:-$(date +%s)}"
+          PLIST=$(find ios -maxdepth 2 -name "Info.plist" -not -path "*Pods*" | head -1)
+          echo "Setting CFBundleVersion=$BN in $PLIST"
+          plutil -replace CFBundleVersion -string "$BN" "$PLIST"
+      - name: Install CocoaPods
+        script: |
+          cd ios
+          pod install
+      - name: Apply provisioning profiles to the Xcode project
+        script: xcode-project use-profiles
+      - name: Build the .ipa
+        script: |
+          # Expo prebuild names the app scheme after the workspace. Deriving it
+          # from the workspace filename avoids picking up Pod schemes (the
+          # workspace's scheme list starts with libraries like "boost").
+          WORKSPACE=$(find ios -maxdepth 1 -name "*.xcworkspace" | head -1)
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          echo "Building workspace=$WORKSPACE scheme=$SCHEME"
+          # On failure, surface the real xcodebuild error: build-ipa hides the
+          # detailed compiler output in a log file under $TMPDIR.
+          xcode-project build-ipa --workspace "$WORKSPACE" --scheme "$SCHEME" || {
+            echo "===== xcodebuild error lines ====="
+            grep -n "error:" "${TMPDIR:-/tmp}"/codemagic-*.log | head -40 || true
+            echo "===== last 200 lines of the detailed xcodebuild log ====="
+            tail -n 200 "${TMPDIR:-/tmp}"/codemagic-*.log || true
+            exit 65
+          }
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

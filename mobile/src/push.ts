@@ -2,8 +2,10 @@ import { Platform } from "react-native";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { registerDevice } from "./api";
+import { getTopics } from "./prefs";
 
-// Show notifications while the app is foregrounded too.
+// Show notifications while the app is foregrounded too (the prayer bell's
+// beep included).
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -14,32 +16,45 @@ Notifications.setNotificationHandler({
 
 /**
  * Ask for notification permission, get this device's Expo push token, and
- * register it with the website so the mosque can broadcast announcements.
- * Best-effort: returns null and stays silent on simulators or if declined.
+ * register it (with the user's chosen topics) so the mosque can notify it.
+ * Best-effort: returns null on simulators or if permission is declined.
  */
-export async function registerForPush(): Promise<string | null> {
-  if (!Device.isDevice) return null; // push doesn't work on simulators
-
-  const existing = await Notifications.getPermissionsAsync();
-  let status = existing.status;
-  if (status !== "granted") {
-    const req = await Notifications.requestPermissionsAsync();
-    status = req.status;
-  }
-  if (status !== "granted") return null;
-
-  if (Platform.OS === "android") {
-    await Notifications.setNotificationChannelAsync("default", {
-      name: "Announcements",
-      importance: Notifications.AndroidImportance.DEFAULT,
-    });
-  }
-
+export async function registerForPush(topics?: string[]): Promise<string | null> {
+  // A single outer try/catch — a broken native module or a missing EAS
+  // projectId must never take the app down. Reporting null just means no
+  // push token; the app still works.
   try {
-    const tokenResponse = await Notifications.getExpoPushTokenAsync();
-    const token = tokenResponse.data;
-    await registerDevice(token, Platform.OS === "android" ? "android" : "ios");
-    return token;
+    if (!Device.isDevice) return null;
+
+    const existing = await Notifications.getPermissionsAsync();
+    let status = existing.status;
+    if (status !== "granted") {
+      const req = await Notifications.requestPermissionsAsync();
+      status = req.status;
+    }
+    if (status !== "granted") return null;
+
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("default", {
+        name: "Mosque announcements",
+        importance: Notifications.AndroidImportance.HIGH,
+        vibrationPattern: [0, 200, 120, 200],
+        lightColor: "#c9a227",
+      }).catch(() => {});
+    }
+
+    // On Android without a configured EAS projectId the token fetch throws;
+    // this is expected and the caller has already deferred us off the first
+    // render, so a null return is harmless.
+    try {
+      const tokenResponse = await Notifications.getExpoPushTokenAsync();
+      const token = tokenResponse.data;
+      const chosen = topics ?? (await getTopics());
+      await registerDevice(token, Platform.OS === "android" ? "android" : "ios", chosen);
+      return token;
+    } catch {
+      return null;
+    }
   } catch {
     return null;
   }

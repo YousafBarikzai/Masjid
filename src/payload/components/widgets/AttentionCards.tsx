@@ -27,22 +27,13 @@ export async function AttentionCards({ payload }: { payload: Payload }) {
     }
   };
 
-  const [unread, submissions, expiring, drafts] = await Promise.all([
+  const [unread, expiring, drafts] = await Promise.all([
     // Unread contact messages
     safe(
       () =>
         payload.count({
           collection: "contact-submissions",
           where: { handled: { equals: false } },
-          overrideAccess: true,
-        }),
-      { totalDocs: 0 },
-    ),
-    // Form submissions (total)
-    safe(
-      () =>
-        payload.count({
-          collection: "form-submissions" as never,
           overrideAccess: true,
         }),
       { totalDocs: 0 },
@@ -86,15 +77,6 @@ export async function AttentionCards({ payload }: { payload: Payload }) {
       <span className="kma-att__big">{unread.totalDocs}</span>
       <span className="kma-att__sub">{unread.totalDocs ? "Awaiting a reply" : "Inbox is clear"}</span>
       <span className="kma-att__cta">Review inbox →</span>
-    </Link>,
-  );
-
-  cards.push(
-    <Link key="forms" href={collectionHref("form-submissions")} className="kma-att kma-att--green">
-      <span className="kma-att__head"><IconDoc size={16} /> Form submissions</span>
-      <span className="kma-att__big">{submissions.totalDocs}</span>
-      <span className="kma-att__sub">{submissions.totalDocs ? "Enquiries & requests" : "No submissions yet"}</span>
-      <span className="kma-att__cta">Open submissions →</span>
     </Link>,
   );
 

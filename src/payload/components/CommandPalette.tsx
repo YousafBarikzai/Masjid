@@ -235,25 +235,12 @@ export function CommandPalette() {
     { id: "qa-event", title: "New event", subtitle: "Create", icon: <IconCalendar />, keywords: "add create", href: createHref("events") },
     { id: "qa-page", title: "New page", subtitle: "Create", icon: <IconDoc />, keywords: "add create", href: createHref("pages") },
     { id: "qa-ann", title: "New announcement", subtitle: "Create", icon: <IconBell />, keywords: "add create banner alert", href: createHref("announcements") },
-    { id: "qa-broadcast", title: "New broadcast", subtitle: "Send", icon: <IconBroadcast />, keywords: "whatsapp email telegram send", href: createHref("broadcasts") },
-    { id: "qa-form", title: "New form", subtitle: "Create", icon: <IconDoc />, keywords: "form builder enquiry membership", href: createHref("forms") },
+    { id: "qa-broadcast", title: "New broadcast", subtitle: "Send", icon: <IconBroadcast />, keywords: "email telegram push send", href: createHref("broadcasts") },
   ].map((a) => ({
     ...a,
     group: "Quick actions" as const,
     run: () => navigate(a.href!),
   }));
-  quickItems.push({
-    id: "qa-export-submissions",
-    group: "Quick actions",
-    title: "Export form submissions (CSV)",
-    subtitle: "Download",
-    icon: <IconDoc />,
-    keywords: "csv export download forms responses spreadsheet",
-    run: () => {
-      window.open("/app-api/form-export", "_blank", "noopener");
-      close();
-    },
-  });
   quickItems.push({
     id: "qa-theme",
     group: "Quick actions",

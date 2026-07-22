@@ -2,12 +2,14 @@ import path from "path";
 import type { Block, CollectionConfig, Field } from "payload";
 import {
   anyone,
+  canEditContent,
   isAdmin,
   isAdminFieldLevel,
   isContributor,
   isEditor,
   isPrayerManager,
   isStaff,
+  isUpdater,
 } from "./access";
 import { editorialFields, notifyReviewers, restrictPublish } from "./editorial";
 import { parseTimetableCsv } from "../lib/parseTimetable";
@@ -27,10 +29,11 @@ export const Users: CollectionConfig = {
   },
   admin: {
     useAsTitle: "name",
-    defaultColumns: ["name", "email", "roles"],
+    defaultColumns: ["name", "email", "roles", "updatedAt"],
     group: "Administration",
     description:
-      "Staff logins. To add a manager or editor: Create → enter their name, email and a password, then choose a role.",
+      "Everyone who can sign in to this admin. Create → name, email, password → pick a role. The role decides what they see in the left menu and what they can do — the guide above explains each one.",
+    components: { beforeList: ["@/payload/components/RoleGuide#RoleGuide"] },
   },
   access: {
     read: isStaff,
@@ -64,14 +67,15 @@ export const Users: CollectionConfig = {
       access: { update: isAdminFieldLevel },
       admin: {
         description:
-          "Super Admin / Admin: full access incl. managing users. Editor: manages content (pages, news, events, services). Prayer Times Manager: edits the prayer timetable. Contributor: can create drafts only. (The first account is made Super Admin automatically.)",
+          "What this person can do — see the role guide at the top of the Users list. Only Admins can change roles.",
       },
       options: [
-        { label: "Super Admin", value: "super-admin" },
-        { label: "Admin", value: "admin" },
-        { label: "Editor / Manager", value: "editor" },
-        { label: "Prayer Times Manager", value: "prayer-times-manager" },
-        { label: "Contributor (drafts only)", value: "contributor" },
+        { label: "Super Admin — everything", value: "super-admin" },
+        { label: "Admin — everything incl. users & settings", value: "admin" },
+        { label: "Editor — create, edit & publish all content", value: "editor" },
+        { label: "Editor (edit only) — change existing content, no new items", value: "updater" },
+        { label: "Contributor — write drafts, an editor publishes", value: "contributor" },
+        { label: "Prayer Times Manager — timetable & Jumuʿah only", value: "prayer-times-manager" },
       ],
     },
   ],
@@ -91,7 +95,7 @@ export const Media: CollectionConfig = {
   },
   // Native folders: organise media into folders (and browse by folder).
   folders: true,
-  access: { read: anyone, create: isEditor, update: isEditor, delete: isEditor },
+  access: { read: anyone, create: isEditor, update: isUpdater, delete: isEditor },
   upload: {
     staticDir: path.resolve(process.cwd(), "media"),
     mimeTypes: ["image/*", "application/pdf"],
@@ -208,6 +212,38 @@ const DownloadBlock: Block = {
 // The full set of layout blocks shared by Pages and News posts.
 const layoutBlocks = [RichTextBlock, ColumnsBlock, MediaBlock, CallToActionBlock, DownloadBlock];
 
+/* -------------------------- Per-surface targeting -------------------------- */
+// "Show on" checkboxes shared by posts, events and announcements: publish once,
+// choose where it appears. Everything is ticked by default (publish everywhere);
+// untick a surface to target the rest. Older items with no choice saved behave
+// as "everywhere".
+const showOnField: Field = {
+  name: "showOn",
+  type: "group",
+  label: "Show on",
+  admin: {
+    description:
+      "Where this appears. All ticked (the default) = website, mobile apps and mosque screens together. Untick a surface to leave it out.",
+  },
+  fields: [
+    {
+      type: "row",
+      fields: [
+        { name: "website", type: "checkbox", defaultValue: true, label: "Website", admin: { width: "33%" } },
+        { name: "app", type: "checkbox", defaultValue: true, label: "Mobile apps", admin: { width: "33%" } },
+        { name: "screens", type: "checkbox", defaultValue: true, label: "Mosque screens", admin: { width: "34%" } },
+      ],
+    },
+  ],
+};
+
+/** True when a doc should appear on the given surface (missing/legacy = yes). */
+export type Surface = "website" | "app" | "screens";
+export function showsOn(doc: unknown, surface: Surface): boolean {
+  const flags = (doc as { showOn?: Record<string, boolean | null> } | null)?.showOn;
+  return flags?.[surface] !== false;
+}
+
 /* ---------------------------------- Pages --------------------------------- */
 export const Pages: CollectionConfig = {
   slug: "pages",
@@ -216,7 +252,7 @@ export const Pages: CollectionConfig = {
     defaultColumns: ["title", "slug", "reviewStatus", "_status"],
     group: "Content",
   },
-  access: { read: anyone, create: isContributor, update: isContributor, delete: isAdmin },
+  access: { read: anyone, create: isContributor, update: canEditContent, delete: isAdmin },
   versions: { drafts: { autosave: false }, maxPerDoc: 20 },
   hooks: { beforeChange: [restrictPublish], afterChange: [notifyReviewers] },
   fields: [
@@ -272,7 +308,7 @@ export const Posts: CollectionConfig = {
     defaultColumns: ["title", "publishedDate", "reviewStatus", "_status"],
     group: "Content",
   },
-  access: { read: anyone, create: isContributor, update: isContributor, delete: isAdmin },
+  access: { read: anyone, create: isContributor, update: canEditContent, delete: isAdmin },
   versions: { drafts: { autosave: false }, maxPerDoc: 20 },
   hooks: { beforeChange: [restrictPublish], afterChange: [notifyReviewers] },
   fields: [
@@ -281,6 +317,7 @@ export const Posts: CollectionConfig = {
     { name: "publishedDate", type: "date" },
     { name: "image", type: "upload", relationTo: "media", admin: { description: "Lead image shown on the card and at the top of the article." } },
     { name: "excerpt", type: "textarea", admin: { description: "Short summary shown on the news card." } },
+    showOnField,
     {
       name: "content",
       type: "richText",
@@ -297,6 +334,118 @@ export const Posts: CollectionConfig = {
       blocks: layoutBlocks,
     },
     ...editorialFields,
+  ],
+};
+
+/* -------------------------------- Khutbahs -------------------------------- */
+// The Friday-sermon archive shown in the app's Media area. Staff add a khutbah
+// after Jumuʿah (or in advance): the video link, who delivered it, a written
+// synopsis and the key lessons. Publishing makes it live in the app within a
+// minute; a future date keeps it hidden until that day (scheduling); drafts
+// stay private until published.
+
+/** Diacritic-stripping slugify — same rules as the app's, so links match. */
+const khutbahSlug = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+export const Khutbahs: CollectionConfig = {
+  slug: "khutbahs",
+  labels: { singular: "Khutbah", plural: "Khutbah Archive" },
+  admin: {
+    useAsTitle: "title",
+    defaultColumns: ["title", "date", "khatib", "_status"],
+    group: "Content",
+    description:
+      "Friday sermons for the app's Khutbah Archive. Publish and it appears in the app within a minute — no app update needed. Give it a future date to schedule it for that day; keep it as a draft while you're still writing.",
+  },
+  access: { read: anyone, create: isEditor, update: isEditor, delete: isAdmin },
+  versions: { drafts: { autosave: false }, maxPerDoc: 20 },
+  hooks: {
+    beforeValidate: [
+      ({ data }) => {
+        // Auto-slug from the title + date so editors never have to think
+        // about it (the date keeps repeat titles unique).
+        if (data && !data.slug && data.title) {
+          data.slug = [khutbahSlug(String(data.title)), String(data.date || "").slice(0, 10)]
+            .filter(Boolean)
+            .join("-");
+        }
+        return data;
+      },
+    ],
+  },
+  fields: [
+    { name: "title", type: "text", required: true, admin: { description: "e.g. “The Prophet's ﷺ advice on patience”" } },
+    {
+      name: "slug",
+      type: "text",
+      unique: true,
+      admin: { description: "Leave blank — generated from the title and date automatically." },
+    },
+    {
+      type: "row",
+      fields: [
+        {
+          name: "date",
+          type: "date",
+          required: true,
+          admin: {
+            width: "50%",
+            date: { pickerAppearance: "dayOnly" },
+            description: "The Friday it was delivered. A future date hides it until that day.",
+          },
+        },
+        {
+          name: "khatib",
+          type: "text",
+          admin: { width: "50%", description: "Who delivered it, e.g. Imam Abdullah" },
+        },
+      ],
+    },
+    {
+      name: "youtubeUrl",
+      type: "text",
+      label: "YouTube video link",
+      admin: {
+        description:
+          "Paste the video's YouTube link (watch, youtu.be or live URL — any form works). The app plays it in its own player.",
+      },
+    },
+    {
+      name: "thumbnail",
+      type: "upload",
+      relationTo: "media",
+      admin: {
+        description: "Optional. Without one, the app uses the YouTube video's own thumbnail automatically.",
+      },
+    },
+    {
+      name: "synopsis",
+      type: "richText",
+      admin: {
+        description:
+          "A written summary of the khutbah. In the app people can read it — or listen to it read aloud while driving or walking.",
+      },
+    },
+    {
+      name: "lessons",
+      type: "array",
+      labels: { singular: "Lesson", plural: "Key lessons" },
+      admin: { description: "The takeaways, one per line — shown as a highlighted list." },
+      fields: [{ name: "lesson", type: "text", required: true }],
+    },
+    {
+      name: "tags",
+      type: "array",
+      labels: { singular: "Tag", plural: "Tags" },
+      admin: { description: "Optional topics, e.g. Patience, Family, Ramadan." },
+      fields: [{ name: "tag", type: "text", required: true }],
+    },
   ],
 };
 
@@ -320,6 +469,7 @@ export const Events: CollectionConfig = {
     { name: "image", type: "upload", relationTo: "media" },
     { name: "description", type: "richText" },
     { name: "registrationUrl", type: "text" },
+    showOnField,
   ],
 };
 
@@ -363,7 +513,7 @@ export const Announcements: CollectionConfig = {
   slug: "announcements",
   labels: { singular: "Announcement / Banner", plural: "Announcements & Banners" },
   admin: { useAsTitle: "message", defaultColumns: ["message", "severity", "enabled"], group: "Content" },
-  access: { read: anyone, create: isEditor, update: isEditor, delete: isEditor },
+  access: { read: anyone, create: isEditor, update: isUpdater, delete: isEditor },
   fields: [
     { name: "label", type: "text", defaultValue: "Notice" },
     { name: "message", type: "textarea", required: true },
@@ -391,6 +541,7 @@ export const Announcements: CollectionConfig = {
     { name: "enabled", type: "checkbox", defaultValue: true },
     { name: "startDate", type: "date" },
     { name: "endDate", type: "date" },
+    showOnField,
     {
       name: "sendPush",
       type: "checkbox",
@@ -444,7 +595,8 @@ export const PrayerDays: CollectionConfig = {
     defaultColumns: ["date", "fajrJamaah", "dhuhrJamaah", "asrJamaah", "ishaJamaah", "source"],
     group: "Prayer Times",
     description:
-      "One record per day. Annual upload fills these in; managers can override any single day.",
+      "Edit any time directly in the grid above — click a cell, type, press Enter. The list below holds the individual override records.",
+    components: { beforeList: ["@/payload/components/TimetableGrid#TimetableGrid"] },
   },
   access: { read: anyone, create: isPrayerManager, update: isPrayerManager, delete: isPrayerManager },
   fields: [
@@ -691,26 +843,67 @@ export const DeviceTokens: CollectionConfig = {
 };
 
 /* ------------------------------- Subscribers ------------------------------ */
-// Opt-in contacts for the Broadcast Center (email + WhatsApp). The public can
-// self-subscribe via a form; staff manage the list in the admin.
+// The mosque's CENTRAL mailing list. Everyone who signs up — on the website,
+// in the iOS app, in the Android app, or added by staff — lands here, and each
+// entry is mirrored to Mailchimp automatically (when MAILCHIMP_API_KEY +
+// MAILCHIMP_AUDIENCE_ID are set), so newsletters are sent from Mailchimp
+// against an always-current audience.
 export const Subscribers: CollectionConfig = {
   slug: "subscribers",
-  labels: { singular: "Subscriber", plural: "Subscribers (Broadcast)" },
+  labels: { singular: "Subscriber", plural: "Subscribers (Mailing list)" },
   admin: {
     useAsTitle: "email",
-    defaultColumns: ["name", "email", "whatsapp", "emailOptIn", "whatsappOptIn", "unsubscribed"],
+    defaultColumns: ["name", "email", "source", "unsubscribed", "updatedAt"],
     group: "Broadcast",
-    description: "People who opted in to email / WhatsApp updates.",
+    description:
+      "The central mailing list. Sign-ups from the website and the mobile apps land here automatically, and every entry syncs to Mailchimp (when configured) — manage campaigns and newsletters in Mailchimp itself.",
   },
   access: { create: () => true, read: isStaff, update: isStaff, delete: isAdmin },
+  hooks: {
+    afterChange: [
+      async ({ doc }) => {
+        // Mirror to Mailchimp — best-effort, never blocks the save.
+        try {
+          const { upsertMailchimpMember } = await import("../lib/mailchimp");
+          await upsertMailchimpMember({
+            email: (doc as { email?: string }).email || "",
+            name: (doc as { name?: string }).name || "",
+            subscribed:
+              (doc as { unsubscribed?: boolean }).unsubscribed !== true &&
+              (doc as { emailOptIn?: boolean }).emailOptIn !== false,
+          });
+        } catch {
+          /* Mailchimp not configured or unreachable — the CMS list is still the record */
+        }
+        return doc;
+      },
+    ],
+    afterDelete: [
+      async ({ doc }) => {
+        try {
+          const { archiveMailchimpMember } = await import("../lib/mailchimp");
+          await archiveMailchimpMember((doc as { email?: string }).email || "");
+        } catch {
+          /* best-effort */
+        }
+      },
+    ],
+  },
   fields: [
     { name: "name", type: "text" },
-    { name: "email", type: "email" },
-    { name: "whatsapp", type: "text", admin: { description: "International format, e.g. 447700900000" } },
+    { name: "email", type: "email", required: true },
     { name: "emailOptIn", type: "checkbox", defaultValue: true, label: "Wants email updates" },
-    { name: "whatsappOptIn", type: "checkbox", defaultValue: false, label: "Wants WhatsApp updates" },
-    { name: "unsubscribed", type: "checkbox", defaultValue: false },
-    { name: "source", type: "text", admin: { description: "How they joined (e.g. website form, QR)" } },
+    {
+      name: "unsubscribed",
+      type: "checkbox",
+      defaultValue: false,
+      admin: { description: "Tick to stop all emails to this person (also marks them unsubscribed in Mailchimp)." },
+    },
+    {
+      name: "source",
+      type: "text",
+      admin: { description: "How they joined — website, ios-app, android-app, or added by staff." },
+    },
   ],
 };
 
@@ -734,7 +927,7 @@ export const Broadcasts: CollectionConfig = {
       name: "image",
       type: "upload",
       relationTo: "media",
-      admin: { description: "Optional. Required for Instagram; used by Facebook/Telegram/WhatsApp if set." },
+      admin: { description: "Optional. Required for Instagram; used by Facebook/Telegram if set." },
     },
     {
       name: "channels",
@@ -745,7 +938,6 @@ export const Broadcasts: CollectionConfig = {
         { label: "App notification (push)", value: "push" },
         { label: "Email", value: "email" },
         { label: "Telegram", value: "telegram" },
-        { label: "WhatsApp", value: "whatsapp" },
         { label: "Facebook", value: "facebook" },
         { label: "Instagram", value: "instagram" },
       ],

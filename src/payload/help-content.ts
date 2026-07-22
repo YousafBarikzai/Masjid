@@ -13,6 +13,32 @@ export interface HelpEntry {
 
 /** Keyed by collection slug OR global slug. */
 export const HELP_CONTENT: Record<string, HelpEntry> = {
+  "screens": {
+    title: "Digital Screens",
+    intro: "Each entry here is one TV in the mosque (Mimbar & Outside, Sisters, Middle Masjid, Ablution Area). A screen plays its list of slides in a loop \u2014 every slide shows for its own number of seconds, then the next appears.",
+    steps: [
+      "Open the screen you want to change (or Create a new one for a new TV).",
+      "Under Slides, click Add Slide and choose the type: Prayer times board, Announcement, Picture / poster, or QR code.",
+      "Set the seconds for the slide \u2014 how long it stays on screen (10\u201315s reads well; give the prayer board 60s or more).",
+      "Fill in the slide's fields: an announcement needs a heading and short text; a picture needs an image from the media library; a QR code needs the link it should open and a caption.",
+      "Drag the handle on the left of each row to change the running order \u2014 the loop plays top to bottom, then repeats.",
+      "Untick \u2018Show this slide\u2019 to take a slide out of rotation without deleting it (handy for seasonal notices).",
+      "Save. The TV updates itself within about a minute \u2014 no need to touch it.",
+    ],
+    tip: "On the TV, open /display/<slug> (for example /display/mimbar-outside) in the browser and make it the homepage \u2014 see docs/SCREENS.md for per-TV setup.",
+  },
+  "app-settings": {
+    title: "Mobile App",
+    intro: "This page controls the iOS and Android app. Everything you set here reaches people's phones within about a minute — no app-store update needed. Prayer times, news, events and contact details come across automatically; this page covers the extras.",
+    steps: [
+      "Welcome greeting: the line at the top of the app's Home screen (for example As-salāmu ʿalaykum).",
+      "Monthly timetable PDF: paste a link to the printable timetable. The Download button on the app's Prayers tab opens it. Leave blank and the app sends people to the website's prayer-times page instead.",
+      "Quick actions: up to four buttons on the app's Home screen. Give each an emoji icon, a short label and a link — a full web address or a site path like /donate.",
+      "Media links: the app's Media tab. Add khutbahs, lectures, YouTube playlists or podcasts — pick the kind so the right icon shows. Each opens inside the app.",
+      "Save — the app refreshes itself; there is nothing else to do.",
+    ],
+    tip: "Announcements you publish (and Broadcasts you send) automatically notify every phone that has the app installed and notifications switched on.",
+  },
   "pages": {
     title: "Pages",
     intro: "Pages are the permanent parts of your website, like About the Mosque, Visit Us or Donate. Use these for information that stays up most of the time, rather than dated news.",
@@ -133,11 +159,11 @@ export const HELP_CONTENT: Record<string, HelpEntry> = {
   },
   "broadcasts": {
     title: "Broadcasts",
-    intro: "Write a notice once and send it out to your chosen channels (email, Telegram, WhatsApp, Facebook, Instagram). You compose a single message and it goes everywhere you tick.",
+    intro: "Write a notice once and send it out to your chosen channels (app push, email, Telegram, Facebook, Instagram). You compose a single message and it goes everywhere you tick.",
     steps: [
       "Click Create, then type a short Title and write your message in the Body box.",
-      "Optionally attach an Image (note: Instagram needs an image; Facebook, Telegram and WhatsApp will use it if you add one).",
-      "Under Channels, tick every place you want this to go (Email, Telegram, WhatsApp, Facebook, Instagram). You compose once and it fans out to all of them.",
+      "Optionally attach an Image (note: Instagram needs an image; Facebook and Telegram will use it if you add one).",
+      "Under Channels, tick every place you want this to go (App push, Email, Telegram, Facebook, Instagram). You compose once and it fans out to all of them.",
       "When you're ready to send, tick the 'Send now' box and click Save. It dispatches just once.",
       "After saving, the Status changes to 'Sent', the Sent At date is filled in, and the Report box shows a line for each channel telling you whether it worked.",
       "To send the same thing again later, create a new Broadcast rather than re-saving an old one.",
@@ -146,12 +172,11 @@ export const HELP_CONTENT: Record<string, HelpEntry> = {
   },
   "subscribers": {
     title: "Subscribers (Broadcast)",
-    intro: "Your list of people who have opted in to receive email or WhatsApp updates. These are the contacts your Broadcasts can reach.",
+    intro: "The mosque's central mailing list. Sign-ups from the website and the mobile apps land here automatically, and every entry syncs to Mailchimp (when configured) — newsletters and campaigns are then managed and sent from Mailchimp.",
     steps: [
       "People usually add themselves through the website sign-up form, so this list often fills up on its own.",
-      "To add someone by hand, click Create and fill in their Name, Email and/or WhatsApp number.",
-      "Enter WhatsApp numbers in international format with no spaces or plus sign, e.g. 447700900000.",
-      "Tick 'Wants email updates' and/or 'Wants WhatsApp updates' to set how they'd like to hear from you.",
+      "To add someone by hand, click Create and fill in their Name and Email — they sync to Mailchimp automatically.",
+      "Tick Unsubscribed to stop all emails to someone — Mailchimp is updated too.",
       "Use the Source field to note how they joined (e.g. 'website form' or 'QR code') so you can keep track.",
       "If someone asks to stop receiving messages, tick the 'Unsubscribed' box rather than deleting them.",
     ],
@@ -169,44 +194,17 @@ export const HELP_CONTENT: Record<string, HelpEntry> = {
     ],
     tip: "The 'Handled' tick box is your to-do marker. Get into the habit of ticking it the moment a message is resolved, so untouched messages are easy to spot.",
   },
-  "forms": {
-    title: "Forms",
-    intro: "A no-code form builder for things like membership sign-ups, enquiries or bookings. You drag in the fields you want, no coding needed, and the form can be placed on a website page.",
-    steps: [
-      "Click Create and give the form a clear name (e.g. 'Membership Application').",
-      "Add the fields you need by choosing field types: text, email, textarea, number, select (dropdown), checkbox, a message/instruction block, country or state.",
-      "Set who receives each submission by entering the recipient email address(es) for this form, so the right person gets notified.",
-      "Write a confirmation message to thank people after they submit, or choose a page to redirect them to instead.",
-      "Save the form, then ask whoever manages the website to add it to the relevant page.",
-      "Submissions are stored under Form Submissions and emailed to the recipients you set.",
-    ],
-    tip: "Each form has its own recipient list, so make sure you set it, otherwise notifications fall back to the mosque's default inbox. You can view and export collected responses to CSV from Form Submissions for spreadsheets or record-keeping.",
-  },
-  "form-submissions": {
-    title: "Form Submissions",
-    intro: "Every response people send through your custom Forms is collected here, so you have a complete record you can read or export.",
-    steps: [
-      "Open the list to see all responses; click any row to read the full set of answers a person submitted.",
-      "Each submission is linked to the Form it came from, so you can tell which form each response belongs to.",
-      "Use the date columns to find recent submissions or work through them in order.",
-      "To get the data into a spreadsheet, use the CSV export so you can sort, filter or share the responses offline.",
-      "Recipients also receive each submission by email automatically, so this list is your backup and full archive.",
-      "If you no longer need old responses, an admin can remove them; editors can read but not change submissions.",
-    ],
-    tip: "Spam is filtered out automatically before it reaches you, so what you see here should be genuine. Export to CSV regularly if you want a long-term record outside the CMS.",
-  },
   "users": {
-    title: "Users (Staff Logins)",
-    intro: "The staff accounts that can log in to manage the website. Here you add volunteers and decide what each person is allowed to do by giving them a role.",
+    title: "Team & Roles",
+    intro: "Everyone who can sign in to this admin. Each person's role decides what they see in the left menu and what they can do — give people the smallest role that covers their job.",
     steps: [
-      "To add someone, click Create and enter their Name, Email and a starting Password.",
-      "Choose one or more Roles to set what they can do (you can give more than one).",
-      "Super Admin and Admin: full access, including managing other users and settings.",
-      "Editor / Manager: manages content like pages, news, events and services.",
-      "Prayer Times Manager: edits the prayer timetable. Contributor (drafts only): can create and edit drafts but cannot publish them live.",
-      "Save, then share the login details with the new volunteer so they can sign in and change their password.",
+      "Click Create, then enter the person's name, email address and a password (they can change it after their first login).",
+      "Pick a role. Super Admin / Admin: run everything including users and settings. Editor: create, edit and publish all content. Editor (edit only): can update existing pages, news and events but cannot add new items or delete. Contributor: writes drafts that an editor reviews and publishes. Prayer Times Manager: only the timetable and Jumu\u02bfah/Ramadan times.",
+      "Save. Send the person their email and password \u2014 they sign in at /admin.",
+      "To change what someone can do, open their entry and change the role (only Admins can do this).",
+      "To remove someone's access, delete their entry.",
     ],
-    tip: "Give people the least access they need; Contributors can only draft, so they're perfect for new helpers whose work you want to review before it goes live. Only Admins and Super Admins can add or change users, and the very first account ever created automatically becomes a Super Admin.",
+    tip: "The role guide at the top of this page shows exactly what each role can and cannot do. The left-hand menu adapts automatically \u2014 an Editor (edit only) will not even see the + buttons for creating new items.",
   },
   "audit-log": {
     title: "Audit Log",
@@ -275,10 +273,9 @@ export const HELP_CONTENT: Record<string, HelpEntry> = {
   },
   "broadcast-settings": {
     title: "Broadcast",
-    intro: "This holds the public-facing settings for your community messaging channels, the optional sign-off added to messages and the \"join us\" links for WhatsApp and Telegram. It only stores the public channel targets and join links; the secret login keys and tokens live safely in the server's environment variables, not here, so there is nothing sensitive for you to enter.",
+    intro: "This holds the public-facing settings for your community messaging channels, the optional sign-off added to messages and the \"join us\" link for Telegram. It only stores the public channel targets and join links; the secret login keys and tokens live safely in the server's environment variables, not here, so there is nothing sensitive for you to enter.",
     steps: [
       "In \"Signature\", optionally type a sign-off that gets added to the end of broadcasts, for example \"— Kingston Mosque\".",
-      "In \"WhatsApp join URL\", paste the public link or QR target where people can join your WhatsApp updates.",
       "In \"Telegram join URL\", paste the public link to your Telegram channel or group.",
       "Leave any field blank if you do not use that channel, blank links simply will not be shown.",
       "Open the links yourself in a browser first to confirm they actually let someone join, then click Save.",

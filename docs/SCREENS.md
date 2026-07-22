@@ -1,5 +1,24 @@
 # Mosque Display Screens
 
+## The four screens (one URL per TV)
+
+| TV | URL |
+|---|---|
+| Mimbar & Outside Screen | `/display/mimbar-outside` |
+| Sisters Screen | `/display/sisters` |
+| Middle Masjid Screen | `/display/middle-masjid` |
+| Ablution Area Screen | `/display/ablution` |
+
+Each TV opens ITS OWN URL (set it as the browser homepage). What each screen
+shows is managed in the admin under **Digital Screens**: a playlist of slides
+(prayer board, announcements, pictures, QR codes) that loop in order, each for
+its own number of seconds. Drag rows to reorder; untick "Show this slide" to
+pull one from rotation. The TV picks up changes within about a minute.
+
+Tip: add `?slide=2` to a screen URL to preview a specific slide while editing.
+The plain `/display` URL still shows the always-on prayer board.
+
+
 The in-mosque TVs show a full-screen prayer board at **`/display`** (e.g.
 `https://kingstonmosque.org/display`). It replaces the paid MasjidBox box at no
 software cost. Everything on it is driven by the website CMS, so updates made in

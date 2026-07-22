@@ -10,9 +10,6 @@ import { createHref } from "../destinations";
 
 const CHANNELS: { key: string; label: string; ready: () => boolean }[] = [
   { key: "email", label: "Email", ready: () => !!process.env.SMTP_HOST },
-  { key: "whatsapp", label: "WhatsApp", ready: () =>
-      !!((process.env.WHATSAPP_GATEWAY_URL && process.env.WHATSAPP_GATEWAY_SECRET && process.env.WHATSAPP_GROUP_IDS) ||
-        (process.env.WHATSAPP_TOKEN && process.env.WHATSAPP_PHONE_ID)) },
   { key: "telegram", label: "Telegram", ready: () => !!(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) },
   { key: "facebook", label: "Facebook", ready: () => !!(process.env.FACEBOOK_PAGE_ID && process.env.FACEBOOK_PAGE_TOKEN) },
   { key: "instagram", label: "Instagram", ready: () =>

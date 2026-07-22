@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { buildSnapshot } from "@/lib/snapshot";
 
 // Mounted at /app-api/* (not /api/*) so it never collides with Payload's REST
@@ -13,9 +13,12 @@ const CORS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const data = await buildSnapshot();
+    // The mosque TVs ask for their own view (?surface=screens) so per-item
+    // "Show on" targeting can differ between the apps and the screens.
+    const surface = req.nextUrl.searchParams.get("surface") === "screens" ? "screens" : "app";
+    const data = await buildSnapshot(new Date(), surface);
     return NextResponse.json(data, {
       headers: {
         ...CORS,

@@ -22,7 +22,6 @@ export async function runBroadcast(
   if (channels.includes("push")) results.push(await sendPush(payload, input));
   if (channels.includes("email")) results.push(await sendEmail(payload, input));
   if (channels.includes("telegram")) results.push(await sendTelegram(input));
-  if (channels.includes("whatsapp")) results.push(await sendWhatsApp(payload, input));
   if (channels.includes("facebook")) results.push(await sendFacebook(input));
   if (channels.includes("instagram")) results.push(await sendInstagram(input));
   return results;
@@ -108,86 +107,6 @@ async function sendTelegram(input: BroadcastInput): Promise<ChannelResult> {
   } catch (err) {
     return { channel: "telegram", status: "failed", detail: (err as Error).message };
   }
-}
-
-/* -------------------------------- WhatsApp -------------------------------- */
-// WhatsApp Business Cloud API — broadcasts to opted-in subscribers. NOTE: free
-// outside the 24h window only via an approved message template; plain text
-// works inside a session window. See docs/BROADCAST.md.
-async function sendWhatsApp(payload: Payload, input: BroadcastInput): Promise<ChannelResult> {
-  // Preferred: self-hosted gateway that posts into the actual WhatsApp group(s).
-  const gwUrl = process.env.WHATSAPP_GATEWAY_URL;
-  const gwSecret = process.env.WHATSAPP_GATEWAY_SECRET;
-  const groupIds = (process.env.WHATSAPP_GROUP_IDS || "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  if (gwUrl && gwSecret && groupIds.length) {
-    const text = `${input.title}\n\n${input.body}`;
-    let sent = 0;
-    for (const groupId of groupIds) {
-      try {
-        const r = await fetch(`${gwUrl.replace(/\/$/, "")}/send`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${gwSecret}` },
-          body: JSON.stringify({ groupId, text, imageUrl: input.imageUrl || undefined }),
-        });
-        if (r.ok) sent++;
-      } catch {
-        /* keep going */
-      }
-    }
-    return {
-      channel: "whatsapp",
-      status: sent ? "sent" : "failed",
-      detail: `${sent}/${groupIds.length} group(s) via gateway`,
-      count: sent,
-    };
-  }
-
-  // Fallback: official Cloud API broadcast to opted-in subscribers.
-  const token = process.env.WHATSAPP_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_ID;
-  if (!token || !phoneId) return { channel: "whatsapp", status: "skipped", detail: "not configured" };
-
-  const subs = await payload.find({
-    collection: "subscribers" as never,
-    where: {
-      and: [{ whatsappOptIn: { equals: true } }, { unsubscribed: { not_equals: true } }, { whatsapp: { exists: true } }],
-    } as never,
-    limit: 10000,
-    depth: 0,
-    overrideAccess: true,
-  });
-  const numbers = (subs.docs as Array<{ whatsapp?: string }>)
-    .map((d) => d.whatsapp?.replace(/[^\d]/g, ""))
-    .filter((n): n is string => !!n);
-  if (!numbers.length) return { channel: "whatsapp", status: "skipped", detail: "no WhatsApp subscribers" };
-
-  let sent = 0;
-  for (const to of numbers) {
-    try {
-      const res = await fetch(`${GRAPH}/${phoneId}/messages`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messaging_product: "whatsapp",
-          to,
-          type: "text",
-          text: { body: `${input.title}\n\n${input.body}` },
-        }),
-      });
-      if (res.ok) sent++;
-    } catch {
-      /* keep going */
-    }
-  }
-  return {
-    channel: "whatsapp",
-    status: sent ? "sent" : "failed",
-    detail: `${sent}/${numbers.length} messaged`,
-    count: sent,
-  };
 }
 
 /* -------------------------------- Facebook -------------------------------- */

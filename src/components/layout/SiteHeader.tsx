@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getSite, getAnnouncement, getMainMenu } from "@/lib/cms";
 import Brand from "./Brand";
 import MobileMenu from "./MobileMenu";
+import DesktopNav from "./DesktopNav";
 import ThemeToggle from "./ThemeToggle";
 
 export default async function SiteHeader() {
@@ -47,33 +48,7 @@ export default async function SiteHeader() {
       <header className="site">
         <div className="wrap">
           <Brand />
-          <nav className="main">
-            {menu
-              .filter((n) => !n.cta)
-              .map((n) =>
-                n.children ? (
-                  <div className="nav-item has-children" key={n.href}>
-                    <Link href={n.href} className="nav-top">
-                      {n.label}
-                      <span className="caret" aria-hidden>
-                        ▾
-                      </span>
-                    </Link>
-                    <div className="dropdown">
-                      {n.children.map((c) => (
-                        <Link key={c.href} href={c.href}>
-                          {c.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <Link key={n.href} href={n.href} className="nav-top">
-                    {n.label}
-                  </Link>
-                ),
-              )}
-          </nav>
+          <DesktopNav items={menu} />
           <div className="header-cta">
             <ThemeToggle />
             <Link className="btn btn-gold desktop-only" href="/donate">

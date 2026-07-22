@@ -1,39 +1,71 @@
 {
   "expo": {
-    "name": "Kingston Mosque",
+    "name": "Kingston Masjid",
     "slug": "kingston-mosque",
     "scheme": "kingstonmosque",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#081f15",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0b3d2e"
+      "backgroundColor": "#081f15"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "org.kingstonmosque.app"
+      "bundleIdentifier": "org.kingstonmosque.app",
+      "buildNumber": "2",
+      "infoPlist": {
+        "UIBackgroundModes": ["remote-notification"],
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "Your location is used only on your device to point the Qibla compass towards the Kaʿbah and to show mosques near you on the map. It is never stored or shared."
+      }
     },
     "android": {
       "package": "org.kingstonmosque.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0b3d2e"
-      }
+        "backgroundColor": "#081f15"
+      },
+      "permissions": ["POST_NOTIFICATIONS", "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
     },
     "web": {
       "bundler": "metro",
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-router", "expo-notifications"],
+    "plugins": [
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "1.9.25"
+          }
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#c9a227",
+          "defaultChannel": "default"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Your location is used only on your device to point the Qibla compass towards the Kaʿbah and to show mosques near you on the map. It is never stored or shared."
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "apiBase": "https://kingstonmosque.org"
+      "apiBase": "https://masjid-production.up.railway.app"
     }
   }
 }

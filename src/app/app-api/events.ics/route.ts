@@ -1,4 +1,5 @@
 import { getPayloadClient } from "@/lib/payloadClient";
+import { showsOn } from "@/payload/collections";
 
 // iCalendar feed of mosque events — usable as a "subscribe to calendar" URL or a
 // downloadable .ics. Pulls from the Events collection; empty (but valid) until
@@ -19,7 +20,7 @@ export async function GET() {
   try {
     const p = await getPayloadClient();
     const res = await p.find({ collection: "events", sort: "start", limit: 200, depth: 0 });
-    docs = res.docs as Array<Record<string, unknown>>;
+    docs = res.docs.filter((e) => showsOn(e, "app")) as Array<Record<string, unknown>>;
   } catch {
     /* return an empty but valid calendar */
   }

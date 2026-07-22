@@ -284,8 +284,13 @@ nav.main { gap: 20px; }
 }
 .dropdown a { padding: 9px 12px; border-radius: 9px; font-size: .92rem; color: var(--ink); white-space: nowrap; }
 .dropdown a:hover { background: var(--cream-2); color: var(--green-3); }
-.nav-item.has-children:hover .dropdown,
-.nav-item.has-children:focus-within .dropdown { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(4px); }
+.nav-item.has-children.is-open .dropdown { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(4px); }
+.nav-caret {
+  appearance: none; border: 0; background: transparent; cursor: pointer;
+  font-size: .7em; color: var(--muted); padding: 4px 2px; margin-left: -2px;
+  transition: transform .18s ease, color .15s ease; line-height: 1;
+}
+.nav-item.is-open .nav-caret { transform: rotate(180deg); color: var(--green-3); }
 
 /* --- Mobile nested nav --- */
 .mobile-group { display: flex; flex-direction: column; border-bottom: 1px solid var(--line); }

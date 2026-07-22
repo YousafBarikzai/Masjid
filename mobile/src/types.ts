@@ -1,6 +1,5 @@
-// Mirrors the shape returned by the website's /app-api/snapshot endpoint.
-// Kept as a small local interface so the app stays decoupled from the server
-// build (the web app's Snapshot type is server-only).
+// Mirrors the shapes returned by the website's app-api endpoints. Kept as small
+// local interfaces so the app stays decoupled from the server build.
 
 export interface PrayerRow {
   key: string;
@@ -33,11 +32,29 @@ export interface CardItem {
   href: string;
 }
 
+export interface JummahCongregation {
+  name: string;
+  language: string;
+  doors: string;
+  khutbah: string;
+}
+
+export interface AppConfig {
+  welcome: string;
+  timetablePdfUrl: string;
+  quickLinks: { icon: string; label: string; url: string }[];
+  mediaLinks: { kind: string; label: string; url: string }[];
+  donateUrl: string;
+  youtube: string;
+}
+
 export interface Snapshot {
   generatedAt: string;
   date: { iso: string; gregorian: string; hijri: string };
   prayers: PrayerRow[];
   nextPrayer: NextPrayer;
+  isFriday?: boolean;
+  jummah?: JummahCongregation[];
   announcement: { enabled: boolean; label: string; message: string } | null;
   news: NewsItem[];
   events: CardItem[];
@@ -51,4 +68,166 @@ export interface Snapshot {
     mapsQuery: string;
     social: { label: string; href: string }[];
   };
+  app?: AppConfig;
+}
+
+/* Monthly timetable (app-api/timetable-grid) */
+export interface MonthDay {
+  date: string; // YYYY-MM-DD
+  weekday: string;
+  isOverride: boolean;
+  fajrBegins: string;
+  fajrJamaah: string;
+  sunrise: string;
+  dhuhrBegins: string;
+  dhuhrJamaah: string;
+  asrBegins: string;
+  asrJamaah: string;
+  maghrib: string;
+  ishaBegins: string;
+  ishaJamaah: string;
+  note?: string;
+}
+
+export interface MonthGrid {
+  year: number;
+  month: string; // YYYY-MM
+  days: MonthDay[];
+}
+
+/* Native content feed (app-api/content) — powers the service, information,
+   donation and article screens without any web views. */
+export interface ContentSection {
+  heading?: string;
+  body?: string[];
+  bullets?: string[];
+}
+
+export interface ServiceContent {
+  slug: string;
+  title: string;
+  icon: string;
+  intro: string;
+  sections: ContentSection[];
+  cta: { heading: string; body: string } | null;
+}
+
+export interface ArticleContent {
+  slug: string;
+  title: string;
+  date: string;
+  excerpt: string;
+  image?: string;
+  sections: ContentSection[];
+}
+
+export interface ArticlesPage {
+  docs: ArticleContent[];
+  page: number;
+  totalPages: number;
+  totalDocs: number;
+  hasMore: boolean;
+}
+
+export interface EventContent {
+  slug: string;
+  title: string;
+  tag: string;
+  when: string;
+  where: string;
+  summary: string;
+  image?: string;
+  sections: ContentSection[];
+  registrationUrl: string;
+}
+
+export interface DonationCampaign {
+  icon: string;
+  title: string;
+  description: string;
+  featured: boolean;
+  goal: number;
+  raised: number;
+  imageUrl: string;
+  link: string;
+}
+
+/* Nearby mosques (app-api/mosques — OpenStreetMap via Overpass) */
+export interface Mosque {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  address: string;
+  phone: string;
+  website: string;
+  wheelchair: boolean;
+  openingHours: string;
+  tags: Record<string, string>;
+}
+
+export interface GeocodeResult {
+  name: string;
+  lat: number;
+  lng: number;
+}
+
+/* Khutbah Archive (app-api/khutbahs) */
+export interface Khutbah {
+  slug: string;
+  title: string;
+  date: string;
+  dateISO: string;
+  khatib: string;
+  videoId: string;
+  watchUrl: string;
+  embedUrl: string;
+  thumbnail: string;
+  excerpt: string;
+  sections: ContentSection[];
+  lessons: string[];
+  tags: string[];
+}
+
+export interface KhutbahsPage {
+  docs: Khutbah[];
+  page: number;
+  totalPages: number;
+  totalDocs: number;
+  hasMore: boolean;
+}
+
+/* Live broadcast feed (app-api/live) */
+export interface LiveFeed {
+  kingston: { live: boolean; embedUrl: string; title: string; channelUrl: string };
+  makkah: { embedUrl: string; attribution: string };
+  recent: { title: string; videoId: string; published: string }[];
+}
+
+export interface ContentFeed {
+  generatedAt: string;
+  services: ServiceContent[];
+  articles: ArticleContent[];
+  events: EventContent[];
+  donation: {
+    heading: string;
+    body: string;
+    donateUrl: string;
+    presets: number[];
+    giftAid: boolean;
+    monthly: boolean;
+    bank: { label: string; value: string }[];
+    categories: { icon: string; title: string; body: string }[];
+    stripeEnabled: boolean;
+    campaigns: DonationCampaign[];
+  };
+  jummah: { intro: string; congregations: JummahCongregation[] };
+  contact: {
+    phone: string;
+    phoneHref: string;
+    email: string;
+    address: { line1: string; city: string; postcode: string };
+    mapsQuery: string;
+  };
+  qibla: { kaabaLat: number; kaabaLng: number };
 }

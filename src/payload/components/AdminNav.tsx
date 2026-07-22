@@ -13,7 +13,7 @@ import { usePathname } from "next/navigation";
      ▸ Website Pages        → Main menu, every page (edit directly), + new page
      ▸ Content              → News, Events, Classes, Announcements, Media …
      ▸ Prayer Times         → Timetable, uploads, Jumu'ah, Ramadan & Eid
-     ▸ Community & Forms    → Forms, submissions, subscribers
+     ▸ Community            → Contact messages, subscribers
      ▸ Broadcast            → Broadcasts + settings
      ▸ Site Settings        → Site settings, donations
      ▸ Administration       → Users, devices, audit log
@@ -28,6 +28,10 @@ type Item = {
   /** link to the "create new" view (collections only) */
   addHref?: string;
   hint?: string;
+  /** roles that see this item (default: the group's view roles) */
+  view?: string[];
+  /** roles that get the "+" create shortcut */
+  create?: string[];
 };
 
 type Group = {
@@ -35,82 +39,112 @@ type Group = {
   label: string;
   icon: string;
   items: Item[];
-  /** when true, also list the actual page documents as child links */
-  pagesTree?: boolean;
+  /** roles that see this group at all */
+  view: string[];
+  /** roles that may create in the docs tree ("Add new" leaf) */
+  treeCreate?: string[];
+  /** list the collection's actual documents as child links (e.g. pages, screens) */
+  docsTree?: { collection: string; titleField: string };
 };
 
 const col = (slug: string) => `/admin/collections/${slug}`;
 const add = (slug: string) => `/admin/collections/${slug}/create`;
 const glob = (slug: string) => `/admin/globals/${slug}`;
 
+/* Role sets — mirror src/payload/access.ts. The sidebar only SHOWS what the
+   role can actually use; the server enforces the same rules regardless. */
+const ADMINS = ["super-admin", "admin"];
+const EDITORS = [...ADMINS, "editor"];
+const CONTENT_EDIT = [...EDITORS, "updater", "contributor"]; // may open/edit content
+const CONTENT_CREATE = [...EDITORS, "contributor"]; // may create pages/posts (updater may not)
+const PRAYER = [...ADMINS, "prayer-times-manager", "editor"];
+const PRAYER_CREATE = [...ADMINS, "prayer-times-manager"];
+
 const GROUPS: Group[] = [
   {
     key: "pages",
     label: "Website Pages",
     icon: "📄",
-    pagesTree: true,
+    view: CONTENT_EDIT,
+    treeCreate: CONTENT_CREATE,
+    docsTree: { collection: "pages", titleField: "title" },
     items: [
-      { label: "Site navigation (menus)", href: glob("main-menu"), hint: "Header menu & dropdowns" },
-      { label: "All pages", href: col("pages"), addHref: add("pages") },
+      { label: "Site navigation (menus)", href: glob("main-menu"), hint: "Header menu & dropdowns", view: EDITORS },
+      { label: "All pages", href: col("pages"), addHref: add("pages"), create: CONTENT_CREATE },
     ],
   },
   {
     key: "content",
     label: "Content",
     icon: "📰",
+    view: CONTENT_EDIT,
     items: [
-      { label: "News & articles", href: col("posts"), addHref: add("posts") },
-      { label: "Events", href: col("events"), addHref: add("events") },
-      { label: "Classes & education", href: col("classes"), addHref: add("classes") },
-      { label: "Services", href: col("services"), addHref: add("services") },
-      { label: "Announcements & banners", href: col("announcements"), addHref: add("announcements") },
-      { label: "Media library", href: col("media"), addHref: add("media") },
+      { label: "News & articles", href: col("posts"), addHref: add("posts"), create: CONTENT_CREATE },
+      { label: "Khutbah archive", href: col("khutbahs"), addHref: add("khutbahs"), create: EDITORS },
+      { label: "Events", href: col("events"), addHref: add("events"), create: EDITORS },
+      { label: "Classes & education", href: col("classes"), addHref: add("classes"), create: EDITORS },
+      { label: "Services", href: col("services"), addHref: add("services"), create: EDITORS },
+      { label: "Announcements & banners", href: col("announcements"), addHref: add("announcements"), create: EDITORS },
+      { label: "Media library", href: col("media"), addHref: add("media"), create: EDITORS },
     ],
   },
   {
     key: "prayer",
     label: "Prayer Times",
     icon: "🕌",
+    view: PRAYER,
     items: [
-      { label: "Prayer timetable", href: col("prayer-days"), addHref: add("prayer-days") },
-      { label: "Annual timetable upload", href: col("timetable-uploads"), addHref: add("timetable-uploads") },
-      { label: "Jumuʿah settings", href: glob("jummah-settings") },
-      { label: "Ramadan & Eid", href: glob("special-schedule") },
+      { label: "Prayer timetable", href: col("prayer-days"), addHref: add("prayer-days"), create: PRAYER_CREATE },
+      { label: "Annual timetable upload", href: col("timetable-uploads"), addHref: add("timetable-uploads"), view: PRAYER_CREATE, create: PRAYER_CREATE },
+      { label: "Jumuʿah settings", href: glob("jummah-settings"), view: PRAYER_CREATE },
+      { label: "Ramadan & Eid", href: glob("special-schedule"), view: PRAYER_CREATE },
     ],
   },
   {
     key: "community",
-    label: "Community & Forms",
+    label: "Community",
     icon: "💬",
+    view: EDITORS,
     items: [
-      { label: "Forms (builder)", href: col("forms"), addHref: add("forms") },
-      { label: "Form submissions", href: col("form-submissions") },
       { label: "Contact messages", href: col("contact-submissions") },
-      { label: "Subscribers", href: col("subscribers"), addHref: add("subscribers") },
+      { label: "Subscribers (mailing list)", href: col("subscribers"), addHref: add("subscribers"), hint: "The central email list — syncs to Mailchimp" },
     ],
   },
   {
     key: "broadcast",
     label: "Broadcast",
     icon: "📣",
+    view: EDITORS,
     items: [
       { label: "Broadcasts (send a notice)", href: col("broadcasts"), addHref: add("broadcasts") },
       { label: "Broadcast settings", href: glob("broadcast-settings") },
     ],
   },
   {
+    key: "tv",
+    label: "Digital Screens",
+    icon: "📺",
+    view: EDITORS,
+    treeCreate: EDITORS,
+    docsTree: { collection: "screens", titleField: "name" },
+    items: [{ label: "All screens", href: col("screens"), addHref: add("screens"), hint: "Each TV's slide playlist" }],
+  },
+  {
     key: "settings",
     label: "Site Settings",
     icon: "⚙️",
+    view: ADMINS,
     items: [
       { label: "Site settings", href: glob("site-settings"), hint: "Contact info, about, socials" },
       { label: "Donations", href: glob("donation-settings"), hint: "Bank details, giving link, campaigns" },
+      { label: "Mobile app", href: glob("app-settings"), hint: "App home, quick actions, media links" },
     ],
   },
   {
     key: "admin",
     label: "Administration",
     icon: "🔐",
+    view: ADMINS,
     items: [
       { label: "Staff users", href: col("users"), addHref: add("users") },
       { label: "App devices (push)", href: col("device-tokens") },
@@ -121,13 +155,30 @@ const GROUPS: Group[] = [
 
 const STORE = "kma-admin-nav-open";
 
-type PageDoc = { id: string | number; title?: string; slug?: string; _status?: string };
+type TreeDoc = { id: string | number; title?: string; name?: string; slug?: string; _status?: string };
 
 export function AdminNav() {
   const pathname = usePathname() || "";
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
-  const [pages, setPages] = useState<PageDoc[]>([]);
+  const [trees, setTrees] = useState<Record<string, TreeDoc[]>>({});
+  const [roles, setRoles] = useState<string[] | null>(null);
+
+  // Who am I? The sidebar only shows what this person's role can use.
+  useEffect(() => {
+    let active = true;
+    fetch("/api/users/me", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!active) return;
+        const rs = data?.user?.roles;
+        setRoles(Array.isArray(rs) ? rs : []);
+      })
+      .catch(() => setRoles([]));
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Restore open/closed state (default: the group containing the active link,
   // plus Website Pages so the tree is visible on first visit).
@@ -159,21 +210,37 @@ export function AdminNav() {
     }
   }, [open, loaded]);
 
-  // Live list of website pages so each one is a direct child link.
+  // Live document lists (website pages, digital screens) as direct child links.
   useEffect(() => {
     let active = true;
-    fetch("/api/pages?limit=100&depth=0&sort=title&draft=true", { credentials: "include" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (active && data?.docs) setPages(data.docs as PageDoc[]);
-      })
-      .catch(() => {});
+    for (const g of GROUPS) {
+      if (!g.docsTree) continue;
+      const { collection, titleField } = g.docsTree;
+      fetch(`/api/${collection}?limit=100&depth=0&sort=${titleField}&draft=true`, { credentials: "include" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (active && data?.docs) setTrees((t) => ({ ...t, [collection]: data.docs as TreeDoc[] }));
+        })
+        .catch(() => {});
+    }
     return () => {
       active = false;
     };
   }, [pathname]);
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
+
+  // Role gate: null while loading (render only the Dashboard link — no flash of
+  // menus the user isn't allowed to use).
+  const can = (allowed?: string[]) =>
+    !allowed || (roles ?? []).some((r) => allowed.includes(r));
+  const visibleGroups =
+    roles === null
+      ? []
+      : GROUPS.filter((g) => can(g.view)).map((g) => ({
+          ...g,
+          items: g.items.filter((i) => can(i.view ?? g.view)),
+        })).filter((g) => g.items.length > 0 || g.docsTree);
 
   return (
     <div className="kma-nav" data-loaded={loaded ? "true" : "false"}>
@@ -182,7 +249,7 @@ export function AdminNav() {
         Dashboard
       </Link>
 
-      {GROUPS.map((g) => {
+      {visibleGroups.map((g) => {
         const expanded = !!open[g.key];
         const groupActive = g.items.some((i) => isActive(i.href));
         return (
@@ -222,7 +289,7 @@ export function AdminNav() {
                     >
                       {item.label}
                     </Link>
-                    {item.addHref && (
+                    {item.addHref && can(item.create) && (
                       <Link
                         href={item.addHref}
                         className="kma-nav__add"
@@ -235,25 +302,27 @@ export function AdminNav() {
                   </div>
                 ))}
 
-                {g.pagesTree && pages.length > 0 && (
+                {g.docsTree && (trees[g.docsTree.collection]?.length ?? 0) > 0 && (
                   <div className="kma-nav__tree">
-                    {pages.map((p) => (
+                    {trees[g.docsTree.collection].map((p) => (
                       <Link
                         key={p.id}
-                        href={`/admin/collections/pages/${p.id}`}
+                        href={`/admin/collections/${g.docsTree!.collection}/${p.id}`}
                         className={`kma-nav__leaf${
-                          pathname === `/admin/collections/pages/${p.id}` ? " is-active" : ""
+                          pathname === `/admin/collections/${g.docsTree!.collection}/${p.id}` ? " is-active" : ""
                         }`}
                       >
                         <span className="kma-nav__leaf-dot" aria-hidden />
-                        <span className="kma-nav__leaf-label">{p.title || p.slug || "Untitled"}</span>
+                        <span className="kma-nav__leaf-label">{p.title || p.name || p.slug || "Untitled"}</span>
                         {p._status === "draft" && <span className="kma-nav__draft">draft</span>}
                       </Link>
                     ))}
-                    <Link href={add("pages")} className="kma-nav__leaf kma-nav__leaf--new">
-                      <span className="kma-nav__leaf-dot is-new" aria-hidden>+</span>
-                      <span className="kma-nav__leaf-label">Add a new page</span>
-                    </Link>
+                    {can(g.treeCreate) && (
+                      <Link href={add(g.docsTree.collection)} className="kma-nav__leaf kma-nav__leaf--new">
+                        <span className="kma-nav__leaf-dot is-new" aria-hidden>+</span>
+                        <span className="kma-nav__leaf-label">Add new</span>
+                      </Link>
+                    )}
                   </div>
                 )}
               </div>

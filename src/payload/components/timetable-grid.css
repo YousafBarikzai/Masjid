@@ -1,0 +1,124 @@
+/* Spreadsheet-style prayer timetable editor (Prayer Timetable list view). */
+
+.ttg {
+  margin: 4px 0 28px;
+  background: var(--theme-elevation-0, #fff);
+  border: 1px solid var(--theme-elevation-100, #e5e0d2);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.ttg__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--theme-elevation-100, #e5e0d2);
+}
+.ttg__title b { display: block; font-size: 14.5px; }
+.ttg__title span { display: block; font-size: 12px; opacity: 0.7; margin-top: 2px; }
+
+.ttg__months { display: flex; gap: 4px; flex-wrap: wrap; }
+.ttg__month {
+  appearance: none;
+  border: 1px solid var(--theme-elevation-150, #ddd6c4);
+  background: transparent;
+  color: inherit;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.ttg__month:hover { border-color: #c9a227; }
+.ttg__month.is-active { background: #0e3d29; border-color: #0e3d29; color: #fff; }
+
+.ttg__scroll { overflow-x: auto; max-height: 62vh; overflow-y: auto; }
+
+.ttg__table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.ttg__table thead th {
+  position: sticky;
+  background: #0e3d29;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 8px 6px;
+  text-align: center;
+  z-index: 3;
+}
+.ttg__salah-row th { top: 0; }
+.ttg__sub-row th { top: 31px; background: #16492f; font-size: 10px; opacity: 0.95; }
+.ttg__table thead th.ttg__day-head { text-align: left; padding-left: 14px; font-size: 12px; }
+.ttg__table thead th.ttg__sub { vertical-align: bottom; padding-bottom: 9px; }
+
+.ttg__table td { border-bottom: 1px solid var(--theme-elevation-100, #efe9d8); padding: 0; text-align: center; }
+.ttg__day {
+  text-align: left !important;
+  padding: 6px 8px 6px 14px !important;
+  font-size: 12.5px;
+  white-space: nowrap;
+  color: inherit;
+  position: sticky;
+  left: 0;
+  background: var(--theme-elevation-0, #fff);
+  z-index: 2;
+  border-right: 1px solid var(--theme-elevation-100, #efe9d8);
+}
+.ttg__day b { font-size: 13.5px; margin-right: 4px; }
+
+.ttg__table input {
+  width: 100%;
+  min-width: 58px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  text-align: center;
+  padding: 7px 4px;
+  outline: none;
+  border-radius: 6px;
+  transition: border-color 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+}
+.ttg__table input:hover { background: rgba(201, 162, 39, 0.07); }
+.ttg__table input:focus {
+  border-color: #c9a227;
+  background: var(--theme-elevation-0, #fff);
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.2);
+}
+
+.ttg__table td.is-saving input { background: rgba(201, 162, 39, 0.12); }
+.ttg__table td.is-saved input { background: rgba(46, 160, 90, 0.16); border-color: rgba(46, 160, 90, 0.5); }
+.ttg__table td.is-error input { background: rgba(224, 83, 61, 0.12); border-color: #e0533d; }
+
+tr.is-friday td { background: rgba(201, 162, 39, 0.06); }
+tr.is-friday .ttg__day { background: #fbf4dd; font-weight: 600; }
+tr.is-today td { background: rgba(46, 160, 90, 0.1); }
+tr.is-today .ttg__day { background: #e2f2e8; }
+
+.ttg__ovr { color: #c9a227; margin-left: 6px; font-style: normal; }
+.ttg__loading { padding: 28px !important; text-align: center; opacity: 0.6; }
+
+.ttg__legend {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 10px 18px;
+  font-size: 11.5px;
+  opacity: 0.8;
+  border-top: 1px solid var(--theme-elevation-100, #efe9d8);
+}
+.ttg__legend span { display: inline-flex; align-items: center; gap: 6px; }
+.ttg__swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.ttg__swatch--fri { background: #f3e5b5; }
+.ttg__swatch--today { background: #bfe3cd; }
+
+/* Dark admin theme */
+html[data-theme="dark"] .ttg__day,
+html[data-theme="dark"] tr.is-friday .ttg__day { background: var(--theme-elevation-50, #1a2520); }
+html[data-theme="dark"] tr.is-today .ttg__day { background: #14392a; }

@@ -60,11 +60,6 @@ export const BroadcastSettings: GlobalConfig = {
       type: "textarea",
       admin: { description: "Optional sign-off appended to broadcasts, e.g. “— Kingston Mosque”." },
     },
-    {
-      name: "whatsappJoinUrl",
-      type: "text",
-      admin: { description: "Public “join our WhatsApp updates” link/QR target shown to the community." },
-    },
     { name: "telegramJoinUrl", type: "text", admin: { description: "Public Telegram channel/group link." } },
   ],
 };
@@ -187,13 +182,35 @@ export const DonationSettings: GlobalConfig = {
     {
       name: "campaigns",
       type: "array",
+      labels: { singular: "Campaign", plural: "Campaigns" },
+      admin: {
+        description:
+          "Donation campaigns shown in the app and on the website — e.g. Masjid Expansion, Zakat, an emergency appeal. Add temporary appeals here (Ramadan, Eid, emergencies) and untick Active to retire them. The app updates within a minute; no app release needed.",
+      },
       fields: [
-        { name: "title", type: "text" },
-        { name: "goal", type: "number" },
-        { name: "raised", type: "number" },
-        { name: "image", type: "upload", relationTo: "media" },
-        { name: "link", type: "text" },
-        { name: "active", type: "checkbox", defaultValue: true },
+        {
+          type: "row",
+          fields: [
+            { name: "icon", type: "text", admin: { width: "15%", description: "Emoji, e.g. 🕌" } },
+            { name: "title", type: "text", required: true, admin: { width: "55%" } },
+            { name: "featured", type: "checkbox", label: "Featured", admin: { width: "15%", description: "Show first, large" } },
+            { name: "active", type: "checkbox", defaultValue: true, admin: { width: "15%" } },
+          ],
+        },
+        {
+          name: "description",
+          type: "textarea",
+          admin: { description: "One or two short sentences shown on the campaign card." },
+        },
+        {
+          type: "row",
+          fields: [
+            { name: "goal", type: "number", admin: { width: "50%", description: "Target £ (optional — shows a progress bar)" } },
+            { name: "raised", type: "number", admin: { width: "50%", description: "Raised so far £" } },
+          ],
+        },
+        { name: "image", type: "upload", relationTo: "media", admin: { description: "Optional photo for the campaign card." } },
+        { name: "link", type: "text", admin: { description: "Optional external appeal link (overrides the in-app checkout for this campaign)." } },
       ],
     },
   ],
@@ -241,6 +258,99 @@ export const SpecialSchedule: GlobalConfig = {
           ],
         },
         { name: "eidNotes", type: "textarea" },
+      ],
+    },
+  ],
+};
+
+/* ------------------------------- Mobile App ------------------------------- */
+// Everything the iOS/Android app shows that isn't already CMS content: the
+// welcome line, quick actions, multimedia links and the monthly-timetable PDF.
+// The app refreshes from the snapshot feed, so edits here reach phones within
+// a minute — no app-store release needed.
+export const AppSettings: GlobalConfig = {
+  slug: "app-settings",
+  label: "Mobile App",
+  admin: { group: "Configuration" },
+  access: { read: anyone, update: isAdmin },
+  fields: [
+    {
+      name: "welcome",
+      type: "text",
+      defaultValue: "As-salāmu ʿalaykum",
+      admin: { description: "Greeting shown at the top of the app's Home screen." },
+    },
+    {
+      name: "timetablePdfUrl",
+      type: "text",
+      admin: {
+        description:
+          "Link to the printable monthly timetable (PDF). The app's Download button opens this. Leave blank to send people to the website's prayer-times page.",
+      },
+    },
+    {
+      name: "quickLinks",
+      type: "array",
+      labels: { singular: "Quick action", plural: "Quick actions" },
+      admin: { description: "Buttons on the app home screen (kept to the first 4). Emoji make good icons." },
+      fields: [
+        { name: "icon", type: "text", admin: { description: "An emoji, e.g. 💛", width: "20%" } },
+        { name: "label", type: "text", required: true, admin: { width: "35%" } },
+        { name: "url", type: "text", required: true, admin: { description: "Full link or a site path like /donate", width: "45%" } },
+      ],
+    },
+    {
+      type: "collapsible",
+      label: "Live broadcast",
+      admin: {
+        description:
+          "The app's Live page. Paste your YouTube link here when you go live (khutbah, Eid, Tarāwīḥ, lectures) and clear it afterwards — the app updates within a minute.",
+      },
+      fields: [
+        {
+          name: "kingstonLiveUrl",
+          type: "text",
+          label: "Kingston Masjid live link",
+          admin: {
+            description:
+              "Paste the YouTube live URL while broadcasting (e.g. https://youtube.com/watch?v=…). Leave EMPTY when not live — the app then shows a friendly 'no broadcast' message. With a YouTube API key configured on the server this is detected automatically instead.",
+          },
+        },
+        {
+          name: "makkahLiveUrl",
+          type: "text",
+          label: "Makkah live stream",
+          defaultValue: "https://www.youtube.com/embed/live_stream?channel=UCos52azQNBgW63_9uDJoPDA",
+          admin: {
+            description:
+              "The Masjid al-Haram stream shown on the Live page. Default: the official KSA Qur'an TV channel's live stream (Saudi Broadcasting Authority) via YouTube's own embed.",
+          },
+        },
+      ],
+    },
+    {
+      name: "mediaLinks",
+      type: "array",
+      labels: { singular: "Media link", plural: "Media links" },
+      admin: {
+        description:
+          "The app's Media tab: khutbahs, lectures, YouTube, podcasts… Each opens in the in-app browser.",
+      },
+      fields: [
+        {
+          name: "kind",
+          type: "select",
+          defaultValue: "video",
+          options: [
+            { label: "Video / YouTube", value: "video" },
+            { label: "Audio / podcast", value: "audio" },
+            { label: "PDF / document", value: "pdf" },
+            { label: "Other link", value: "link" },
+          ],
+          admin: { width: "30%" },
+        },
+        { name: "label", type: "text", required: true, admin: { width: "35%" } },
+        { name: "url", type: "text", required: true, admin: { width: "35%" } },
       ],
     },
   ],

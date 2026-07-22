@@ -8,13 +8,13 @@ import { textStates } from "./payload/richtext";
 import { s3Storage } from "@payloadcms/storage-s3";
 import { nodemailerAdapter } from "@payloadcms/email-nodemailer";
 import sharp from "sharp";
-import { formsPlugin } from "./payload/forms";
 
 import {
   Users,
   Media,
   Pages,
   Posts,
+  Khutbahs,
   Events,
   Classes,
   Services,
@@ -33,8 +33,10 @@ import {
   SpecialSchedule,
   BroadcastSettings,
   MainMenu,
+  AppSettings,
 } from "./payload/globals";
 import { AuditLog, withAudit } from "./payload/audit";
+import { Screens } from "./payload/screens";
 import { withHelp, withHelpGlobal } from "./payload/help";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -71,8 +73,6 @@ const db = /^postgres(ql)?:\/\//i.test(dbUri)
 // only when S3_BUCKET is set, so it never blocks a deploy. Uses server-side
 // uploads (no client component) to keep the admin bundle clean.
 const plugins = [
-  // No-code form builder (forms + form-submissions collections).
-  formsPlugin,
   ...(process.env.S3_BUCKET
     ? [
         s3Storage({
@@ -122,6 +122,7 @@ export default buildConfig({
     // in-CMS "how to use this page" panel (slug-driven, no-op without content).
     withHelp(withAudit(Pages)),
     withHelp(withAudit(Posts)),
+    withHelp(withAudit(Khutbahs)),
     withHelp(withAudit(Events)),
     withHelp(withAudit(Classes)),
     withHelp(withAudit(Services)),
@@ -132,6 +133,7 @@ export default buildConfig({
     DeviceTokens,
     withHelp(Subscribers),
     withHelp(withAudit(Broadcasts)),
+    withHelp(withAudit(Screens)),
     withHelp(withAudit(Media)),
     withHelp(withAudit(Users)),
     withHelp(AuditLog),
@@ -143,6 +145,7 @@ export default buildConfig({
     withHelpGlobal(SpecialSchedule),
     withHelpGlobal(BroadcastSettings),
     withHelpGlobal(MainMenu),
+    withHelpGlobal(AppSettings),
   ],
   // Rich editor for ALL richText fields: keeps every default feature (headings,
   // lists, links, images, alignment…), shows an always-visible toolbar so the
@@ -201,27 +204,105 @@ export default buildConfig({
     }
     if (process.env.NODE_ENV === "production" && process.env.PAYLOAD_MIGRATING !== "true") {
       try {
-        const { pushDevSchema } = await import("@payloadcms/drizzle");
-        await pushDevSchema(payload.db as never);
-        payload.logger.info("✓ Database schema synced on boot.");
+        // Push the schema WITHOUT the interactive confirm that pushDevSchema
+        // uses. On a headless server that prompt cannot be answered and its
+        // fallback is process.exit(0) — which would kill the boot the first
+        // time a change involves a data-loss warning (e.g. dropping a removed
+        // feature's columns). We call drizzle-kit's pushSchema directly and
+        // auto-accept, logging exactly what was accepted.
+        const adapter = payload.db as unknown as {
+          requireDrizzleKit: () => {
+            pushSchema: (
+              schema: unknown,
+              drizzle: unknown,
+              schemaName?: string[],
+            ) => Promise<{
+              apply: () => Promise<void>;
+              hasDataLoss: boolean;
+              warnings: string[];
+              statementsToExecute: string[];
+            }>;
+          };
+          schema: unknown;
+          drizzle: unknown;
+          schemaName?: string;
+          execute: (args: { drizzle: unknown; raw: string }) => Promise<unknown>;
+        };
+        const { pushSchema } = adapter.requireDrizzleKit();
+        const { apply, hasDataLoss, warnings, statementsToExecute } = await pushSchema(
+          adapter.schema,
+          adapter.drizzle,
+          adapter.schemaName ? [adapter.schemaName] : undefined,
+        );
+        if (warnings?.length) {
+          payload.logger.warn(
+            `Schema push warnings (auto-accepted on boot${hasDataLoss ? ", includes data loss" : ""}): ${warnings.join(" | ")}`,
+          );
+        }
+        try {
+          // Fast path: apply everything at once.
+          await apply();
+          payload.logger.info("✓ Database schema synced on boot.");
+          (globalThis as Record<string, unknown>).__schemaSync = { status: "ok", at: new Date().toISOString() };
+        } catch (applyErr) {
+          // apply() is all-or-nothing: one failing statement (typically a
+          // destructive DROP that the driver refuses) blocks EVERY other
+          // change — including the additive ADD COLUMNs new features need,
+          // which then makes saving those records fail. Re-run each statement
+          // individually so the additive changes always land even when a drop
+          // can't complete.
+          payload.logger.warn(
+            "Batch schema apply failed — applying statements individually: " + (applyErr as Error).message,
+          );
+          let applied = 0;
+          let skipped = 0;
+          for (const stmt of statementsToExecute ?? []) {
+            try {
+              await adapter.execute({ drizzle: adapter.drizzle, raw: stmt });
+              applied += 1;
+            } catch (stmtErr) {
+              skipped += 1;
+              payload.logger.warn(
+                `  · schema statement skipped: ${stmt.slice(0, 90)} … (${(stmtErr as Error).message.slice(0, 140)})`,
+              );
+            }
+          }
+          payload.logger.info(
+            `✓ Database schema synced statement-by-statement: ${applied} applied, ${skipped} skipped.`,
+          );
+          (globalThis as Record<string, unknown>).__schemaSync = {
+            status: `fallback: ${applied} applied, ${skipped} skipped`,
+            at: new Date().toISOString(),
+          };
+        }
       } catch (err) {
         payload.logger.error("Schema sync on boot failed: " + (err as Error).message);
+        (globalThis as Record<string, unknown>).__schemaSync = {
+          status: `failed: ${(err as Error).message.slice(0, 160)}`,
+          at: new Date().toISOString(),
+        };
       }
     }
 
     // Make every website page editable: seed the Pages collection with the
     // site's built-in text once (never overwrites staff edits — see seed-pages.ts).
     try {
-      const { seedWebsitePages } = await import("./payload/seed-pages");
+      const { seedWebsitePages, seedScreens, seedSampleKhutbahs } = await import("./payload/seed-pages");
       await seedWebsitePages(payload);
+      await seedScreens(payload);
+      await seedSampleKhutbahs(payload);
     } catch (err) {
       payload.logger.warn("Website page seeding failed: " + (err as Error).message);
     }
 
     // Optional: provision a Super Admin login from env vars, so there's a
-    // guaranteed admin account without the first-time setup screen. Created once
-    // (only if that email doesn't already exist), never overwritten — so a
-    // password you later change in the admin is preserved.
+    // guaranteed admin account without the first-time setup screen. Created
+    // once; the password is never overwritten. Crucially, the account's ROLE
+    // is also repaired on every boot: if the ADMIN_EMAIL account exists but
+    // has somehow lost its admin role (e.g. it was edited, or created before
+    // roles were assigned), Super Admin is restored — this is the safety net
+    // that guarantees the named administrator can always approve, publish and
+    // manage users.
     if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
       try {
         const existing = await payload.find({
@@ -241,6 +322,23 @@ export default buildConfig({
             },
           });
           payload.logger.info("✓ Super Admin provisioned from ADMIN_EMAIL.");
+        } else {
+          const account = existing.docs[0] as { id: string | number; roles?: string[] };
+          const roles = Array.isArray(account.roles) ? account.roles : [];
+          payload.logger.info(
+            `Admin account ${process.env.ADMIN_EMAIL} roles: [${roles.join(", ") || "none"}]`,
+          );
+          if (!roles.includes("super-admin") && !roles.includes("admin")) {
+            await payload.update({
+              collection: "users",
+              id: account.id,
+              data: { roles: [...roles, "super-admin"] },
+              overrideAccess: true,
+            });
+            payload.logger.warn(
+              `⚠ ADMIN_EMAIL account was missing its admin role (had: ${roles.join(", ") || "none"}) — Super Admin restored.`,
+            );
+          }
         }
       } catch (err) {
         payload.logger.error("Admin bootstrap failed: " + (err as Error).message);

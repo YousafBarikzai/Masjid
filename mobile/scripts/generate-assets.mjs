@@ -1,7 +1,14 @@
 /**
- * Generate the Expo app's icon / adaptive-icon / splash / favicon from the same
- * gold-mosque-on-green emblem used by the website PWA, so every surface shares
- * one mark. Uses sharp from the repo root. Run from the repo root:
+ * Generate the Expo app's icon / adaptive-icon / splash / favicon from the
+ * OFFICIAL Kingston Muslim Association mark — the navy arch monogram ("I∏",
+ * an abstract mosque gateway) from the KMA logo.
+ *
+ *  - icon / favicon: faithful brand rendering — navy mark on white.
+ *  - splash: the same mark in warm gold on the app's deep-emerald ground with
+ *    the KMA wordmark beneath, so the native splash flows into the animated
+ *    in-app intro without a colour jump.
+ *
+ * Uses sharp from the repo root. Run from the repo root:
  *   node mobile/scripts/generate-assets.mjs
  */
 import sharp from "sharp";
@@ -10,46 +17,79 @@ import path from "node:path";
 
 const OUT = path.resolve("mobile/assets");
 
-const dome = (cx, hw, by, py) =>
-  `M${cx - hw} ${by} Q${cx - hw} ${py} ${cx} ${py} Q${cx + hw} ${py} ${cx + hw} ${by} Z`;
+const NAVY = "#27348C";
+const GOLD = "#c9a227";
+const GOLD_SOFT = "#e8d59a";
+const CREAM = "#f4efe2";
 
-const minaret = (cx) => `
-  <rect x="${cx - 13}" y="206" width="26" height="188" rx="4" fill="#e8d59a"/>
-  <rect x="${cx - 18}" y="236" width="36" height="9" rx="3" fill="#c9a227"/>
-  <path d="${dome(cx, 13, 206, 168)}" fill="#e8d59a"/>
-  <rect x="${cx - 2}" y="150" width="4" height="18" rx="2" fill="#c9a227"/>
-  <circle cx="${cx}" cy="146" r="5" fill="#c9a227"/>`;
+/** The KMA arch monogram. Geometry in a 512 box.
+ *  Left: freestanding pillar (I). Right: gateway (∏) — two pillars joined by a
+ *  lintel. Bar width 58, height 224, gap 34. */
+function mark(color, x = 0, y = 0, s = 1) {
+  const B = 58; // bar width
+  const H = 224; // bar height
+  const G = 34; // gap
+  const x0 = 0;
+  const x1 = B + G; // gateway left pillar
+  const x2 = x1 + B + G; // gateway right pillar
+  return `<g transform="translate(${x} ${y}) scale(${s})" fill="${color}">
+    <rect x="${x0}" y="0" width="${B}" height="${H}"/>
+    <rect x="${x1}" y="0" width="${B}" height="${H}"/>
+    <rect x="${x2}" y="0" width="${B}" height="${H}"/>
+    <rect x="${x1}" y="0" width="${x2 + B - x1}" height="${B}"/>
+  </g>`;
+}
 
-const emblem = `
-  ${minaret(150)}
-  ${minaret(362)}
-  <rect x="172" y="300" width="168" height="94" rx="6" fill="#e8d59a"/>
-  <path d="${dome(256, 84, 300, 168)}" fill="#e8d59a"/>
-  <rect x="253" y="146" width="6" height="24" rx="3" fill="#c9a227"/>
-  <circle cx="256" cy="132" r="17" fill="#c9a227"/>
-  <circle cx="263" cy="127" r="14" fill="#0f5132"/>
-  <path d="M236 394 L236 348 Q256 326 276 348 L276 394 Z" fill="#0f5132"/>`;
+const MARK_W = 58 * 3 + 34 * 2; // 242
+const MARK_H = 224;
 
-const withBg = `
+/* App icon — official branding: navy monogram on a clean white field with a
+   whisper of cool gradient so it doesn't read flat on the home screen. */
+const icon = `
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 512 512">
-  <defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#157f54"/><stop offset="0.55" stop-color="#0f5132"/><stop offset="1" stop-color="#07271d"/>
-  </linearGradient></defs>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eef0f6"/>
+    </linearGradient>
+  </defs>
   <rect width="512" height="512" fill="url(#bg)"/>
-  ${emblem}
+  ${mark(NAVY, (512 - MARK_W) / 2, (512 - MARK_H) / 2)}
 </svg>`;
 
-// Transparent emblem for the splash (app.json paints the green behind it).
-const transparent = `
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 512 512">${emblem}</svg>`;
+/* Android adaptive icon foreground: mark centred within the safe zone. */
+const adaptive = `
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#ffffff"/>
+  ${mark(NAVY, (512 - MARK_W * 0.78) / 2, (512 - MARK_H * 0.78) / 2, 0.78)}
+</svg>`;
+
+/* Splash foreground (transparent; app.json paints #081f15 behind it):
+   gold monogram + wordmark, sitting calmly in the centre of any screen. */
+const splash = `
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${GOLD_SOFT}"/>
+      <stop offset="1" stop-color="${GOLD}"/>
+    </linearGradient>
+  </defs>
+  ${mark("url(#gold)", (512 - MARK_W * 0.9) / 2, 128, 0.9)}
+  <text x="256" y="392" text-anchor="middle" font-family="DejaVu Sans, Helvetica, Arial, sans-serif"
+        font-size="30" font-weight="bold" letter-spacing="6" fill="${CREAM}">KINGSTON</text>
+  <text x="256" y="428" text-anchor="middle" font-family="DejaVu Sans, Helvetica, Arial, sans-serif"
+        font-size="30" font-weight="bold" letter-spacing="6" fill="${GOLD_SOFT}">MUSLIM</text>
+  <text x="256" y="458" text-anchor="middle" font-family="DejaVu Sans, Helvetica, Arial, sans-serif"
+        font-size="17" letter-spacing="7" fill="rgba(244,239,226,0.65)">ASSOCIATION</text>
+</svg>`;
 
 async function main() {
   await mkdir(OUT, { recursive: true });
-  await sharp(Buffer.from(withBg)).resize(1024, 1024).png().toFile(path.join(OUT, "icon.png"));
-  await sharp(Buffer.from(withBg)).resize(1024, 1024).png().toFile(path.join(OUT, "adaptive-icon.png"));
-  await sharp(Buffer.from(transparent)).resize(1024, 1024).png().toFile(path.join(OUT, "splash-icon.png"));
-  await sharp(Buffer.from(withBg)).resize(48, 48).png().toFile(path.join(OUT, "favicon.png"));
-  console.log("✓ mobile assets: icon, adaptive-icon, splash-icon, favicon");
+  await sharp(Buffer.from(icon)).resize(1024, 1024).png().toFile(path.join(OUT, "icon.png"));
+  await sharp(Buffer.from(adaptive)).resize(1024, 1024).png().toFile(path.join(OUT, "adaptive-icon.png"));
+  await sharp(Buffer.from(splash)).resize(1024, 1024).png().toFile(path.join(OUT, "splash-icon.png"));
+  await sharp(Buffer.from(icon)).resize(48, 48).png().toFile(path.join(OUT, "favicon.png"));
+  console.log("✓ mobile assets regenerated with the official KMA monogram");
 }
 
 main().catch((e) => {
