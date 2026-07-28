@@ -25,6 +25,10 @@ export async function GET() {
     commit: (process.env.RAILWAY_GIT_COMMIT_SHA || "unknown").slice(0, 10),
     branch: process.env.RAILWAY_GIT_BRANCH || "unknown",
     schemaSyncOnBoot: (globalThis as Record<string, unknown>).__schemaSync ?? "not run (dev mode or pre-boot)",
+    // The auth origins actually in effect — cookie-authenticated writes are
+    // rejected (as "not allowed") when the admin's Origin isn't listed here,
+    // so this line answers "why can't I save?" at a glance.
+    authOrigins: (globalThis as Record<string, unknown>).__authConfig ?? "not initialised",
   };
 
   try {
