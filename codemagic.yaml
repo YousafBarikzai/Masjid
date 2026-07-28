@@ -41,11 +41,18 @@ workflows:
           "
       - name: Generate the native Android project
         script: npx expo prebuild --platform android --no-install
-      - name: Build debug APK
+      - name: Build self-contained release APK
         script: |
+          # MUST be assembleRelease, not assembleDebug: a debug APK contains no
+          # JavaScript — it expects a Metro dev server on the developer's
+          # machine, so on a real phone it hangs on the splash screen forever
+          # (the JS that hides the splash never runs). The release variant
+          # embeds the JS bundle, and Expo's generated build.gradle signs it
+          # with the auto-created debug keystore, so it still needs zero
+          # credentials and installs on any phone.
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleRelease
       - name: Show where the APK actually is
         script: |
           # Prints every .apk Gradle produced with its absolute path so the
