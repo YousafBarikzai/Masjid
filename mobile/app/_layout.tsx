@@ -7,6 +7,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { registerForPush } from "@/push";
 import { colors } from "@/theme";
 import { BrandIntro } from "@/BrandIntro";
+import { ErrorBoundary } from "@/ErrorBoundary";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -50,18 +51,20 @@ export default function RootLayout() {
   }, [kickPush]);
 
   return (
-    <SafeAreaProvider>
-      <StatusBar style="light" />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.bg },
-          animation: "slide_from_right",
-        }}
-      >
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-      {intro ? <BrandIntro onDone={done} /> : null}
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <StatusBar style="light" />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.bg },
+            animation: "slide_from_right",
+          }}
+        >
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+        {intro ? <BrandIntro onDone={done} /> : null}
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }

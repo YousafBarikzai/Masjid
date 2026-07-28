@@ -92,13 +92,49 @@ const plugins = [
     : []),
 ];
 
+/* The site's public URL. On Railway RAILWAY_PUBLIC_DOMAIN is injected
+   automatically, so production gets a correct serverURL even when SERVER_URL
+   was never set — which is what silently broke cookie-authenticated admin
+   writes (CSRF origin rejection) before this fallback existed. */
+const publicServerURL =
+  process.env.SERVER_URL ||
+  process.env.NEXT_PUBLIC_SERVER_URL ||
+  (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : undefined) ||
+  (process.env.NODE_ENV === "production" ? "https://masjid-production.up.railway.app" : "http://localhost:3000");
+
+/* Every origin the admin panel may legitimately be used from. */
+const csrfOrigins = Array.from(
+  new Set(
+    [
+      publicServerURL,
+      "https://masjid-production.up.railway.app",
+      "https://kingstonmosque.org",
+      "https://www.kingstonmosque.org",
+      "http://localhost:3000",
+      ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(",").map((s) => s.trim()) : []),
+      ...(process.env.CSRF_ORIGINS ? process.env.CSRF_ORIGINS.split(",").map((s) => s.trim()) : []),
+    ].filter((o): o is string => Boolean(o) && o !== "*"),
+  ),
+);
+
+// Surfaced by /app-api/diag so production can self-report its effective auth
+// origins (this is exactly the setting whose absence broke admin saves).
+(globalThis as Record<string, unknown>).__authConfig = { serverURL: publicServerURL, csrf: csrfOrigins };
+
 export default buildConfig({
-  // Public URL of the deployed site (used in emails, previews, API links).
-  serverURL: process.env.SERVER_URL || process.env.NEXT_PUBLIC_SERVER_URL || undefined,
+  // Public URL of the deployed site (used in emails, previews, API links —
+  // and, crucially, CSRF origin checks on cookie-authenticated writes).
+  serverURL: publicServerURL,
   // Allow the mobile apps, PWA and mosque screens to call the API from other
   // origins. Defaults to open ("*") since all app-facing data is public read;
   // set CORS_ORIGINS (comma-separated) to lock it down to known origins.
   cors: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(",").map((s) => s.trim()) : "*",
+  // Origins allowed to send cookie-authenticated requests. Payload rejects
+  // the auth cookie on any mutation whose Origin header isn't in this list —
+  // browsers always send Origin on POST/PATCH/DELETE, so if the deployed
+  // domain is missing every admin save fails with "You are not allowed to
+  // perform this action" (and logout fails) even though reads still work.
+  csrf: csrfOrigins,
   admin: {
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
