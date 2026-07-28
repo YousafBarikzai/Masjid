@@ -12,6 +12,7 @@ import {
   Pressable,
 } from "react-native";
 import MapView, { Marker, type Region } from "react-native-maps";
+import Constants from "expo-constants";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -298,8 +299,24 @@ export default function Mosques() {
   const selectedDist = selected ? haversine(origin.lat, origin.lng, selected.lat, selected.lng) : 0;
   const selectedOpen = selected?.openingHours ? isOpenNow(selected.openingHours) : null;
 
+  // Google Maps on Android crashes natively (uncatchably) when the build has
+  // no Maps API key. iOS uses Apple Maps and needs none. Rather than take the
+  // whole app down, drop to a keyless placeholder — search and the nearby
+  // list keep working.
+  const mapAvailable =
+    Platform.OS !== "android" ||
+    Boolean((Constants.expoConfig?.android?.config as { googleMaps?: { apiKey?: string } } | undefined)?.googleMaps?.apiKey);
+
   return (
     <View style={s.root}>
+      {!mapAvailable ? (
+        <View style={[StyleSheet.absoluteFill, s.mapless]}>
+          <Ionicons name="map-outline" size={42} color={colors.textFaint} />
+          <Text style={s.maplessText}>
+            The map is unavailable in this build — search still works and nearby mosques are listed below.
+          </Text>
+        </View>
+      ) : (
       <MapView
         ref={mapRef}
         style={StyleSheet.absoluteFill}
@@ -327,6 +344,7 @@ export default function Mosques() {
           />
         ))}
       </MapView>
+      )}
 
       {/* ---- Floating header: back, search, filters ---- */}
       <View style={[s.top, { paddingTop: insets.top + 8 }]} pointerEvents="box-none">
@@ -499,6 +517,8 @@ export default function Mosques() {
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
+  mapless: { alignItems: "center", justifyContent: "center", gap: 14, padding: 40, backgroundColor: colors.bg },
+  maplessText: { color: colors.textDim, fontSize: t.small, textAlign: "center", lineHeight: 19 },
 
   pin: {
     width: 34,
