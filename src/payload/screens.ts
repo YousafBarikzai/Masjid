@@ -13,20 +13,33 @@ export const Screens: CollectionConfig = {
   labels: { singular: "Digital screen", plural: "Digital Screens" },
   admin: {
     useAsTitle: "name",
-    defaultColumns: ["name", "slug", "updatedAt"],
+    defaultColumns: ["name", "link", "updatedAt"],
     group: "Digital Screens",
     description:
-      "One entry per TV in the mosque. Each has a playlist of slides that loop — drag to reorder, set seconds per slide. The TV shows it at /display/<slug>; changes reach the screen within about a minute.",
+      "One entry per TV in the mosque. Each has a playlist of slides that loop — drag to reorder, set seconds per slide. Every screen has its own unique link (shown below and on each screen's page) — open it on the TV and changes reach it within about a minute.",
   },
   access: { read: anyone, create: isEditor, update: isEditor, delete: isAdmin },
   fields: [
+    {
+      // The screen's unique URL — shown prominently with copy/open actions,
+      // and as a column on the Digital Screens list. Purely presentational
+      // (derived live from the slug), so it can never go stale.
+      name: "link",
+      type: "ui",
+      admin: {
+        components: {
+          Field: "@/payload/components/ScreenLink#ScreenLinkField",
+          Cell: "@/payload/components/ScreenLink#ScreenLinkCell",
+        },
+      },
+    },
     { name: "name", type: "text", required: true, admin: { description: "e.g. Mimbar & Outside Screen" } },
     {
       name: "slug",
       type: "text",
       required: true,
       unique: true,
-      admin: { description: "The TV opens /display/<slug> — e.g. mimbar-outside" },
+      admin: { description: "Sets the screen's unique link: the TV opens /display/<slug> — e.g. mimbar-outside" },
     },
     {
       name: "slides",
@@ -92,9 +105,23 @@ export const Screens: CollectionConfig = {
           type: "upload",
           relationTo: "media",
           admin: {
-            description: "Shown full screen. Landscape images work best on TVs.",
+            description:
+              "Pick from the library or drag a file straight from your desktop. Shown full screen — check it in the preview below before switching the slide on.",
             condition: (_data, sibling) => sibling?.type === "image",
           },
+        },
+        {
+          name: "fit",
+          type: "select",
+          defaultValue: "contain",
+          admin: {
+            description: "How the picture sits on the TV.",
+            condition: (_data, sibling) => sibling?.type === "image",
+          },
+          options: [
+            { label: "Show the whole image (soft blurred edges)", value: "contain" },
+            { label: "Fill the screen (edges may be cropped)", value: "cover" },
+          ],
         },
         {
           name: "url",
@@ -113,6 +140,16 @@ export const Screens: CollectionConfig = {
           },
         },
       ],
+    },
+    {
+      // Embedded live preview: the real /display page in a scaled frame, with
+      // play/pause/next/prev/restart controls, per-slide countdown, size and
+      // orientation presets, and an "include hidden slides" staging toggle.
+      name: "preview",
+      type: "ui",
+      admin: {
+        components: { Field: "@/payload/components/ScreenPreview#ScreenPreview" },
+      },
     },
   ],
 };
