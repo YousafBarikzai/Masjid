@@ -1,5 +1,7 @@
 import path from "path";
-import type { Block, CollectionConfig, Field } from "payload";
+import type { CollectionConfig, Field } from "payload";
+import { layoutBlocks } from "./blocks";
+import { articleEditor, articleEditorHint } from "./editor";
 import {
   anyone,
   canEditContent,
@@ -137,80 +139,8 @@ export const Media: CollectionConfig = {
 };
 
 /* ------------------------------ Reusable blocks --------------------------- */
-// Reusable "section background colour" control, used by several blocks.
-const backgroundField: Field = {
-  name: "background",
-  type: "select",
-  defaultValue: "none",
-  admin: { description: "Optional background colour for this section.", width: "50%" },
-  options: [
-    { label: "None", value: "none" },
-    { label: "Cream", value: "cream" },
-    { label: "Soft green", value: "green" },
-    { label: "Mosque green (dark)", value: "green-dark" },
-    { label: "Gold tint", value: "gold" },
-  ],
-};
-
-const RichTextBlock: Block = {
-  slug: "content",
-  labels: { singular: "Text", plural: "Text blocks" },
-  fields: [
-    backgroundField,
-    { name: "richText", type: "richText" },
-  ],
-};
-const ColumnsBlock: Block = {
-  slug: "columns",
-  labels: { singular: "Columns", plural: "Column layouts" },
-  fields: [
-    backgroundField,
-    {
-      name: "columns",
-      type: "array",
-      minRows: 2,
-      maxRows: 4,
-      labels: { singular: "Column", plural: "Columns" },
-      admin: {
-        description: "Add 2–4 columns. Each has its own rich text (with the full toolbar) and an optional image. Columns stack on mobile.",
-      },
-      fields: [
-        { name: "image", type: "upload", relationTo: "media", admin: { description: "Optional image, shown above the text." } },
-        { name: "richText", type: "richText" },
-      ],
-    },
-  ],
-};
-const MediaBlock: Block = {
-  slug: "mediaBlock",
-  labels: { singular: "Image", plural: "Images" },
-  fields: [
-    { name: "image", type: "upload", relationTo: "media" },
-    { name: "caption", type: "text" },
-  ],
-};
-const CallToActionBlock: Block = {
-  slug: "cta",
-  labels: { singular: "Button / Call to action", plural: "Buttons / CTAs" },
-  fields: [
-    backgroundField,
-    { name: "heading", type: "text" },
-    { name: "text", type: "textarea" },
-    { name: "buttonLabel", type: "text" },
-    { name: "buttonUrl", type: "text" },
-  ],
-};
-const DownloadBlock: Block = {
-  slug: "download",
-  labels: { singular: "Download / PDF", plural: "Downloads" },
-  fields: [
-    { name: "label", type: "text" },
-    { name: "file", type: "upload", relationTo: "media" },
-  ],
-};
-
-// The full set of layout blocks shared by Pages and News posts.
-const layoutBlocks = [RichTextBlock, ColumnsBlock, MediaBlock, CallToActionBlock, DownloadBlock];
+// Block definitions live in ./blocks — shared between the unified rich-text
+// editor (./editor) and the legacy Pages "layout" sections array.
 
 /* -------------------------- Per-surface targeting -------------------------- */
 // "Show on" checkboxes shared by posts, events and announcements: publish once,
@@ -273,19 +203,18 @@ export const Pages: CollectionConfig = {
       name: "content",
       type: "richText",
       label: "Page content",
-      admin: {
-        description:
-          "The main content. Use the toolbar for bold, headings, colours, lists, links and images.",
-      },
+      editor: articleEditor,
+      admin: { description: articleEditorHint },
     },
     {
       name: "layout",
       type: "blocks",
-      label: "Page sections (text, columns, images, buttons)",
+      label: "Older page sections",
       labels: { singular: "Section", plural: "Sections" },
       admin: {
+        initCollapsed: true,
         description:
-          "Build the page from sections: a Text block (full formatting toolbar), a Columns layout (2–4 columns), images, buttons or downloads — each with an optional background colour.",
+          "The previous section-by-section builder. Existing pages were built with it and still work; for new content, prefer writing directly in “Page content” above — the same blocks are available inline there.",
       },
       blocks: layoutBlocks,
     },
@@ -321,16 +250,18 @@ export const Posts: CollectionConfig = {
     {
       name: "content",
       type: "richText",
-      admin: { description: "The article body. Use the toolbar for bold, headings, colours, lists, links and images." },
+      editor: articleEditor,
+      admin: { description: articleEditorHint },
     },
     {
+      // Legacy: replaced by inline blocks in the unified editor above. Hidden
+      // from the edit screen, but kept so older posts written with separate
+      // sections still render on the website unchanged.
       name: "layout",
       type: "blocks",
-      label: "Extra sections (optional)",
+      label: "Legacy extra sections",
       labels: { singular: "Section", plural: "Sections" },
-      admin: {
-        description: "Optional richer layout below the article — columns, images, buttons or downloads, each with an optional background colour.",
-      },
+      admin: { hidden: true },
       blocks: layoutBlocks,
     },
     ...editorialFields,
@@ -427,9 +358,11 @@ export const Khutbahs: CollectionConfig = {
     {
       name: "synopsis",
       type: "richText",
+      editor: articleEditor,
       admin: {
         description:
-          "A written summary of the khutbah. In the app people can read it — or listen to it read aloud while driving or walking.",
+          "A written summary of the khutbah. In the app people can read it — or listen to it read aloud while driving or walking. " +
+          articleEditorHint,
       },
     },
     {
@@ -467,7 +400,7 @@ export const Events: CollectionConfig = {
     { name: "location", type: "text" },
     { name: "summary", type: "textarea", admin: { description: "Short text shown on cards" } },
     { name: "image", type: "upload", relationTo: "media" },
-    { name: "description", type: "richText" },
+    { name: "description", type: "richText", editor: articleEditor, admin: { description: articleEditorHint } },
     { name: "registrationUrl", type: "text" },
     showOnField,
   ],
@@ -504,7 +437,7 @@ export const Services: CollectionConfig = {
     { name: "slug", type: "text", unique: true },
     { name: "icon", type: "text", admin: { description: "Emoji or icon name" } },
     { name: "summary", type: "textarea" },
-    { name: "content", type: "richText" },
+    { name: "content", type: "richText", editor: articleEditor, admin: { description: articleEditorHint } },
   ],
 };
 
