@@ -243,3 +243,103 @@ textarea,
   border-radius: 999px;
 }
 .nav__scroll::-webkit-scrollbar-thumb:hover { background: rgba(230, 200, 121, 0.5); }
+
+/* ============================================================================
+   Section cards — the edit-screen redesign.
+   Collections wrap related fields in collapsibles/groups tagged with the
+   "kma-section" className (see payload/sections.ts). These rules turn each
+   one into a clearly-bounded card with a titled header strip, so every edit
+   screen reads as: what is it → how it looks → the content → where it shows.
+   ============================================================================ */
+
+/* The card shell (collapsible sections and group sections alike). */
+.collapsible-field.kma-section,
+.group-field.kma-section {
+  background: var(--theme-elevation-0);
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.05);
+  margin-bottom: 22px;
+  overflow: hidden;
+}
+[data-theme="dark"] .collapsible-field.kma-section,
+[data-theme="dark"] .group-field.kma-section {
+  background: var(--theme-elevation-50);
+  border-color: var(--theme-elevation-150);
+}
+
+/* Card header: the collapsible's toggle strip. */
+.kma-section .collapsible__header-wrap {
+  background: var(--theme-elevation-50);
+  border-bottom: 1px solid var(--theme-elevation-100);
+  padding: 4px 8px;
+}
+.kma-section .collapsible-field__row-label-wrap,
+.kma-section .collapsible__header-wrap .row-label {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--theme-elevation-800);
+}
+/* Collapsed cards keep the header strip but lose the divider line. */
+.kma-section .collapsible--collapsed .collapsible__header-wrap { border-bottom: none; }
+
+/* Card body. */
+.kma-section .collapsible__content { padding: 22px 24px 8px; }
+
+/* Group-card header (e.g. “Where it shows”, “SEO”). */
+/* Top-level groups get a full-bleed -60px margin from Payload; a card must
+   align with its sibling cards instead. */
+.group-field.kma-section,
+.group-field.kma-section.group-field--top-level {
+  padding: 0;
+  margin: 0 0 22px !important;
+}
+.group-field.kma-section > .group-field__wrap > .group-field__header,
+.group-field.kma-section .group-field__header {
+  background: var(--theme-elevation-50);
+  border-bottom: 1px solid var(--theme-elevation-100);
+  margin: 0 0 18px;
+  padding: 13px 24px;
+}
+.group-field.kma-section .group-field__title {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.group-field.kma-section > .group-field__wrap { padding: 0 24px 10px; }
+.group-field.kma-section > .group-field__wrap > .group-field__header { margin-left: -24px; margin-right: -24px; }
+
+/* Inside a card, kill the doubled-up borders some field types bring. */
+.kma-section .collapsible__content > .render-fields > .field-type:last-child { margin-bottom: 14px; }
+
+/* ---- General edit-form polish (applies CMS-wide) --------------------------- */
+/* Clearer field labels and calmer helper text. */
+.field-label { font-weight: 600; font-size: 13px; }
+.field-description { font-size: 12.5px; color: var(--theme-elevation-500); line-height: 1.45; }
+
+/* Breathing room between fields (Payload's default is tight). */
+.render-fields > .field-type { margin-bottom: 6px; }
+
+/* The document title + sticky controls bar reads as one clean strip. */
+.doc-controls {
+  background: var(--theme-elevation-0);
+  border-bottom: 1px solid var(--theme-elevation-100);
+}
+
+/* Checkbox rows: align and give them a touch more presence. */
+.field-type.checkbox .checkbox-input__label { font-weight: 500; }
+
+/* Responsive: tighter card padding on small screens so nothing feels cramped. */
+@media (max-width: 768px) {
+  .kma-section .collapsible__content { padding: 16px 14px 6px; }
+  .group-field.kma-section > .group-field__wrap { padding: 0 14px 8px; }
+  .group-field.kma-section > .group-field__wrap > .group-field__header {
+    margin-left: -14px;
+    margin-right: -14px;
+    padding: 12px 14px;
+  }
+  .collapsible-field.kma-section,
+  .group-field.kma-section { border-radius: 12px; margin-bottom: 16px; }
+}

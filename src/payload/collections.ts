@@ -2,6 +2,7 @@ import path from "path";
 import type { CollectionConfig, Field } from "payload";
 import { layoutBlocks } from "./blocks";
 import { articleEditor, articleEditorHint } from "./editor";
+import { section } from "./sections";
 import {
   anyone,
   canEditContent,
@@ -150,8 +151,9 @@ export const Media: CollectionConfig = {
 const showOnField: Field = {
   name: "showOn",
   type: "group",
-  label: "Show on",
+  label: "📍 Where it shows",
   admin: {
+    className: "kma-section",
     description:
       "Where this appears. All ticked (the default) = website, mobile apps and mosque screens together. Untick a surface to leave it out.",
   },
@@ -186,43 +188,60 @@ export const Pages: CollectionConfig = {
   versions: { drafts: { autosave: false }, maxPerDoc: 20 },
   hooks: { beforeChange: [restrictPublish], afterChange: [notifyReviewers] },
   fields: [
-    { name: "title", type: "text", required: true },
-    {
-      name: "slug",
-      type: "text",
-      required: true,
-      unique: true,
-      admin: { description: "URL path, e.g. about-the-mosque" },
-    },
-    {
-      name: "intro",
-      type: "textarea",
-      admin: { description: "Short summary shown under the page title." },
-    },
-    {
-      name: "content",
-      type: "richText",
-      label: "Page content",
-      editor: articleEditor,
-      admin: { description: articleEditorHint },
-    },
-    {
-      name: "layout",
-      type: "blocks",
-      label: "Older page sections",
-      labels: { singular: "Section", plural: "Sections" },
-      admin: {
-        initCollapsed: true,
+    section("📰 Title & address", [
+      { name: "title", type: "text", required: true },
+      {
+        name: "slug",
+        type: "text",
+        required: true,
+        unique: true,
+        admin: { description: "URL path, e.g. about-the-mosque" },
+      },
+      {
+        name: "intro",
+        type: "textarea",
+        admin: { description: "Short summary shown under the page title." },
+      },
+    ]),
+    section("✍️ Page content", [
+      {
+        name: "content",
+        type: "richText",
+        label: false,
+        editor: articleEditor,
+        admin: { description: articleEditorHint },
+      },
+    ]),
+    section(
+      "🧱 Older page sections",
+      [
+        {
+          name: "layout",
+          type: "blocks",
+          label: false,
+          labels: { singular: "Section", plural: "Sections" },
+          admin: { initCollapsed: true },
+          blocks: layoutBlocks,
+        },
+      ],
+      {
+        collapsed: true,
         description:
           "The previous section-by-section builder. Existing pages were built with it and still work; for new content, prefer writing directly in “Page content” above — the same blocks are available inline there.",
       },
-      blocks: layoutBlocks,
-    },
+    ),
     {
       name: "meta",
       type: "group",
-      label: "SEO",
-      fields: [{ name: "description", type: "textarea" }],
+      label: "🔍 Search engines (SEO)",
+      admin: { className: "kma-section" },
+      fields: [
+        {
+          name: "description",
+          type: "textarea",
+          admin: { description: "One or two sentences Google may show under the page title in search results." },
+        },
+      ],
     },
     ...editorialFields,
   ],
@@ -241,18 +260,33 @@ export const Posts: CollectionConfig = {
   versions: { drafts: { autosave: false }, maxPerDoc: 20 },
   hooks: { beforeChange: [restrictPublish], afterChange: [notifyReviewers] },
   fields: [
-    { name: "title", type: "text", required: true },
-    { name: "slug", type: "text", unique: true },
-    { name: "publishedDate", type: "date" },
-    { name: "image", type: "upload", relationTo: "media", admin: { description: "Lead image shown on the card and at the top of the article." } },
-    { name: "excerpt", type: "textarea", admin: { description: "Short summary shown on the news card." } },
+    section("📰 Title & date", [
+      { name: "title", type: "text", required: true },
+      {
+        type: "row",
+        fields: [
+          { name: "slug", type: "text", unique: true, admin: { width: "50%", description: "Web address — leave blank to fill automatically." } },
+          { name: "publishedDate", type: "date", admin: { width: "50%" } },
+        ],
+      },
+    ]),
+    section(
+      "🖼️ News-card appearance",
+      [
+        { name: "image", type: "upload", relationTo: "media", admin: { description: "Lead image shown on the card and at the top of the article." } },
+        { name: "excerpt", type: "textarea", admin: { description: "Short summary shown on the news card." } },
+      ],
+      { description: "What people see on the news list, before they open the article." },
+    ),
+    section("✍️ The article", [
+      {
+        name: "content",
+        type: "richText",
+        editor: articleEditor,
+        admin: { description: articleEditorHint },
+      },
+    ]),
     showOnField,
-    {
-      name: "content",
-      type: "richText",
-      editor: articleEditor,
-      admin: { description: articleEditorHint },
-    },
     {
       // Legacy: replaced by inline blocks in the unified editor above. Hidden
       // from the edit screen, but kept so older posts written with separate
@@ -311,74 +345,83 @@ export const Khutbahs: CollectionConfig = {
     ],
   },
   fields: [
-    { name: "title", type: "text", required: true, admin: { description: "e.g. “The Prophet's ﷺ advice on patience”" } },
-    {
-      name: "slug",
-      type: "text",
-      unique: true,
-      admin: { description: "Leave blank — generated from the title and date automatically." },
-    },
-    {
-      type: "row",
-      fields: [
-        {
-          name: "date",
-          type: "date",
-          required: true,
-          admin: {
-            width: "50%",
-            date: { pickerAppearance: "dayOnly" },
-            description: "The Friday it was delivered. A future date hides it until that day.",
+    section("📰 Title & Friday", [
+      { name: "title", type: "text", required: true, admin: { description: "e.g. “The Prophet's ﷺ advice on patience”" } },
+      {
+        type: "row",
+        fields: [
+          {
+            name: "date",
+            type: "date",
+            required: true,
+            admin: {
+              width: "50%",
+              date: { pickerAppearance: "dayOnly" },
+              description: "The Friday it was delivered. A future date hides it until that day.",
+            },
           },
+          {
+            name: "khatib",
+            type: "text",
+            admin: { width: "50%", description: "Who delivered it, e.g. Imam Abdullah" },
+          },
+        ],
+      },
+      {
+        name: "slug",
+        type: "text",
+        unique: true,
+        admin: { description: "Leave blank — generated from the title and date automatically." },
+      },
+    ]),
+    section("🎥 The video", [
+      {
+        name: "youtubeUrl",
+        type: "text",
+        label: "YouTube video link",
+        admin: {
+          description:
+            "Paste the video's YouTube link (watch, youtu.be or live URL — any form works). The app plays it in its own player.",
         },
-        {
-          name: "khatib",
-          type: "text",
-          admin: { width: "50%", description: "Who delivered it, e.g. Imam Abdullah" },
+      },
+      {
+        name: "thumbnail",
+        type: "upload",
+        relationTo: "media",
+        admin: {
+          description: "Optional. Without one, the app uses the YouTube video's own thumbnail automatically.",
         },
-      ],
-    },
-    {
-      name: "youtubeUrl",
-      type: "text",
-      label: "YouTube video link",
-      admin: {
-        description:
-          "Paste the video's YouTube link (watch, youtu.be or live URL — any form works). The app plays it in its own player.",
       },
-    },
-    {
-      name: "thumbnail",
-      type: "upload",
-      relationTo: "media",
-      admin: {
-        description: "Optional. Without one, the app uses the YouTube video's own thumbnail automatically.",
+    ]),
+    section("✍️ Written summary", [
+      {
+        name: "synopsis",
+        type: "richText",
+        label: false,
+        editor: articleEditor,
+        admin: {
+          description:
+            "A written summary of the khutbah. In the app people can read it — or listen to it read aloud while driving or walking. " +
+            articleEditorHint,
+        },
       },
-    },
-    {
-      name: "synopsis",
-      type: "richText",
-      editor: articleEditor,
-      admin: {
-        description:
-          "A written summary of the khutbah. In the app people can read it — or listen to it read aloud while driving or walking. " +
-          articleEditorHint,
+    ]),
+    section("⭐ Key lessons & topics", [
+      {
+        name: "lessons",
+        type: "array",
+        labels: { singular: "Lesson", plural: "Key lessons" },
+        admin: { description: "The takeaways, one per line — shown as a highlighted list." },
+        fields: [{ name: "lesson", type: "text", required: true }],
       },
-    },
-    {
-      name: "lessons",
-      type: "array",
-      labels: { singular: "Lesson", plural: "Key lessons" },
-      admin: { description: "The takeaways, one per line — shown as a highlighted list." },
-      fields: [{ name: "lesson", type: "text", required: true }],
-    },
-    {
-      name: "tags",
-      type: "array",
-      labels: { singular: "Tag", plural: "Tags" },
-      admin: { description: "Optional topics, e.g. Patience, Family, Ramadan." },
-      fields: [{ name: "tag", type: "text", required: true }],
-    },
+      {
+        name: "tags",
+        type: "array",
+        labels: { singular: "Tag", plural: "Tags" },
+        admin: { description: "Optional topics, e.g. Patience, Family, Ramadan." },
+        fields: [{ name: "tag", type: "text", required: true }],
+      },
+    ]),
   ],
 };
 
@@ -388,20 +431,43 @@ export const Events: CollectionConfig = {
   admin: { useAsTitle: "title", defaultColumns: ["title", "start", "category"], group: "Content" },
   access: { read: anyone, create: isEditor, update: isEditor, delete: isAdmin },
   fields: [
-    { name: "title", type: "text", required: true },
-    { name: "slug", type: "text", unique: true },
-    {
-      name: "category",
-      type: "select",
-      options: ["Eid", "Ramadan", "Youth", "Community", "Lecture", "Fundraiser"],
-    },
-    { name: "start", type: "date", admin: { date: { pickerAppearance: "dayAndTime" } } },
-    { name: "end", type: "date", admin: { date: { pickerAppearance: "dayAndTime" } } },
-    { name: "location", type: "text" },
-    { name: "summary", type: "textarea", admin: { description: "Short text shown on cards" } },
-    { name: "image", type: "upload", relationTo: "media" },
-    { name: "description", type: "richText", editor: articleEditor, admin: { description: articleEditorHint } },
-    { name: "registrationUrl", type: "text" },
+    section("📰 Event basics", [
+      { name: "title", type: "text", required: true },
+      {
+        type: "row",
+        fields: [
+          { name: "slug", type: "text", unique: true, admin: { width: "50%", description: "Web address — leave blank to fill automatically." } },
+          {
+            name: "category",
+            type: "select",
+            options: ["Eid", "Ramadan", "Youth", "Community", "Lecture", "Fundraiser"],
+            admin: { width: "50%" },
+          },
+        ],
+      },
+    ]),
+    section("🗓️ When & where", [
+      {
+        type: "row",
+        fields: [
+          { name: "start", type: "date", admin: { width: "50%", date: { pickerAppearance: "dayAndTime" } } },
+          { name: "end", type: "date", admin: { width: "50%", date: { pickerAppearance: "dayAndTime" } } },
+        ],
+      },
+      { name: "location", type: "text" },
+    ]),
+    section(
+      "🖼️ Event-card appearance",
+      [
+        { name: "summary", type: "textarea", admin: { description: "Short text shown on cards" } },
+        { name: "image", type: "upload", relationTo: "media" },
+      ],
+      { description: "What people see on the events list, before they open the event." },
+    ),
+    section("✍️ Full details", [
+      { name: "description", type: "richText", label: false, editor: articleEditor, admin: { description: articleEditorHint } },
+      { name: "registrationUrl", type: "text", admin: { description: "Optional link to a sign-up or tickets page." } },
+    ]),
     showOnField,
   ],
 };
@@ -413,17 +479,32 @@ export const Classes: CollectionConfig = {
   admin: { useAsTitle: "title", defaultColumns: ["title", "category", "ageRange"], group: "Content" },
   access: { read: anyone, create: isEditor, update: isEditor, delete: isAdmin },
   fields: [
-    { name: "title", type: "text", required: true },
-    {
-      name: "category",
-      type: "select",
-      options: ["Children", "Youth", "Sisters", "Adult", "Course", "Lecture"],
-    },
-    { name: "ageRange", type: "text", admin: { description: "e.g. 6–16" } },
-    { name: "schedule", type: "text", admin: { description: "e.g. Mon–Fri, 5–7pm" } },
-    { name: "fees", type: "text" },
-    { name: "description", type: "textarea" },
-    { name: "enrolUrl", type: "text" },
+    section("📰 Class basics", [
+      { name: "title", type: "text", required: true },
+      {
+        type: "row",
+        fields: [
+          {
+            name: "category",
+            type: "select",
+            options: ["Children", "Youth", "Sisters", "Adult", "Course", "Lecture"],
+            admin: { width: "50%" },
+          },
+          { name: "ageRange", type: "text", admin: { width: "50%", description: "e.g. 6–16" } },
+        ],
+      },
+      {
+        type: "row",
+        fields: [
+          { name: "schedule", type: "text", admin: { width: "50%", description: "e.g. Mon–Fri, 5–7pm" } },
+          { name: "fees", type: "text", admin: { width: "50%" } },
+        ],
+      },
+    ]),
+    section("✍️ Details & enrolment", [
+      { name: "description", type: "textarea" },
+      { name: "enrolUrl", type: "text", admin: { description: "Optional link to an enrolment or contact form." } },
+    ]),
   ],
 };
 
@@ -433,11 +514,20 @@ export const Services: CollectionConfig = {
   admin: { useAsTitle: "title", defaultColumns: ["title", "slug"], group: "Content" },
   access: { read: anyone, create: isEditor, update: isEditor, delete: isAdmin },
   fields: [
-    { name: "title", type: "text", required: true },
-    { name: "slug", type: "text", unique: true },
-    { name: "icon", type: "text", admin: { description: "Emoji or icon name" } },
-    { name: "summary", type: "textarea" },
-    { name: "content", type: "richText", editor: articleEditor, admin: { description: articleEditorHint } },
+    section("📰 Service basics", [
+      { name: "title", type: "text", required: true },
+      {
+        type: "row",
+        fields: [
+          { name: "slug", type: "text", unique: true, admin: { width: "50%", description: "Web address — leave blank to fill automatically." } },
+          { name: "icon", type: "text", admin: { width: "50%", description: "Emoji or icon name" } },
+        ],
+      },
+      { name: "summary", type: "textarea" },
+    ]),
+    section("✍️ Full details", [
+      { name: "content", type: "richText", label: false, editor: articleEditor, admin: { description: articleEditorHint } },
+    ]),
   ],
 };
 
@@ -448,46 +538,69 @@ export const Announcements: CollectionConfig = {
   admin: { useAsTitle: "message", defaultColumns: ["message", "severity", "enabled"], group: "Content" },
   access: { read: anyone, create: isEditor, update: isUpdater, delete: isEditor },
   fields: [
-    { name: "label", type: "text", defaultValue: "Notice" },
-    { name: "message", type: "textarea", required: true },
-    {
-      name: "severity",
-      type: "select",
-      defaultValue: "info",
-      options: [
-        { label: "Info", value: "info" },
-        { label: "Warning", value: "warning" },
-        { label: "Urgent", value: "urgent" },
-      ],
-    },
-    {
-      name: "relatedPage",
-      type: "relationship",
-      relationTo: "pages",
-      label: "Link to a page",
-      admin: {
-        description:
-          "Optional: pick a page this announcement should open. The banner becomes clickable. (Takes priority over the link below.)",
+    section("📢 The banner", [
+      {
+        type: "row",
+        fields: [
+          { name: "label", type: "text", defaultValue: "Notice", admin: { width: "50%", description: "Small heading on the banner, e.g. Notice or Eid." } },
+          {
+            name: "severity",
+            type: "select",
+            defaultValue: "info",
+            admin: { width: "50%", description: "Sets the banner's colour and urgency." },
+            options: [
+              { label: "Info", value: "info" },
+              { label: "Warning", value: "warning" },
+              { label: "Urgent", value: "urgent" },
+            ],
+          },
+        ],
       },
-    },
-    { name: "link", type: "text", admin: { description: "Or paste an external link (used only if no page is chosen above)." } },
-    { name: "enabled", type: "checkbox", defaultValue: true },
-    { name: "startDate", type: "date" },
-    { name: "endDate", type: "date" },
+      { name: "message", type: "textarea", required: true },
+    ]),
+    section(
+      "🔗 Where it links",
+      [
+        {
+          name: "relatedPage",
+          type: "relationship",
+          relationTo: "pages",
+          label: "Link to a page",
+          admin: {
+            description:
+              "Optional: pick a page this announcement should open. The banner becomes clickable. (Takes priority over the link below.)",
+          },
+        },
+        { name: "link", type: "text", admin: { description: "Or paste an external link (used only if no page is chosen above)." } },
+      ],
+      { description: "Optional — leave both empty for a plain, non-clickable banner." },
+    ),
+    section("🗓️ Timing & visibility", [
+      { name: "enabled", type: "checkbox", defaultValue: true },
+      {
+        type: "row",
+        fields: [
+          { name: "startDate", type: "date", admin: { width: "50%", description: "Leave empty to show immediately." } },
+          { name: "endDate", type: "date", admin: { width: "50%", description: "Leave empty to show until switched off." } },
+        ],
+      },
+    ]),
     showOnField,
-    {
-      name: "sendPush",
-      type: "checkbox",
-      defaultValue: false,
-      label: "Send push notification to the apps",
-      admin: { description: "Tick to alert everyone with the mobile app. Sends once." },
-    },
-    {
-      name: "pushSent",
-      type: "checkbox",
-      defaultValue: false,
-      admin: { readOnly: true, description: "Set automatically once the push has been sent." },
-    },
+    section("📲 Push notification", [
+      {
+        name: "sendPush",
+        type: "checkbox",
+        defaultValue: false,
+        label: "Send push notification to the apps",
+        admin: { description: "Tick to alert everyone with the mobile app. Sends once." },
+      },
+      {
+        name: "pushSent",
+        type: "checkbox",
+        defaultValue: false,
+        admin: { readOnly: true, description: "Set automatically once the push has been sent." },
+      },
+    ]),
   ],
   hooks: {
     afterChange: [
