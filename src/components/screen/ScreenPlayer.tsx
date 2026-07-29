@@ -74,17 +74,13 @@ export default function ScreenPlayer({
   initialScreen: ScreenDoc;
   initialSnapshot: Snapshot;
 }) {
-  // Preview flags come from the URL; parsed once (client only — SSR sees defaults).
-  const [flags] = useState(() => {
-    if (typeof window === "undefined") return { preview: false, all: false, startAt: 0 };
-    const q = new URLSearchParams(window.location.search);
-    const n = parseInt(q.get("slide") || "", 10);
-    return {
-      preview: q.get("preview") === "1",
-      all: q.get("all") === "1",
-      startAt: Number.isFinite(n) && n > 0 ? n - 1 : 0,
-    };
-  });
+  // Preview flags come from the URL — but they are applied AFTER mount, never
+  // during the first render. The server can't see query params, and React
+  // keeps server-rendered attributes (like an <img>'s src) when hydration
+  // finds a mismatch, so parsing them during the initial render made deep
+  // links (?slide=N) silently show the wrong slide's image. Rendering slide 0
+  // first on both server and client, then jumping, is always correct.
+  const [flags, setFlags] = useState({ preview: false, all: false });
 
   const activeSlides = useCallback(
     (doc: ScreenDoc): Slide[] => (doc?.slides ?? []).filter((s) => flags.all || s.enabled !== false),
@@ -92,7 +88,8 @@ export default function ScreenPlayer({
   );
 
   const [screen, setScreen] = useState<ScreenDoc>(initialScreen);
-  const [index, setIndex] = useState<number>(flags.startAt);
+  const [broken, setBroken] = useState<Record<string, boolean>>({});
+  const [index, setIndex] = useState<number>(0);
   const [cycle, setCycle] = useState(0); // bumps on every jump so timers reset even on 1-slide loops
   const [paused, setPaused] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(10);
@@ -101,6 +98,19 @@ export default function ScreenPlayer({
   slidesRef.current = activeSlides(screen);
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
+
+  // Apply the URL's preview flags and ?slide=N jump once, right after mount.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const preview = q.get("preview") === "1";
+    const all = q.get("all") === "1";
+    if (preview || all) setFlags({ preview, all });
+    const n = parseInt(q.get("slide") || "", 10);
+    if (Number.isFinite(n) && n > 1) {
+      setIndex(n - 1);
+      setCycle((c) => c + 1);
+    }
+  }, []);
 
   // Re-fetch the playlist so edits reach the TV automatically (fast in preview).
   useEffect(() => {
@@ -236,17 +246,28 @@ export default function ScreenPlayer({
           )}
 
           {overlay.type === "image" &&
-            (imageUrl ? (
+            (imageUrl && !broken[imageUrl] ? (
               <div className={`slide slide--image${overlay.fit === "cover" ? " fit-cover" : ""}`}>
                 {/* Blurred copy fills the letterbox so any aspect ratio looks deliberate. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img className="img-backdrop" src={imageUrl} alt="" aria-hidden />
+                {/* A file that can't load (e.g. wiped by a redeploy on ephemeral
+                    storage) says so plainly instead of leaving a dark screen. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="img-main" src={imageUrl} alt={imageAlt} />
+                <img
+                  className="img-main"
+                  src={imageUrl}
+                  alt={imageAlt}
+                  onError={() => setBroken((b) => ({ ...b, [imageUrl]: true }))}
+                />
               </div>
             ) : (
               <div className="slide slide--announce">
-                <p className="slide-body">Picture slide — add an image in the admin.</p>
+                <p className="slide-body">
+                  {imageUrl
+                    ? "This picture's file can't be loaded — please re-upload it in the Media library."
+                    : "Picture slide — add an image in the admin."}
+                </p>
               </div>
             ))}
 
