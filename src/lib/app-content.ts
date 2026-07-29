@@ -35,6 +35,22 @@ export function lexicalToSections(node: unknown): AppSection[] {
     } else if (type === "quote" || type === "paragraph") {
       const t = textOf(n).trim();
       if (t) (current.body ||= []).push(t);
+    } else if (type === "block") {
+      // Inline layout blocks from the unified editor. Extract their readable
+      // text so app readers see the words; visual-only blocks (galleries,
+      // videos, images) are skipped — the app article stays clean.
+      const f = n.fields ?? {};
+      const inner: unknown[] = [];
+      if (f.richText) inner.push(f.richText);
+      if (Array.isArray(f.columns)) for (const c of f.columns) if (c?.richText) inner.push(c.richText);
+      for (const rt of inner) {
+        pushCurrent();
+        out.push(...lexicalToSections(rt));
+      }
+      if (f.blockType === "cta") {
+        const bits = [f.heading, f.text].map((x: unknown) => String(x || "").trim()).filter(Boolean);
+        if (bits.length) (current.body ||= []).push(bits.join(" — "));
+      }
     } else {
       const t = textOf(n).trim();
       if (t) (current.body ||= []).push(t);

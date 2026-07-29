@@ -396,6 +396,47 @@ nav.main { gap: 20px; }
 .block-bg-green-dark :is(h1, h2, h3, h4) { color: var(--gold-soft); }
 .block-bg-green-dark a { color: var(--gold-soft); text-decoration: underline; }
 
+/* --- Unified-editor inline blocks --- */
+/* Callout / note boxes */
+.cms-callout { border-radius: 14px; border: 1px solid; padding: 18px 22px; margin: 22px 0; }
+.cms-callout > :first-child { margin-top: 0; }
+.cms-callout > :last-child { margin-bottom: 0; }
+.cms-callout-info { background: #e7f4ec; border-color: #bcd9c6; }
+.cms-callout-tip { background: #f7ecc9; border-color: var(--gold); }
+.cms-callout-warning { background: #fdf1de; border-color: #e6b45e; }
+.cms-callout-quote { background: var(--cream-2); border-color: #e4dcc8; font-style: italic; }
+
+/* Image blocks with a position */
+.cms-figure { margin: 1.4em 0; }
+.cms-figure-center { max-width: 66%; margin-left: auto; margin-right: auto; }
+.cms-figure-left { float: left; width: min(46%, 340px); margin: 6px 24px 12px 0; }
+.cms-figure-right { float: right; width: min(46%, 340px); margin: 6px 0 12px 24px; }
+@media (max-width: 720px) {
+  .cms-figure-left, .cms-figure-right { float: none; width: 100%; margin: 1.2em 0; }
+  .cms-figure-center { max-width: 100%; }
+}
+
+/* Gallery grid */
+.cms-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; margin: 22px 0; }
+.cms-gallery-item { margin: 0; }
+.cms-gallery-item img { width: 100%; height: 180px; object-fit: cover; border-radius: 12px; display: block; }
+.cms-gallery-item figcaption { color: var(--muted); font-size: 0.82rem; margin-top: 5px; }
+
+/* Responsive video embed */
+.cms-video { margin: 22px 0; }
+.cms-video-frame { position: relative; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: #000; }
+.cms-video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+/* Tables from the rich editor */
+.prose table, .rich-text table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.95rem; }
+.prose table th, .rich-text table th { background: var(--cream-2); font-weight: 700; text-align: left; }
+.prose table th, .prose table td, .rich-text table th, .rich-text table td {
+  border: 1px solid #e4dcc8;
+  padding: 9px 12px;
+  vertical-align: top;
+}
+.prose table tr:nth-child(even) td, .rich-text table tr:nth-child(even) td { background: rgba(238, 232, 214, 0.35); }
+
 /* --- Arabic / Qur'anic typography & RTL --- */
 .quran {
   font-family: "Scheherazade New", "Amiri", serif;
