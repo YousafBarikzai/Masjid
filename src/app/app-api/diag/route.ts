@@ -1,3 +1,5 @@
+import { existsSync, readdirSync } from "fs";
+import path from "path";
 import { NextResponse } from "next/server";
 import { getPayloadClient } from "@/lib/payloadClient";
 
@@ -62,6 +64,35 @@ export async function GET() {
       out.showOnColumns = "present";
     } catch (e) {
       out.showOnColumns = `MISSING: ${(e as Error).message.slice(0, 120)}`;
+    }
+
+    // Media storage: answers "why don't uploaded images show?" at a glance.
+    // Uploads live on the container's own disk unless S3 (or a mounted volume
+    // via MEDIA_DIR) is configured — and Railway WIPES that disk on every
+    // deploy, so DB records survive while their files vanish.
+    try {
+      const s3 = Boolean(process.env.S3_BUCKET);
+      const dir = process.env.MEDIA_DIR || path.resolve(process.cwd(), "media");
+      const media: Record<string, unknown> = {
+        mode: s3 ? "S3 (persistent)" : process.env.MEDIA_DIR ? `volume at ${dir}` : `container disk at ${dir} — WIPED ON EVERY DEPLOY`,
+      };
+      if (!s3) {
+        media.dirExists = existsSync(dir);
+        media.filesOnDisk = existsSync(dir) ? readdirSync(dir).length : 0;
+      }
+      const docs = await p.find({ collection: "media" as never, limit: 100, depth: 0, overrideAccess: true });
+      media.filesInDatabase = docs.totalDocs;
+      if (!s3 && docs.docs.length) {
+        const missing = (docs.docs as Array<{ filename?: string }>)
+          .filter((d) => d.filename && !existsSync(path.join(dir, d.filename)))
+          .map((d) => d.filename);
+        media.missingFiles = missing.length
+          ? { count: missing.length, examples: missing.slice(0, 5) }
+          : "none — every database record has its file";
+      }
+      out.media = media;
+    } catch (e) {
+      out.media = `check failed: ${(e as Error).message.slice(0, 120)}`;
     }
   } catch (e) {
     out.payloadInit = `FAILED: ${(e as Error).message.slice(0, 160)}`;
