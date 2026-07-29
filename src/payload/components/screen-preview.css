@@ -1,0 +1,87 @@
+/* Embedded live preview of a digital screen (ScreenPreview). */
+
+.kma-preview {
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 14px;
+  background: var(--theme-elevation-0);
+  padding: 16px 18px 14px;
+  margin: 10px 0 24px;
+}
+.kma-preview--empty { color: var(--theme-elevation-500); font-size: 13px; }
+
+.kma-preview__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.kma-preview__title { font-size: 15px; font-weight: 700; }
+.kma-preview__status {
+  font-size: 12.5px;
+  color: var(--theme-elevation-500);
+  font-variant-numeric: tabular-nums;
+}
+
+.kma-preview__bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.kma-preview__controls,
+.kma-preview__opts { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+.kma-preview__controls button,
+.kma-preview__opts button {
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-elevation-0);
+  color: var(--theme-elevation-800);
+  border-radius: 8px;
+  padding: 6px 11px;
+  font-size: 13px;
+  cursor: pointer;
+  line-height: 1;
+}
+.kma-preview__controls button:hover,
+.kma-preview__opts button:hover { background: var(--theme-elevation-50); }
+.kma-preview__opts button.is-on {
+  background: rgba(21, 127, 84, 0.1);
+  border-color: #157f54;
+  color: #157f54;
+  font-weight: 600;
+}
+.kma-preview__refresh { font-weight: 600; }
+.kma-preview__hidden {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--theme-elevation-600);
+  margin-left: 6px;
+  cursor: pointer;
+}
+
+.kma-preview__stage {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #04130c;
+  border: 1px solid var(--theme-elevation-150);
+}
+.kma-preview__frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 0;
+  transform-origin: top left;
+  pointer-events: none; /* the preview is watched, not clicked */
+}
+
+.kma-preview__note {
+  font-size: 12px;
+  color: var(--theme-elevation-500);
+  margin: 10px 0 0;
+  line-height: 1.5;
+}

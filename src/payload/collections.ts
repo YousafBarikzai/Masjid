@@ -100,7 +100,7 @@ export const Media: CollectionConfig = {
   folders: true,
   access: { read: anyone, create: isEditor, update: isUpdater, delete: isEditor },
   upload: {
-    staticDir: path.resolve(process.cwd(), "media"),
+    staticDir: process.env.MEDIA_DIR || path.resolve(process.cwd(), "media"),
     mimeTypes: ["image/*", "application/pdf"],
     // Drag-and-drop several files at once.
     bulkUpload: true,
@@ -703,7 +703,7 @@ export const TimetableUploads: CollectionConfig = {
   },
   access: { read: isPrayerManager, create: isPrayerManager, update: isPrayerManager, delete: isPrayerManager },
   upload: {
-    staticDir: path.resolve(process.cwd(), "media"),
+    staticDir: process.env.MEDIA_DIR || path.resolve(process.cwd(), "media"),
     mimeTypes: ["text/csv", "application/csv", "application/vnd.ms-excel", "text/plain"],
   },
   fields: [
