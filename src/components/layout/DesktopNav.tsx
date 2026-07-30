@@ -64,7 +64,7 @@ export default function DesktopNav({ items }: { items: NavItem[] }) {
       {items
         .filter((n) => !n.cta)
         .map((n) =>
-          n.children ? (
+          n.children && n.children.length ? (
             <div
               className={`nav-item has-children${open === n.href ? " is-open" : ""}`}
               key={n.href}
