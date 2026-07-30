@@ -253,7 +253,7 @@ export interface ResourcePage {
   icon: string;
   intro: string;
   sections: PageSection[];
-  downloads?: { label: string; file: string }[];
+  downloads?: { label: string; file: string; year?: string; version?: string }[];
 }
 
 export const resourcePages: ResourcePage[] = [
@@ -271,11 +271,11 @@ export const resourcePages: ResourcePage[] = [
       },
       {
         body: [
-          "PLACEHOLDER — Add the membership criteria, fees and submission instructions exactly as published by KMA.",
+          "The easiest way to join is our online membership application: apply in five short steps, track your application, and pay the annual fee once approved. Visit the Membership page to get started.",
         ],
       },
     ],
-    downloads: [{ label: "Membership Form (PDF)", file: "membership-form.pdf" }],
+    downloads: [],
   },
   {
     slug: "data-policy",
@@ -286,12 +286,12 @@ export const resourcePages: ResourcePage[] = [
       {
         heading: "Data protection",
         body: [
-          "Kingston Muslim Association is committed to protecting the privacy of its members and the community and to handling personal data responsibly and in line with UK data-protection law.",
-          "PLACEHOLDER — Paste the full Data Protection Policy text here, exactly as published by KMA.",
+          "Kingston Muslim Association is committed to protecting the privacy of its members and the community and to handling personal data responsibly, in line with the UK GDPR, the Data Protection Act 2018 and PECR.",
+          "Our full Data Protection & Privacy Policy explains what information we collect and why, the lawful bases we rely on, how long we keep records, who we share them with, and your rights — including how to make a Subject Access Request or a complaint. Download the current version below.",
         ],
       },
     ],
-    downloads: [{ label: "Data Policy (PDF)", file: "data-policy.pdf" }],
+    downloads: [{ label: "KMA Data Protection & Privacy Policy", file: "data-policy.pdf", version: "v1.0 draft" }],
   },
   {
     slug: "right-of-access-request",
@@ -303,11 +303,11 @@ export const resourcePages: ResourcePage[] = [
         heading: "Making a request",
         body: [
           "You have the right to request access to the personal information we hold about you (a “Right of Access” or Subject Access Request). To make a request, complete the Right of Access Request form below and return it to the mosque office.",
-          "PLACEHOLDER — Add the exact ROA process, timescales and contact details published by KMA.",
+          "Download the fillable form below, complete it on your computer or by hand, and return it with the identity documents it describes. We will normally respond within one calendar month of verifying your identity. If you need the form in another format, contact the mosque office.",
         ],
       },
     ],
-    downloads: [{ label: "Right of Access Request Form (PDF)", file: "right-of-access-request.pdf" }],
+    downloads: [{ label: "Right of Access (Subject Access) Request Form — fillable", file: "right-of-access-request.pdf", version: "v1.0" }],
   },
   {
     slug: "agm-minutes",
@@ -317,12 +317,12 @@ export const resourcePages: ResourcePage[] = [
     sections: [
       {
         body: [
-          "Minutes of recent Annual General Meetings are available to download below. PLACEHOLDER — replace with the actual AGM minutes documents and dates.",
+          "Approved minutes of Annual General Meetings are published here. The reusable minutes template below is completed at each AGM; once approved, each year's minutes are uploaded by the administrators alongside it.",
         ],
       },
     ],
     downloads: [
-      { label: "AGM Minutes (PDF)", file: "agm-minutes.pdf" },
+      { label: "AGM Minutes Template — complete and republish each year", file: "agm-minutes.pdf", version: "v1.0" },
     ],
   },
   {
@@ -338,8 +338,8 @@ export const resourcePages: ResourcePage[] = [
       },
     ],
     downloads: [
-      { label: "Accounts — year ended 31 March 2024 (PDF)", file: "accounts-2024.pdf" },
-      { label: "Accounts — year ended 31 March 2023 (PDF)", file: "accounts-2023.pdf" },
+      { label: "KMA Financial Accounts — Year End 2025 (sample template)", file: "accounts-2025.pdf", year: "2025" },
+      { label: "KMA Financial Accounts — Year End 2024 (sample template)", file: "accounts-2024.pdf", year: "2024" },
     ],
   },
 ];

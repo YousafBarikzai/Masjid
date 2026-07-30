@@ -2042,3 +2042,70 @@ a.camp-card:hover { transform: translateY(-5px); box-shadow: 0 24px 50px -30px r
   .ma-card, .ma-card * { visibility: visible; }
   .ma-card { position: fixed; inset: 20px auto auto 20px; }
 }
+
+/* ═══ Resources — document cards ═══════════════════════════════════════════ */
+.doc-cards__heading { margin-top: 30px; }
+.doc-cards { list-style: none; padding: 0; margin: 14px 0 8px; display: grid; gap: 12px; }
+.doc-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #fff;
+  border: 1.5px solid #e4dcc8;
+  border-radius: 14px;
+  padding: 16px 18px;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.doc-card:hover { border-color: var(--green-2); box-shadow: 0 6px 18px -10px rgba(11, 61, 46, .35); }
+.doc-card__icon {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #eef3ee;
+  color: var(--green-2);
+}
+.doc-card__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.doc-card__title { font-weight: 700; line-height: 1.35; }
+.doc-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  color: var(--muted);
+  font-size: .82rem;
+  align-items: center;
+}
+.doc-card__chip {
+  background: var(--green-2);
+  color: #fff;
+  font-weight: 800;
+  font-size: .68rem;
+  letter-spacing: .06em;
+  border-radius: 5px;
+  padding: 2px 7px;
+}
+.doc-card__actions { display: flex; gap: 8px; flex: none; }
+.doc-card__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: .92rem;
+  text-decoration: none;
+  transition: transform .12s ease, filter .12s ease;
+}
+.doc-card__btn:hover { transform: translateY(-1px); filter: brightness(1.06); text-decoration: none; }
+.doc-card__btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.doc-card__btn--view { border: 1.5px solid var(--green-2); color: var(--green-2) !important; background: #fff; }
+.doc-card__btn--dl { background: var(--green-2); color: #fff !important; }
+@media (max-width: 640px) {
+  .doc-card { flex-wrap: wrap; }
+  .doc-card__body { min-width: 60%; }
+  .doc-card__actions { width: 100%; }
+  .doc-card__btn { flex: 1; }
+}

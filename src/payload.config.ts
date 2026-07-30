@@ -37,6 +37,7 @@ import {
 } from "./payload/globals";
 import { AuditLog, withAudit } from "./payload/audit";
 import { Members, MembershipSettings } from "./payload/membership";
+import { ResourceDocuments } from "./payload/documents";
 import { Screens } from "./payload/screens";
 import { withHelp, withHelpGlobal } from "./payload/help";
 
@@ -174,6 +175,7 @@ export default buildConfig({
     withHelp(withAudit(Media)),
     withHelp(withAudit(Users)),
     withHelp(withAudit(Members)),
+    withHelp(withAudit(ResourceDocuments)),
     withHelp(AuditLog),
   ],
   globals: [

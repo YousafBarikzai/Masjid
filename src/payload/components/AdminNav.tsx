@@ -87,6 +87,7 @@ const GROUPS: Group[] = [
       { label: "Services", href: col("services"), addHref: add("services"), create: EDITORS },
       { label: "Announcements & banners", href: col("announcements"), addHref: add("announcements"), create: EDITORS },
       { label: "Media library", href: col("media"), addHref: add("media"), create: EDITORS },
+      { label: "Resource documents (PDFs)", href: col("documents"), addHref: add("documents"), view: ADMINS, create: ADMINS, hint: "Data policy, AGM minutes, accounts…" },
     ],
   },
   {
