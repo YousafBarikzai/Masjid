@@ -3,7 +3,6 @@ import { getSite, getAnnouncement, getMainMenu } from "@/lib/cms";
 import Brand from "./Brand";
 import MobileMenu from "./MobileMenu";
 import DesktopNav from "./DesktopNav";
-import ThemeToggle from "./ThemeToggle";
 
 export default async function SiteHeader() {
   const [site, alert, menu] = await Promise.all([getSite(), getAnnouncement(), getMainMenu()]);
@@ -50,7 +49,6 @@ export default async function SiteHeader() {
           <Brand />
           <DesktopNav items={menu} />
           <div className="header-cta">
-            <ThemeToggle />
             <Link className="btn btn-gold desktop-only" href="/donate">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C3322" strokeWidth="2" aria-hidden>
                 <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1a5.5 5.5 0 0 0-7.8 7.7l1.1 1.1L12 21l7.8-7.8 1.1-1a5.5 5.5 0 0 0 0-7.7z" />
