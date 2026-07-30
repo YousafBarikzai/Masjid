@@ -47,6 +47,18 @@ export default function DesktopNav({ items }: { items: NavItem[] }) {
     closeTimer.current = setTimeout(() => setOpen(null), 160);
   }
 
+  /** Is this the section the visitor is currently in? */
+  function isActive(href: string): boolean {
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
+
+  const chevron = (
+    <svg className="nav-chevron" width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden>
+      <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+
   return (
     <nav className="main" ref={rootRef as never}>
       {items
@@ -59,7 +71,11 @@ export default function DesktopNav({ items }: { items: NavItem[] }) {
               onMouseEnter={() => enter(n.href)}
               onMouseLeave={leave}
             >
-              <Link href={n.href} className="nav-top" onClick={() => setOpen(null)}>
+              <Link
+                href={n.href}
+                className={`nav-top${isActive(n.href) ? " is-active" : ""}`}
+                onClick={() => setOpen(null)}
+              >
                 {n.label}
               </Link>
               <button
@@ -69,18 +85,24 @@ export default function DesktopNav({ items }: { items: NavItem[] }) {
                 aria-expanded={open === n.href}
                 onClick={() => setOpen((o) => (o === n.href ? null : n.href))}
               >
-                ▾
+                {chevron}
               </button>
               <div className="dropdown" role="menu">
                 {n.children.map((c) => (
-                  <Link key={c.href} href={c.href} role="menuitem" onClick={() => setOpen(null)}>
+                  <Link
+                    key={c.href}
+                    href={c.href}
+                    role="menuitem"
+                    className={isActive(c.href) ? "is-active" : undefined}
+                    onClick={() => setOpen(null)}
+                  >
                     {c.label}
                   </Link>
                 ))}
               </div>
             </div>
           ) : (
-            <Link key={n.href} href={n.href} className="nav-top">
+            <Link key={n.href} href={n.href} className={`nav-top${isActive(n.href) ? " is-active" : ""}`}>
               {n.label}
             </Link>
           ),

@@ -271,26 +271,68 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, input:focus-visible, 
 /* ===================== Rebuilt site: shared components ==================== */
 
 /* --- Header dropdown nav --- */
-nav.main { gap: 20px; }
-.nav-top { display: inline-flex; align-items: center; gap: 4px; font-weight: 500; font-size: .95rem; color: var(--ink); padding: 6px 0; }
-.nav-top:hover { color: var(--green-3); }
-.nav-item { position: relative; }
-.nav-item .caret { font-size: .7em; opacity: .7; }
+/* The item is ONE inline row: label + chevron side by side (the chevron used
+   to wrap onto its own line below the label). Hover/active state is a gold
+   underline that grows in — calm, obvious, and consistent across items. */
+nav.main { gap: 6px; }
+.nav-item { position: relative; display: inline-flex; align-items: center; }
+nav.main .nav-top {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  font-weight: 550;
+  font-size: .95rem;
+  color: var(--ink);
+  padding: 10px 10px;
+  border-radius: 9px;
+  white-space: nowrap;
+}
+nav.main .nav-item.has-children .nav-top { padding-right: 2px; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+nav.main .nav-top::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 3px;
+  height: 2.5px;
+  border-radius: 999px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .18s ease;
+}
+nav.main .nav-top:hover, nav.main .nav-item.is-open .nav-top { color: var(--green-3); }
+.nav-top:hover::after, .nav-item.is-open nav.main .nav-top::after { transform: scaleX(1); }
+nav.main .nav-top.is-active { color: var(--green-3); font-weight: 700; }
+nav.main .nav-top.is-active::after { transform: scaleX(1); }
+.nav-caret {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  padding: 10px 8px 10px 2px;
+  border-top-right-radius: 9px;
+  border-bottom-right-radius: 9px;
+  line-height: 1;
+}
+.nav-caret .nav-chevron { transition: transform .18s ease; }
+.nav-item.is-open .nav-caret { color: var(--green-3); }
+.nav-item.is-open .nav-caret .nav-chevron { transform: rotate(180deg); }
+.nav-item:hover .nav-caret { color: var(--green-3); }
 .dropdown {
   position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(8px);
-  min-width: 232px; background: var(--white); border: 1px solid var(--line);
+  min-width: 236px; background: var(--white); border: 1px solid var(--line);
   border-radius: 14px; box-shadow: var(--shadow); padding: 8px; display: grid; gap: 2px;
   opacity: 0; visibility: hidden; transition: .16s ease; z-index: 70;
 }
 .dropdown a { padding: 9px 12px; border-radius: 9px; font-size: .92rem; color: var(--ink); white-space: nowrap; }
 .dropdown a:hover { background: var(--cream-2); color: var(--green-3); }
+.dropdown a.is-active { background: var(--cream-2); color: var(--green-3); font-weight: 700; }
 .nav-item.has-children.is-open .dropdown { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(4px); }
-.nav-caret {
-  appearance: none; border: 0; background: transparent; cursor: pointer;
-  font-size: .7em; color: var(--muted); padding: 4px 2px; margin-left: -2px;
-  transition: transform .18s ease, color .15s ease; line-height: 1;
-}
-.nav-item.is-open .nav-caret { transform: rotate(180deg); color: var(--green-3); }
 
 /* --- Mobile nested nav --- */
 .mobile-group { display: flex; flex-direction: column; border-bottom: 1px solid var(--line); }
