@@ -17,7 +17,12 @@ export const dynamic = "force-dynamic";
 
 async function authedStaff() {
   const payload = await getPayloadClient();
-  const h = await nextHeaders();
+  // Same-origin GET/POST fetches (the admin dashboard) carry no Origin header,
+  // which Payload's CSRF check treats as unauthenticated for cookie tokens.
+  // An ABSENT Origin cannot come from a forged cross-site browser request
+  // (those always send one), so absence is safely treated as same-origin.
+  const h = new Headers(await nextHeaders());
+  if (!h.get("origin")) h.set("origin", payload.config.serverURL || "");
   const { user } = await payload.auth({ headers: h });
   const ok = user && (user as { collection?: string }).collection === "users" && userIsMembershipStaff(user);
   return { payload, user: ok ? user : null };
