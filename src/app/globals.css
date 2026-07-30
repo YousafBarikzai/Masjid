@@ -1800,8 +1800,56 @@ a.camp-card:hover { transform: translateY(-5px); box-shadow: 0 24px 50px -30px r
 
 /* ═══ KMA Membership — public wizard + member account ══════════════════════ */
 
-.member-doors { display: flex; flex-wrap: wrap; gap: 12px; margin: 6px 0 26px; }
-.member-door { flex: 1 1 240px; text-align: center; }
+/* The two doors: apply vs sign in — equal-weight cards, unmissable buttons. */
+.member-doors {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin: 6px 0 30px;
+}
+.member-door {
+  border-radius: 16px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1.5px solid;
+}
+.member-door--new { background: #fff8e6; border-color: var(--gold); }
+.member-door--existing { background: #eaf4ee; border-color: var(--green-2); }
+[data-theme="dark"] .member-door--new { background: #241f10; }
+[data-theme="dark"] .member-door--existing { background: #0d2b1e; }
+.member-door__eyebrow {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.member-door__title { margin: 0; font-size: 1.25rem; }
+.member-door__text { margin: 0 0 8px; color: var(--muted); font-size: 0.93rem; line-height: 1.5; }
+.member-door__btn {
+  margin-top: auto;
+  display: block;
+  text-align: center;
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-weight: 800;
+  font-size: 1.02rem;
+  text-decoration: none;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+.member-door__btn:hover { transform: translateY(-2px); filter: brightness(1.06); text-decoration: none; }
+.member-door__btn--gold {
+  background: linear-gradient(150deg, #d8b23a, var(--gold));
+  color: #241b00 !important;
+  box-shadow: 0 8px 20px -10px rgba(196, 149, 28, 0.8);
+}
+.member-door__btn--green {
+  background: linear-gradient(150deg, #157f54, var(--green-2));
+  color: #ffffff !important;
+  box-shadow: 0 8px 20px -10px rgba(15, 81, 50, 0.7);
+}
 .member-journey { list-style: none; padding: 0; margin: 14px 0 8px; display: grid; gap: 12px; }
 .member-journey li { display: flex; gap: 14px; align-items: flex-start; }
 .member-journey__n {

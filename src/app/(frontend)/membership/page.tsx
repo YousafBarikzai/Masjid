@@ -44,12 +44,22 @@ export default async function MembershipPage() {
       <section>
         <div className="wrap narrow prose">
           <div className="member-doors">
-            <Link href="/membership/apply" className="btn btn-gold member-door">
-              Apply for membership →
-            </Link>
-            <Link href="/membership/account" className="btn btn-green member-door">
-              Sign in / check my application →
-            </Link>
+            <div className="member-door member-door--new">
+              <span className="member-door__eyebrow">New to KMA?</span>
+              <h3 className="member-door__title">Become a member</h3>
+              <p className="member-door__text">Five short steps — about ten minutes. Your progress is saved as you go.</p>
+              <Link href="/membership/apply" className="member-door__btn member-door__btn--gold">
+                Apply for membership →
+              </Link>
+            </div>
+            <div className="member-door member-door--existing">
+              <span className="member-door__eyebrow">Already applied, or a member?</span>
+              <h3 className="member-door__title">Check my application</h3>
+              <p className="member-door__text">Sign in to track progress, pay your fee, or view your membership card.</p>
+              <Link href="/membership/account" className="member-door__btn member-door__btn--green">
+                Sign in to my account →
+              </Link>
+            </div>
           </div>
 
           <h2>How it works</h2>
