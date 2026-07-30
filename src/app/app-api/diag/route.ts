@@ -48,13 +48,14 @@ export async function GET() {
       out.dbRead = `FAILED: ${(e as Error).message.slice(0, 120)}`;
     }
 
-    // Write check — its own scratch table, dropped again straight away so it
-    // can never confuse the boot-time schema diff (a lingering unknown table
-    // makes drizzle ask "create or rename?" and hang a headless deploy).
+    // Write check — a zero-row UPDATE on a table that always exists. Proves
+    // write permission without touching any data and, crucially, without
+    // creating ANY table: an unknown table left behind makes the boot-time
+    // schema diff stop at an interactive "create or rename?" prompt, hanging
+    // a headless deploy. (Older scratch tables are dropped before every diff
+    // by the schema-sync code as a second line of defence.)
     try {
-      await adapter.execute({ drizzle: adapter.drizzle, raw: "CREATE TABLE IF NOT EXISTS _diag_probe (ts text)" });
-      await adapter.execute({ drizzle: adapter.drizzle, raw: "INSERT INTO _diag_probe (ts) VALUES ('probe')" });
-      await adapter.execute({ drizzle: adapter.drizzle, raw: "DROP TABLE _diag_probe" });
+      await adapter.execute({ drizzle: adapter.drizzle, raw: "UPDATE users SET updated_at = updated_at WHERE id = -1" });
       out.dbWrite = "ok";
     } catch (e) {
       out.dbWrite = `FAILED: ${(e as Error).message.slice(0, 160)}`;
