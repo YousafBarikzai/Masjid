@@ -212,20 +212,51 @@ body {
   max-width: 60vw;
 }
 
-/* picture slides: fill the screen, letterboxed on the brand green */
+/* picture slides: the whole image is always visible ("contain"), with a
+   blurred copy of itself filling the letterbox so any aspect ratio looks
+   deliberate on any TV. Slides set to "Fill screen" use cover instead. */
 .slide--image {
   max-width: none;
   padding: 0;
-  width: 100vw;
-  height: 100vh;
-  display: grid;
-  place-items: center;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
 }
-.slide--image img {
-  max-width: 100vw;
-  max-height: 100vh;
+.slide--image .img-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(30px) brightness(0.5) saturate(1.05);
+  transform: scale(1.12);
+}
+.slide--image .img-main {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   display: block;
+}
+.slide--image.fit-cover .img-main { object-fit: cover; }
+.slide--image.fit-cover .img-backdrop { display: none; }
+
+/* Preview-only badge on slides that are switched off. */
+.slide-hiddenbadge {
+  position: absolute;
+  top: 3vh;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  background: rgba(192, 57, 43, 0.92);
+  color: #fff;
+  font-size: 1.3vw;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 0.8vh 1.8vw;
 }
 
 /* QR slides */

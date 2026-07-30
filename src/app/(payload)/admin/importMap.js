@@ -28,6 +28,9 @@ import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { HelpPanel as HelpPanel_6015953bf7421e795b880d5ac94432c0 } from '@/payload/components/HelpPanel'
 import { TimetableGrid as TimetableGrid_be427682d609f9848bf9539ba9c427fb } from '@/payload/components/TimetableGrid'
 import { SlideRowLabel as SlideRowLabel_a0998635afb84560a89cce1297434647 } from '@/payload/components/SlideRowLabel'
+import { ScreenLinkField as ScreenLinkField_kma0000000000000000000000000001 } from '@/payload/components/ScreenLink'
+import { ScreenLinkCell as ScreenLinkCell_kma00000000000000000000000000002 } from '@/payload/components/ScreenLink'
+import { ScreenPreview as ScreenPreview_kma00000000000000000000000000003 } from '@/payload/components/ScreenPreview'
 import { FolderTableCell as FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { FolderField as FolderField_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { RoleGuide as RoleGuide_1ae8b8f2eb313b6e07a2fbd815409f4c } from '@/payload/components/RoleGuide'
@@ -69,6 +72,9 @@ export const importMap = {
   "@/payload/components/HelpPanel#HelpPanel": HelpPanel_6015953bf7421e795b880d5ac94432c0,
   "@/payload/components/TimetableGrid#TimetableGrid": TimetableGrid_be427682d609f9848bf9539ba9c427fb,
   "@/payload/components/SlideRowLabel#SlideRowLabel": SlideRowLabel_a0998635afb84560a89cce1297434647,
+  "@/payload/components/ScreenLink#ScreenLinkField": ScreenLinkField_kma0000000000000000000000000001,
+  "@/payload/components/ScreenLink#ScreenLinkCell": ScreenLinkCell_kma00000000000000000000000000002,
+  "@/payload/components/ScreenPreview#ScreenPreview": ScreenPreview_kma00000000000000000000000000003,
   "@payloadcms/next/rsc#FolderTableCell": FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@payloadcms/next/rsc#FolderField": FolderField_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@/payload/components/RoleGuide#RoleGuide": RoleGuide_1ae8b8f2eb313b6e07a2fbd815409f4c,

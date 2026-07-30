@@ -7,9 +7,15 @@ import type { Snapshot } from "@/lib/snapshot";
 /* Plays a digital screen's slide playlist. The prayer board stays mounted (and
    live) underneath at all times; announcement / picture / QR slides fade in as
    full-screen overlays for their configured seconds, then the loop continues.
-   The playlist is re-fetched every minute, so admin edits reach the TV without
+   The playlist is re-fetched periodically, so admin edits reach the TV without
    anyone touching it. A "prayer-board" slide simply shows the board itself.
-   Add ?slide=2 to the URL to preview a specific slide while editing. */
+
+   Preview mode (?preview=1) powers the admin's embedded preview: the playlist
+   refreshes every few seconds instead of every minute, the parent page can
+   drive it (play/pause/next/prev/restart via postMessage), and the player
+   reports which slide is showing and the seconds remaining. ?all=1 also
+   includes slides that are switched off, so staff can check a slide before
+   showing it to the mosque. Add ?slide=2 to jump straight to a slide. */
 
 type Slide = {
   id?: string;
@@ -19,16 +25,23 @@ type Slide = {
   heading?: string;
   body?: string;
   image?: { url?: string; alt?: string } | string | null;
+  fit?: "contain" | "cover";
   url?: string;
   label?: string;
 };
 
 type ScreenDoc = { id: string | number; name?: string; slides?: Slide[] } | null;
 
-const POLL_MS = 60_000;
+function slideLabel(s: Slide | null): string {
+  if (!s) return "";
+  if (s.type === "prayer-board") return "Prayer times board";
+  if (s.type === "announcement") return s.heading ? `Announcement — ${s.heading}` : "Announcement";
+  if (s.type === "image") return s.heading ? `Picture — ${s.heading}` : "Picture";
+  return s.label ? `QR — ${s.label}` : "QR code";
+}
 
-function activeSlides(doc: ScreenDoc): Slide[] {
-  return (doc?.slides ?? []).filter((s) => s.enabled !== false);
+function durationOf(s: Slide | null): number {
+  return Math.max(3, Number(s?.duration) || 10);
 }
 
 function QrImage({ url }: { url: string }) {
@@ -61,17 +74,45 @@ export default function ScreenPlayer({
   initialScreen: ScreenDoc;
   initialSnapshot: Snapshot;
 }) {
+  // Preview flags come from the URL — but they are applied AFTER mount, never
+  // during the first render. The server can't see query params, and React
+  // keeps server-rendered attributes (like an <img>'s src) when hydration
+  // finds a mismatch, so parsing them during the initial render made deep
+  // links (?slide=N) silently show the wrong slide's image. Rendering slide 0
+  // first on both server and client, then jumping, is always correct.
+  const [flags, setFlags] = useState({ preview: false, all: false });
+
+  const activeSlides = useCallback(
+    (doc: ScreenDoc): Slide[] => (doc?.slides ?? []).filter((s) => flags.all || s.enabled !== false),
+    [flags.all],
+  );
+
   const [screen, setScreen] = useState<ScreenDoc>(initialScreen);
-  const [index, setIndex] = useState<number>(() => {
-    if (typeof window === "undefined") return 0;
-    const n = parseInt(new URLSearchParams(window.location.search).get("slide") || "", 10);
-    return Number.isFinite(n) && n > 0 ? n - 1 : 0;
-  });
+  const [broken, setBroken] = useState<Record<string, boolean>>({});
+  const [index, setIndex] = useState<number>(0);
+  const [cycle, setCycle] = useState(0); // bumps on every jump so timers reset even on 1-slide loops
+  const [paused, setPaused] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(10);
   const [clock, setClock] = useState("");
   const slidesRef = useRef<Slide[]>(activeSlides(initialScreen));
   slidesRef.current = activeSlides(screen);
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
 
-  // Re-fetch the playlist every minute so edits reach the TV automatically.
+  // Apply the URL's preview flags and ?slide=N jump once, right after mount.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const preview = q.get("preview") === "1";
+    const all = q.get("all") === "1";
+    if (preview || all) setFlags({ preview, all });
+    const n = parseInt(q.get("slide") || "", 10);
+    if (Number.isFinite(n) && n > 1) {
+      setIndex(n - 1);
+      setCycle((c) => c + 1);
+    }
+  }, []);
+
+  // Re-fetch the playlist so edits reach the TV automatically (fast in preview).
   useEffect(() => {
     let alive = true;
     const poll = async () => {
@@ -87,27 +128,82 @@ export default function ScreenPlayer({
         /* keep playing the last-known playlist */
       }
     };
-    const id = setInterval(poll, POLL_MS);
+    const id = setInterval(poll, flags.preview ? 5_000 : 60_000);
     return () => {
       alive = false;
       clearInterval(id);
     };
-  }, [slug]);
+  }, [slug, flags.preview]);
 
-  // Advance the rotation: each slide holds for its own duration.
-  const advance = useCallback(() => {
-    setIndex((i) => (slidesRef.current.length ? (i + 1) % slidesRef.current.length : 0));
+  const jump = useCallback((to: (i: number, len: number) => number) => {
+    setIndex((i) => {
+      const len = slidesRef.current.length;
+      return len ? ((to(i, len) % len) + len) % len : 0;
+    });
+    setCycle((c) => c + 1);
   }, []);
+  const advance = useCallback(() => jump((i) => i + 1), [jump]);
 
   const slides = activeSlides(screen);
   const current = slides.length ? slides[index % slides.length] : null;
 
+  // Reset the countdown whenever the slide (or playlist) changes.
+  useEffect(() => {
+    setSecondsLeft(durationOf(current));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index, cycle, screen]);
+
+  // The heartbeat: count the current slide down, advance at zero.
   useEffect(() => {
     if (!current) return;
-    const secs = Math.max(3, Number(current.duration) || 10);
-    const id = setTimeout(advance, secs * 1000);
-    return () => clearTimeout(id);
-  }, [current, index, advance]);
+    const id = setInterval(() => {
+      if (pausedRef.current) return;
+      setSecondsLeft((s) => {
+        if (s <= 1) {
+          advance();
+          return 0; // replaced by the reset effect
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [current, advance]);
+
+  // Preview mode: obey the admin preview's controls…
+  useEffect(() => {
+    if (!flags.preview) return;
+    const onMsg = (e: MessageEvent) => {
+      const cmd = (e.data as { kmaPreview?: string })?.kmaPreview;
+      if (!cmd) return;
+      if (cmd === "pause") setPaused(true);
+      else if (cmd === "play") setPaused(false);
+      else if (cmd === "next") advance();
+      else if (cmd === "prev") jump((i) => i - 1);
+      else if (cmd === "restart") {
+        jump(() => 0);
+        setPaused(false);
+      }
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, [flags.preview, advance, jump]);
+
+  // …and report what's playing back to it.
+  useEffect(() => {
+    if (!flags.preview || typeof window === "undefined" || window.parent === window) return;
+    window.parent.postMessage(
+      {
+        kmaSlide: {
+          index: slides.length ? index % slides.length : 0,
+          total: slides.length,
+          secondsLeft,
+          duration: durationOf(current),
+          label: slideLabel(current),
+        },
+      },
+      "*",
+    );
+  }, [flags.preview, index, secondsLeft, slides.length, current]);
 
   // Small live clock for the overlay corner chip.
   useEffect(() => {
@@ -130,6 +226,10 @@ export default function ScreenPlayer({
     overlay?.type === "image" && overlay.image && typeof overlay.image === "object"
       ? overlay.image.url
       : undefined;
+  const imageAlt =
+    overlay?.type === "image" && overlay.image && typeof overlay.image === "object"
+      ? overlay.image.alt || overlay.heading || "Slide"
+      : "Slide";
 
   return (
     <div className="screenplayer">
@@ -137,24 +237,37 @@ export default function ScreenPlayer({
       <DisplayBoard initial={initialSnapshot} />
 
       {overlay && (
-        <div className="slide-overlay" key={`${index}-${overlay.id ?? overlay.type}`}>
+        <div className="slide-overlay" key={`${cycle}-${overlay.id ?? overlay.type}`}>
           {overlay.type === "announcement" && (
             <div className="slide slide--announce">
-              <div className="slide-eyebrow">Announcement</div>
               {overlay.heading && <h1 className="slide-heading serif">{overlay.heading}</h1>}
               {overlay.body && <p className="slide-body">{overlay.body}</p>}
             </div>
           )}
 
           {overlay.type === "image" &&
-            (imageUrl ? (
-              <div className="slide slide--image">
+            (imageUrl && !broken[imageUrl] ? (
+              <div className={`slide slide--image${overlay.fit === "cover" ? " fit-cover" : ""}`}>
+                {/* Blurred copy fills the letterbox so any aspect ratio looks deliberate. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={imageUrl} alt={overlay.heading || "Slide"} />
+                <img className="img-backdrop" src={imageUrl} alt="" aria-hidden />
+                {/* A file that can't load (e.g. wiped by a redeploy on ephemeral
+                    storage) says so plainly instead of leaving a dark screen. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  className="img-main"
+                  src={imageUrl}
+                  alt={imageAlt}
+                  onError={() => setBroken((b) => ({ ...b, [imageUrl]: true }))}
+                />
               </div>
             ) : (
               <div className="slide slide--announce">
-                <p className="slide-body">Picture slide — add an image in the admin.</p>
+                <p className="slide-body">
+                  {imageUrl
+                    ? "This picture's file can't be loaded — please re-upload it in the Media library."
+                    : "Picture slide — add an image in the admin."}
+                </p>
               </div>
             ))}
 
@@ -165,6 +278,9 @@ export default function ScreenPlayer({
               {overlay.label && <div className="slide-qr__label">{overlay.label}</div>}
             </div>
           )}
+
+          {/* Hidden slides are visible only in preview — badge them clearly. */}
+          {flags.all && overlay.enabled === false && <div className="slide-hiddenbadge">Hidden from the TV</div>}
 
           {/* Corner chip: the screen never loses the time. */}
           <div className="slide-chip" suppressHydrationWarning>
