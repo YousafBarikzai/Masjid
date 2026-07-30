@@ -48,15 +48,19 @@ export const getMainMenu = cache(async (): Promise<NavItem[]> => {
       ? g.items.filter((i: any) => i?.label && i.visible !== false)
       : [];
     if (!items.length) return seed.nav; // fall back to the built-in default menu
-    return items.map((i: any) => ({
-      label: i.label,
-      href: i.url || "#",
-      children: Array.isArray(i.children)
+    return items.map((i: any) => {
+      const href = i.url || "#";
+      let children = Array.isArray(i.children)
         ? i.children
             .filter((c: any) => c?.label && c.visible !== false)
             .map((c: any) => ({ label: c.label, href: c.url || "#" }))
-        : undefined,
-    }));
+        : [];
+      // A dropdown must EARN its chevron: no children (Payload returns an
+      // empty array, not undefined) or a single child that merely repeats the
+      // parent link means a plain menu item, never an empty little submenu.
+      if (children.length === 1 && children[0].href === href) children = [];
+      return { label: i.label, href, children: children.length ? children : undefined };
+    });
   } catch {
     return seed.nav;
   }

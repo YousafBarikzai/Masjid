@@ -1,17 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { REMOTE_IMAGES } from "@/lib/remote-images";
 
 // Try these extensions in order, so an editor can upload jpg/png/webp with the
 // slot name and it just works.
 const EXTS = ["jpg", "jpeg", "png", "webp"];
 
 /**
- * Renders an image from /public/images/<slot>.<ext> (first format that exists).
- * Until a file is uploaded it shows a clean, branded placeholder panel (a muted
- * mosque emblem on a soft cream gradient) so the live site looks intentional —
- * never dev text or a broken image. The filename to upload is kept in the
- * title/aria-label for editors.
+ * Renders an image for a named slot, in order of preference:
+ *   1. an uploaded file at /public/images/<slot>.<ext> — the mosque's own
+ *      photo always wins;
+ *   2. the slot's default mosque-themed photo (remote-images.ts);
+ *   3. a clean, branded placeholder panel — never dev text or a broken image.
+ * The filename to upload is kept in the title/aria-label for editors.
  */
 export default function ImageSlot({
   slot,
@@ -29,12 +31,16 @@ export default function ImageSlot({
   const [i, setI] = useState(0);
   const radius = rounded ? 14 : 0;
 
-  if (i < EXTS.length) {
+  const remote = REMOTE_IMAGES[slot];
+  const sources = [...EXTS.map((ext) => `/images/${slot}.${ext}`), ...(remote ? [remote] : [])];
+
+  if (i < sources.length) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={`/images/${slot}.${EXTS[i]}`}
+        src={sources[i]}
         alt={alt}
+        loading="lazy"
         onError={() => setI((n) => n + 1)}
         className={className}
         style={{ width: "100%", aspectRatio: ratio, objectFit: "cover", borderRadius: radius, display: "block" }}
