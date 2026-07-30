@@ -59,7 +59,15 @@ export const getMainMenu = cache(async (): Promise<NavItem[]> => {
       // empty array, not undefined) or a single child that merely repeats the
       // parent link means a plain menu item, never an empty little submenu.
       if (children.length === 1 && children[0].href === href) children = [];
-      return { label: i.label, href, children: children.length ? children : undefined };
+      return {
+        label: i.label,
+        href,
+        children: children.length ? children : undefined,
+        // The header renders its own prominent gold Donate button — a /donate
+        // menu item next to it is a duplicate, so mark it as the CTA (which
+        // the menus already filter out) rather than listing it twice.
+        cta: href === "/donate" || undefined,
+      };
     });
   } catch {
     return seed.nav;

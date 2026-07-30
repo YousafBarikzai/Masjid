@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import PageHero from "@/components/layout/PageHero";
 import CTASection from "@/components/sections/CTASection";
 import RichTextRenderer from "@/components/cms/RichTextRenderer";
+import DocumentCards from "@/components/media/DocumentCards";
 import { resourcePages } from "@/lib/site-content";
 import { getPageBySlug } from "@/lib/cms";
 
@@ -55,24 +56,7 @@ export default async function ResourceDetailPage({ params }: Args) {
             ))
           )}
 
-          {page.downloads && page.downloads.length > 0 && (
-            <div className="resource-list">
-              {page.downloads.map((d) => (
-                <a
-                  key={d.file}
-                  className="download-link"
-                  href={`/downloads/${d.file}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <span className="dl-ic" aria-hidden>
-                    📄
-                  </span>
-                  {d.label}
-                </a>
-              ))}
-            </div>
-          )}
+          <DocumentCards category={slug} defaults={page.downloads ?? []} />
         </div>
       </section>
       <CTASection
