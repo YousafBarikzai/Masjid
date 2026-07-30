@@ -311,6 +311,16 @@ export default buildConfig({
           schemaName?: string;
           execute: (args: { drizzle: unknown; raw: string }) => Promise<unknown>;
         };
+        // The diag endpoint's scratch table must never exist when the schema
+        // diff runs: drizzle can mistake a brand-new collection table for a
+        // RENAME of it and stop at an interactive "create or rename?" prompt,
+        // hanging a headless boot. Removing it first keeps the diff
+        // unambiguous (diag recreates it on demand).
+        try {
+          await adapter.execute({ drizzle: adapter.drizzle, raw: "DROP TABLE IF EXISTS _diag_probe" });
+        } catch {
+          /* nothing to drop */
+        }
         const { pushSchema } = adapter.requireDrizzleKit();
         const { apply, hasDataLoss, warnings, statementsToExecute } = await pushSchema(
           adapter.schema,

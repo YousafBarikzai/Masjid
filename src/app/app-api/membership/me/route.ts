@@ -27,7 +27,11 @@ const CORS = {
 
 async function authedMember() {
   const payload = await getPayloadClient();
-  const h = await nextHeaders();
+  // Clients send `Authorization: JWT <token>` (no cookies), but keep parity
+  // with authedStaff: an absent Origin is treated as same-origin, since forged
+  // cross-site browser requests always carry one.
+  const h = new Headers(await nextHeaders());
+  if (!h.get("origin")) h.set("origin", payload.config.serverURL || "");
   const { user } = await payload.auth({ headers: h });
   if (!user || (user as { collection?: string }).collection !== "members") return { payload, member: null };
   const member = await payload.findByID({
