@@ -238,3 +238,71 @@ export async function registerDevice(
     body: JSON.stringify({ token, platform, topics }),
   });
 }
+
+/* ------------------------------ KMA membership ----------------------------- */
+
+export type MembershipMember = {
+  id: number | string;
+  firstName: string;
+  fullName: string;
+  applicationNumber: string;
+  membershipNumber: string | null;
+  status: string;
+  statusLabel: string;
+  journeyStep: number;
+  journey: string[];
+  nextAction: string;
+  startDate: string | null;
+  expiryDate: string | null;
+  paymentReference: string | null;
+  canReportPayment: boolean;
+  fee: number;
+  bank: { accountName: string; sortCode: string; accountNumber: string } | null;
+  paymentHistory: Array<{ at: string; reference: string; note: string }>;
+};
+
+export async function membershipApply(body: Record<string, unknown>): Promise<{
+  ok: boolean;
+  applicationNumber?: string;
+  error?: string;
+  errors?: Record<string, string>;
+}> {
+  const res = await fetch(`${apiBase}/app-api/membership/apply`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return (await res.json()) as never;
+}
+
+export async function membershipLogin(
+  identifier: string,
+  password: string,
+): Promise<{ ok: boolean; token?: string; member?: MembershipMember; error?: string }> {
+  const res = await fetch(`${apiBase}/app-api/membership/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ identifier, password }),
+  });
+  return (await res.json()) as never;
+}
+
+export async function membershipMe(token: string): Promise<{ ok: boolean; member?: MembershipMember }> {
+  const res = await fetch(`${apiBase}/app-api/membership/me`, {
+    headers: { Authorization: `JWT ${token}` },
+  });
+  return (await res.json()) as never;
+}
+
+export async function membershipReportPayment(
+  token: string,
+  paymentDate: string,
+  paymentReference: string,
+): Promise<{ ok: boolean; member?: MembershipMember; error?: string }> {
+  const res = await fetch(`${apiBase}/app-api/membership/me`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `JWT ${token}` },
+    body: JSON.stringify({ paymentDate, paymentReference }),
+  });
+  return (await res.json()) as never;
+}

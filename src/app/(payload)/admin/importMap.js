@@ -31,6 +31,8 @@ import { SlideRowLabel as SlideRowLabel_a0998635afb84560a89cce1297434647 } from 
 import { ScreenLinkField as ScreenLinkField_kma0000000000000000000000000001 } from '@/payload/components/ScreenLink'
 import { ScreenLinkCell as ScreenLinkCell_kma00000000000000000000000000002 } from '@/payload/components/ScreenLink'
 import { ScreenPreview as ScreenPreview_kma00000000000000000000000000003 } from '@/payload/components/ScreenPreview'
+import { MembershipDashboard as MembershipDashboard_kma000000000000000000004 } from '@/payload/components/MembershipDashboard'
+import { MemberStatusCell as MemberStatusCell_kma00000000000000000000000005 } from '@/payload/components/MemberStatusCell'
 import { FolderTableCell as FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { FolderField as FolderField_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { RoleGuide as RoleGuide_1ae8b8f2eb313b6e07a2fbd815409f4c } from '@/payload/components/RoleGuide'
@@ -75,6 +77,8 @@ export const importMap = {
   "@/payload/components/ScreenLink#ScreenLinkField": ScreenLinkField_kma0000000000000000000000000001,
   "@/payload/components/ScreenLink#ScreenLinkCell": ScreenLinkCell_kma00000000000000000000000000002,
   "@/payload/components/ScreenPreview#ScreenPreview": ScreenPreview_kma00000000000000000000000000003,
+  "@/payload/components/MembershipDashboard#MembershipDashboard": MembershipDashboard_kma000000000000000000004,
+  "@/payload/components/MemberStatusCell#MemberStatusCell": MemberStatusCell_kma00000000000000000000000005,
   "@payloadcms/next/rsc#FolderTableCell": FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@payloadcms/next/rsc#FolderField": FolderField_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@/payload/components/RoleGuide#RoleGuide": RoleGuide_1ae8b8f2eb313b6e07a2fbd815409f4c,

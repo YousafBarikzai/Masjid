@@ -243,25 +243,43 @@ export default buildConfig({
       g.__membershipSweepTimer = setInterval(run, 12 * 60 * 60 * 1000);
     }
 
-    // Make sure the public menu offers the membership page (additive, once).
+    // Make sure the public menu is complete and offers the membership page.
+    // The site header falls back to the built-in default menu ONLY while the
+    // CMS menu is empty — so seeding must always write the FULL menu, never a
+    // single item (a one-item menu would replace the whole navigation).
     try {
       const menu = (await payload.findGlobal({ slug: "main-menu" as never })) as {
         items?: Array<{ label?: string; url?: string; children?: Array<{ label?: string; url?: string }> }>;
       };
       const items = menu?.items ?? [];
-      const has = items.some(
-        (i) => i.url === "/membership" || (i.children ?? []).some((c) => c.url === "/membership"),
-      );
-      if (!has) {
-        // Prefer nesting under an existing "Resources" dropdown; otherwise top level.
-        const resources = items.find((i) => /resources/i.test(String(i.label)) && Array.isArray(i.children));
-        if (resources) {
-          resources.children = [...(resources.children ?? []), { label: "Membership Form", url: "/membership" }];
-        } else {
-          items.push({ label: "Membership", url: "/membership" });
+      // Self-heal: empty, or exactly the lone "/membership" item an earlier
+      // version of this seed wrote — replace with the complete default menu.
+      const needsFullSeed =
+        items.length === 0 || (items.length === 1 && items[0]?.url === "/membership");
+      if (needsFullSeed) {
+        const { nav } = await import("./lib/content");
+        const full = nav.map((i) => ({
+          label: i.label,
+          url: i.href,
+          children: i.children?.map((c) => ({ label: c.label, url: c.href })),
+        }));
+        await payload.updateGlobal({ slug: "main-menu" as never, data: { items: full } as never });
+        payload.logger.info("Seeded the full site menu (incl. Resources → Membership Form).");
+      } else {
+        // Admin-managed menu: just make sure membership is reachable.
+        const has = items.some(
+          (i) => i.url === "/membership" || (i.children ?? []).some((c) => c.url === "/membership"),
+        );
+        if (!has) {
+          const resources = items.find((i) => /resources/i.test(String(i.label)) && Array.isArray(i.children));
+          if (resources) {
+            resources.children = [...(resources.children ?? []), { label: "Membership Form", url: "/membership" }];
+          } else {
+            items.push({ label: "Membership", url: "/membership" });
+          }
+          await payload.updateGlobal({ slug: "main-menu" as never, data: { items } as never });
+          payload.logger.info("Added “Membership Form” to the site menu.");
         }
-        await payload.updateGlobal({ slug: "main-menu" as never, data: { items } as never });
-        payload.logger.info("Added “Membership” to the site menu.");
       }
     } catch {
       /* menu is admin-managed — never block boot over it */
