@@ -1,0 +1,68 @@
+/* Membership dashboard above the Members list. */
+
+.kma-mdash {
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 14px;
+  background: var(--theme-elevation-0);
+  padding: 16px 18px;
+  margin-bottom: 18px;
+}
+.kma-mdash__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.kma-mdash__title { font-size: 15px; font-weight: 700; }
+.kma-mdash__actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.kma-mdash__btn {
+  display: inline-block;
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-elevation-0);
+  color: var(--theme-elevation-800);
+  border-radius: 8px;
+  padding: 6px 11px;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.kma-mdash__btn:hover { background: var(--theme-elevation-50); text-decoration: none; }
+.kma-mdash__btn--go { background: #157f54; border-color: #0f6a45; color: #fff; }
+.kma-mdash__btn--go:hover { background: #157f54; filter: brightness(1.08); }
+.kma-mdash__note { font-size: 12.5px; color: var(--theme-elevation-500); margin: 8px 0 0; }
+
+.kma-mdash__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  gap: 9px;
+  margin-top: 14px;
+}
+.kma-mdash__tile {
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--theme-elevation-50);
+}
+.kma-mdash__tile.is-green { background: #e7f4ec; border-color: #bcd9c6; }
+.kma-mdash__tile.is-amber { background: #fdf1de; border-color: #ecd3a4; }
+.kma-mdash__tile.is-blue { background: #e7eef8; border-color: #c4d4ea; }
+.kma-mdash__tile.is-red { background: #fbe9e7; border-color: #ecc0ba; }
+[data-theme="dark"] .kma-mdash__tile.is-green,
+[data-theme="dark"] .kma-mdash__tile.is-amber,
+[data-theme="dark"] .kma-mdash__tile.is-blue,
+[data-theme="dark"] .kma-mdash__tile.is-red { background: var(--theme-elevation-100); border-color: var(--theme-elevation-150); }
+.kma-mdash__num { font-size: 22px; font-weight: 800; line-height: 1.1; }
+.kma-mdash__lbl { font-size: 11.5px; color: var(--theme-elevation-600); font-weight: 600; }
+
+.kma-mdash__fees { margin-top: 16px; }
+.kma-mdash__feestitle { font-size: 12.5px; font-weight: 700; color: var(--theme-elevation-600); }
+.kma-mdash__bars { display: flex; align-items: flex-end; gap: 10px; margin-top: 10px; overflow-x: auto; padding-bottom: 4px; }
+.kma-mdash__barwrap { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 44px; }
+.kma-mdash__bar { width: 26px; border-radius: 5px 5px 2px 2px; background: linear-gradient(180deg, #2a9168, #157f54); }
+.kma-mdash__barlbl { font-size: 10.5px; color: var(--theme-elevation-500); }
+.kma-mdash__barval { font-size: 11px; font-weight: 700; }

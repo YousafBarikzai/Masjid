@@ -1,11 +1,19 @@
 import type { Access, FieldAccess } from "payload";
 
-type Role = "super-admin" | "admin" | "editor" | "updater" | "prayer-times-manager" | "contributor";
+type Role = "super-admin" | "admin" | "editor" | "updater" | "prayer-times-manager" | "contributor" | "membership-manager";
 
 function hasRole(user: unknown, ...roles: Role[]): boolean {
   const u = user as { roles?: Role[] } | null | undefined;
   return !!u && Array.isArray(u.roles) && u.roles.some((r) => roles.includes(r));
 }
+
+/** Staff who may see and manage membership applications (personal data). */
+export const isMembershipStaff: Access = ({ req: { user } }) =>
+  hasRole(user, "super-admin", "admin", "membership-manager");
+
+/** Same check, usable outside Payload's Access signature. */
+export const userIsMembershipStaff = (user: unknown): boolean =>
+  hasRole(user, "super-admin", "admin", "membership-manager");
 
 /** Anyone (public read for site content). */
 export const anyone: Access = () => true;

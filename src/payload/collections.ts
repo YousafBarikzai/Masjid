@@ -79,6 +79,7 @@ export const Users: CollectionConfig = {
         { label: "Editor (edit only) — change existing content, no new items", value: "updater" },
         { label: "Contributor — write drafts, an editor publishes", value: "contributor" },
         { label: "Prayer Times Manager — timetable & Jumuʿah only", value: "prayer-times-manager" },
+        { label: "Membership Manager — applications, payments & renewals", value: "membership-manager" },
       ],
     },
   ],

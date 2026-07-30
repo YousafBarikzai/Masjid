@@ -36,6 +36,7 @@ import {
   AppSettings,
 } from "./payload/globals";
 import { AuditLog, withAudit } from "./payload/audit";
+import { Members, MembershipSettings } from "./payload/membership";
 import { Screens } from "./payload/screens";
 import { withHelp, withHelpGlobal } from "./payload/help";
 
@@ -172,9 +173,11 @@ export default buildConfig({
     withHelp(withAudit(Screens)),
     withHelp(withAudit(Media)),
     withHelp(withAudit(Users)),
+    withHelp(withAudit(Members)),
     withHelp(AuditLog),
   ],
   globals: [
+    MembershipSettings,
     withHelpGlobal(SiteSettings),
     withHelpGlobal(JummahSettings),
     withHelpGlobal(DonationSettings),
@@ -220,6 +223,50 @@ export default buildConfig({
   // in this environment — so we sync the schema on first boot instead. This is
   // idempotent (applies only diffs) and keeps the managed DB in step with the code.
   onInit: async (payload) => {
+    // Membership housekeeping: run the renewal sweep (status transitions +
+    // reminder emails) shortly after boot and then twice a day. Guarded so hot
+    // reloads never stack intervals; the sweep itself is idempotent.
+    const g = globalThis as Record<string, unknown>;
+    if (!g.__membershipSweepTimer) {
+      const run = async () => {
+        try {
+          const { runMembershipSweep } = await import("./lib/membership");
+          const result = await runMembershipSweep(payload);
+          if (result.remindersSent || result.markedRenewalDue || result.markedExpired) {
+            payload.logger.info(`Membership sweep: ${JSON.stringify(result)}`);
+          }
+        } catch (err) {
+          payload.logger.warn(`Membership sweep failed: ${(err as Error).message}`);
+        }
+      };
+      setTimeout(run, 30_000);
+      g.__membershipSweepTimer = setInterval(run, 12 * 60 * 60 * 1000);
+    }
+
+    // Make sure the public menu offers the membership page (additive, once).
+    try {
+      const menu = (await payload.findGlobal({ slug: "main-menu" as never })) as {
+        items?: Array<{ label?: string; url?: string; children?: Array<{ label?: string; url?: string }> }>;
+      };
+      const items = menu?.items ?? [];
+      const has = items.some(
+        (i) => i.url === "/membership" || (i.children ?? []).some((c) => c.url === "/membership"),
+      );
+      if (!has) {
+        // Prefer nesting under an existing "Resources" dropdown; otherwise top level.
+        const resources = items.find((i) => /resources/i.test(String(i.label)) && Array.isArray(i.children));
+        if (resources) {
+          resources.children = [...(resources.children ?? []), { label: "Membership Form", url: "/membership" }];
+        } else {
+          items.push({ label: "Membership", url: "/membership" });
+        }
+        await payload.updateGlobal({ slug: "main-menu" as never, data: { items } as never });
+        payload.logger.info("Added “Membership” to the site menu.");
+      }
+    } catch {
+      /* menu is admin-managed — never block boot over it */
+    }
+
     // Loudly flag the #1 deployment foot-gun: running in production with no
     // persistent database, so every redeploy wipes users + content.
     if (dbReferenceUnresolved) {
