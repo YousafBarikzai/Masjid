@@ -59,6 +59,7 @@ const CONTENT_EDIT = [...EDITORS, "updater", "contributor"]; // may open/edit co
 const CONTENT_CREATE = [...EDITORS, "contributor"]; // may create pages/posts (updater may not)
 const PRAYER = [...ADMINS, "prayer-times-manager", "editor"];
 const PRAYER_CREATE = [...ADMINS, "prayer-times-manager"];
+const MEMBERSHIP = [...ADMINS, "membership-manager"];
 
 const GROUPS: Group[] = [
   {
@@ -108,6 +109,16 @@ const GROUPS: Group[] = [
     items: [
       { label: "Contact messages", href: col("contact-submissions") },
       { label: "Subscribers (mailing list)", href: col("subscribers"), addHref: add("subscribers"), hint: "The central email list — syncs to Mailchimp" },
+    ],
+  },
+  {
+    key: "membership",
+    label: "Membership",
+    icon: "🪪",
+    view: MEMBERSHIP,
+    items: [
+      { label: "Members & applications", href: col("members"), hint: "Review, approve, verify payments, renew" },
+      { label: "Membership settings", href: glob("membership-settings"), hint: "Fee, bank account, period, wording", view: ADMINS },
     ],
   },
   {

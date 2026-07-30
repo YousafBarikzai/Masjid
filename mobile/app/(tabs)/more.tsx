@@ -110,6 +110,13 @@ export default function More() {
       <Section title="Stay in touch" />
       <Card style={{ paddingVertical: 4 }}>
         <ListRow
+          icon="🪪"
+          title="KMA membership"
+          sub="Apply to become a member, or track your application"
+          onPress={() => router.push("/membership" as never)}
+        />
+        <Divider />
+        <ListRow
           icon="💌"
           title="Email updates"
           sub="Join the mosque's mailing list — news, events & Ramadan"
