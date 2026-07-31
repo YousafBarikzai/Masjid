@@ -119,6 +119,9 @@ const GROUPS: Group[] = [
     view: MEMBERSHIP,
     items: [
       { label: "Members & applications", href: col("members"), hint: "Review, approve, verify payments, renew" },
+      { label: "Members-only documents", href: col("member-documents"), addHref: add("member-documents"), create: MEMBERSHIP, hint: "Accounts, AGM minutes, confidential papers" },
+      { label: "Portal categories", href: col("member-document-categories"), addHref: add("member-document-categories"), create: MEMBERSHIP, hint: "The sections of the members portal" },
+      { label: "Member notices", href: col("member-notices"), addHref: add("member-notices"), create: MEMBERSHIP, hint: "Announcements only members can see" },
       { label: "Membership settings", href: glob("membership-settings"), hint: "Fee, bank account, period, wording", view: ADMINS },
     ],
   },
