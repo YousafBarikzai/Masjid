@@ -25,11 +25,14 @@ const JOURNEY = [
 export default async function MembershipPage() {
   let benefits: unknown = null;
   let fee = 12;
+  let quote: { monthlyRate: number; monthsCharged: number; amountDue: number; expiryDate: Date } | null = null;
   try {
     const payload = await getPayloadClient();
     const s = (await payload.findGlobal({ slug: "membership-settings" as never })) as Record<string, unknown>;
     benefits = s?.benefits ?? null;
     fee = Number(s?.annualFee ?? 12);
+    const { prorate, readFeeSettings } = await import("@/payload/membership");
+    quote = prorate(readFeeSettings(s), new Date());
   } catch {
     /* settings not created yet — the page still works */
   }
@@ -75,8 +78,18 @@ export default async function MembershipPage() {
             ))}
           </ol>
           <p className="note-box">
-            The annual membership fee is <b>£{fee}</b>, payable by bank transfer once your application is approved.
-            You&apos;ll need two current KMA members to propose you.
+            The annual membership fee is <b>£{fee}</b>, and all memberships renew together on the same date each
+            year. Join part-way through the year and you only pay for the months remaining
+            {quote ? (
+              <>
+                {" "}
+                — joining this month it&apos;s <b>£{quote.amountDue.toFixed(2)}</b> ({quote.monthsCharged} month
+                {quote.monthsCharged === 1 ? "" : "s"} at £{quote.monthlyRate.toFixed(2)}/month, taking you to{" "}
+                {quote.expiryDate.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })})
+              </>
+            ) : null}
+            . It&apos;s payable by bank transfer once your application is approved. You&apos;ll need two current KMA
+            members to propose you.
           </p>
 
           <h2>Rights &amp; benefits of membership</h2>

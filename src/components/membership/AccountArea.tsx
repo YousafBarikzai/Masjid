@@ -2,11 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import MembersPortal from "./MembersPortal";
 
 /* The member's account: sign in, the five-step journey tracker, what to do
-   next, payment instructions when due (fee, bank details, personal
-   reference), "I've paid" reporting, contact-detail updates, password change,
-   payment history and a printable membership card. */
+   next, the full fee breakdown (monthly rate × months to the April renewal,
+   discounts, paid, outstanding), payment instructions when due, "I've paid"
+   reporting, contact-detail updates, password change, payment history, a
+   printable membership card — and the members-only portal (documents &
+   notices) once the membership is approved. */
 
 type MemberVM = {
   id: number | string;
@@ -28,8 +31,20 @@ type MemberVM = {
   paymentReference: string | null;
   canReportPayment: boolean;
   fee: number;
+  billing?: {
+    monthlyRate: number;
+    monthsCharged: number;
+    amountDue: number;
+    adjustment: number;
+    netDue: number;
+    amountPaid: number;
+    outstanding: number;
+    paymentStatus: string;
+    paymentStatusLabel: string;
+    renewalDate: string | null;
+  };
   bank: { accountName: string; sortCode: string; accountNumber: string } | null;
-  paymentHistory: Array<{ at: string; reference: string; note: string }>;
+  paymentHistory: Array<{ at: string; reference: string; note: string; amount?: number | null }>;
   statusHistory: Array<{ status: string; at: string }>;
   reportedPaymentDate: string | null;
 };
@@ -45,7 +60,7 @@ export default function AccountArea() {
   const [member, setMember] = useState<MemberVM | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
-  const [view, setView] = useState<"status" | "details" | "password" | "card">("status");
+  const [view, setView] = useState<"status" | "details" | "password" | "card" | "portal">("status");
 
   // Sign-in form state
   const [identifier, setIdentifier] = useState("");
@@ -197,6 +212,9 @@ export default function AccountArea() {
 
   /* ------------------------------ Signed in ------------------------------ */
   const isActive = member.status === "active" || member.status === "renewal-due";
+  const isApproved = ["active", "renewal-due", "renewal-pending"].includes(member.status);
+  const b = member.billing;
+  const gbp = (n: number) => `£${n.toFixed(2)}`;
   return (
     <div className="ma">
       <div className="ma-top">
@@ -230,10 +248,35 @@ export default function AccountArea() {
       </div>
       {msg ? <p className="ma-msg" role="status">{msg}</p> : null}
 
+      {/* Fee breakdown — the same numbers staff see, at every stage. */}
+      {b && (
+        <div className="ma-billing">
+          <h3>Your membership fee</h3>
+          <dl className="ma-billing__grid">
+            <div><dt>Monthly rate</dt><dd>{gbp(b.monthlyRate)}</dd></div>
+            <div><dt>Months charged</dt><dd>{b.monthsCharged} (to the annual renewal)</dd></div>
+            <div><dt>Prorated amount due</dt><dd>{gbp(b.amountDue)}</dd></div>
+            {b.adjustment > 0 && <div><dt>Discount applied</dt><dd>−{gbp(b.adjustment)}</dd></div>}
+            <div><dt>Amount paid</dt><dd>{gbp(b.amountPaid)}</dd></div>
+            <div><dt>Outstanding balance</dt><dd className={b.outstanding > 0 ? "is-owing" : ""}>{gbp(b.outstanding)}</dd></div>
+            <div><dt>Payment status</dt><dd><span className={`ma-paychip is-${b.paymentStatus}`}>{b.paymentStatusLabel}</span></dd></div>
+            {member.startDate && <div><dt>Membership start</dt><dd>{fmt(member.startDate)}</dd></div>}
+            <div><dt>Expiry / renewal date</dt><dd>{fmt(b.renewalDate || member.expiryDate)}</dd></div>
+          </dl>
+        </div>
+      )}
+
       {/* Payment instructions */}
       {member.bank && (
         <div className="ma-pay">
-          <h3>How to pay your £{member.fee} membership fee</h3>
+          <h3>How to pay your £{Number(member.fee).toFixed(2)} membership fee</h3>
+          {b && (
+            <p className="ma-paynote">
+              That&apos;s {b.monthsCharged} month{b.monthsCharged === 1 ? "" : "s"} at £{b.monthlyRate.toFixed(2)}/month
+              until your renewal on {fmt(b.renewalDate || member.expiryDate)}
+              {b.adjustment > 0 ? <> (after a £{b.adjustment.toFixed(2)} discount)</> : null}.
+            </p>
+          )}
           <p>Please pay by bank transfer to:</p>
           <dl className="ma-bank">
             <div><dt>Account name</dt><dd>{member.bank.accountName || "—"}</dd></div>
@@ -271,6 +314,11 @@ export default function AccountArea() {
 
       {/* Actions */}
       <div className="ma-actions">
+        {isApproved && (
+          <button type="button" className={view === "portal" ? "is-on" : ""} onClick={() => setView(view === "portal" ? "status" : "portal")}>
+            🔒 Members&apos; area
+          </button>
+        )}
         <button type="button" className={view === "details" ? "is-on" : ""} onClick={() => setView(view === "details" ? "status" : "details")}>
           Update contact details
         </button>
@@ -283,6 +331,8 @@ export default function AccountArea() {
           </button>
         )}
       </div>
+
+      {view === "portal" && isApproved && <MembersPortal token={token} />}
 
       {view === "details" && (
         <form className="ma-form" onSubmit={saveContact}>
@@ -341,7 +391,11 @@ export default function AccountArea() {
           <summary>Payment history</summary>
           <ul>
             {member.paymentHistory.map((p, i) => (
-              <li key={i}>{fmt(p.at)} — £{member.fee} ({p.note}){p.reference ? ` · ref ${p.reference}` : ""}</li>
+              <li key={i}>
+                {fmt(p.at)}
+                {p.amount != null && p.amount > 0 ? <> — £{Number(p.amount).toFixed(2)}</> : null} ({p.note})
+                {p.reference ? ` · ref ${p.reference}` : ""}
+              </li>
             ))}
           </ul>
         </details>

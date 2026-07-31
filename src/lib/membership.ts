@@ -1,6 +1,6 @@
 import "server-only";
 import type { Payload } from "payload";
-import { journeyStep } from "@/payload/membership";
+import { journeyStep, prorate, readFeeSettings, recordCommunication } from "@/payload/membership";
 
 /* Server-side membership helpers shared by the app-api routes, the reminder
    scheduler (payload.config onInit) and the admin dashboard endpoints. */
@@ -26,6 +26,19 @@ const STATUS_LABELS: Record<string, string> = {
   expired: "Expired",
   rejected: "Not approved",
 };
+
+const PAYMENT_LABELS: Record<string, string> = {
+  "not-due": "Not due yet",
+  pending: "Payment pending",
+  "part-paid": "Part paid",
+  paid: "Paid in full",
+  overdue: "Overdue",
+  waived: "Waived / concession",
+};
+
+export function paymentStatusLabel(s: string): string {
+  return PAYMENT_LABELS[s] || s;
+}
 
 export function statusLabel(s: string): string {
   return STATUS_LABELS[s] || s;
@@ -67,6 +80,20 @@ export async function memberView(payload: Payload, member: AnyDoc): Promise<AnyD
     .catch(() => null)) ?? {}) as AnyDoc;
   const status = String(member.status || "pending-review");
   const showPayment = PAY_STATUSES.includes(status);
+
+  // Billing: the member's own fee record; before approval fall back to a live
+  // pro-rata quote so applicants always see what they WOULD pay.
+  const f = (member.fee as AnyDoc) || {};
+  const quote = prorate(readFeeSettings(settings), new Date());
+  const monthlyRate = Number(f.monthlyRate) || quote.monthlyRate;
+  const monthsCharged = Number(f.monthsCharged) || quote.monthsCharged;
+  const amountDue = Number(f.amountDue) || quote.amountDue;
+  const adjustment = Number(f.adjustment) || 0;
+  const amountPaid = Number(f.amountPaid) || 0;
+  const netDue = Math.max(0, Math.round((amountDue - adjustment) * 100) / 100);
+  const outstanding = f.outstanding != null ? Number(f.outstanding) : Math.max(0, netDue - amountPaid);
+  const paymentStatus = String(f.paymentStatus || "not-due");
+
   return {
     id: member.id,
     firstName: member.firstName,
@@ -93,7 +120,21 @@ export async function memberView(payload: Payload, member: AnyDoc): Promise<AnyD
     renewalDate: member.expiryDate || null,
     paymentReference: showPayment || status === "payment-verification" || status === "renewal-pending" ? member.paymentReference || null : null,
     canReportPayment: REPORT_STATUSES.includes(status),
-    fee: Number(settings.annualFee ?? 12),
+    // `fee` = what the member is being asked to pay right now (net of any
+    // discount). Kept as a plain number for the mobile app.
+    fee: outstanding > 0 ? outstanding : netDue,
+    billing: {
+      monthlyRate,
+      monthsCharged,
+      amountDue,
+      adjustment,
+      netDue,
+      amountPaid,
+      outstanding,
+      paymentStatus,
+      paymentStatusLabel: paymentStatusLabel(paymentStatus),
+      renewalDate: member.expiryDate || quote.expiryDate.toISOString(),
+    },
     bank: showPayment
       ? {
           accountName: settings.bank?.accountName || "",
@@ -104,6 +145,7 @@ export async function memberView(payload: Payload, member: AnyDoc): Promise<AnyD
     proofOfPaymentEnabled: Boolean(settings.proofOfPaymentEnabled),
     paymentHistory: (member.paymentHistory || []).map((p: AnyDoc) => ({
       at: p.at,
+      amount: p.amount ?? null,
       reference: p.reference,
       note: p.note,
     })),
@@ -122,12 +164,74 @@ const REMINDERS: Array<{ kind: string; daysBefore: number }> = [
   { kind: "overdue", daysBefore: -3 }, // 3 days after expiry
 ];
 
+const SITE = () =>
+  process.env.SERVER_URL || process.env.NEXT_PUBLIC_SERVER_URL || "https://masjid-production.up.railway.app";
+
+/** One payment/renewal reminder email to one member, with the outstanding
+ *  amount spelled out, recorded in remindersSent + the communication history.
+ *  Used by the daily sweep AND the dashboard's manual "send reminders". */
+export async function sendPaymentReminder(
+  payload: Payload,
+  member: AnyDoc,
+  kind: string,
+  opts?: { manual?: boolean },
+): Promise<boolean> {
+  const f = (member.fee as AnyDoc) || {};
+  const outstanding = Math.max(0, Number(f.outstanding) || 0);
+  const expiry = member.expiryDate ? new Date(member.expiryDate) : null;
+  const overdue = expiry ? expiry.getTime() < Date.now() : String(f.paymentStatus) === "overdue";
+  const amount = outstanding > 0 ? outstanding : Math.max(0, (Number(f.amountDue) || 0) - (Number(f.adjustment) || 0));
+  try {
+    await payload.sendEmail({
+      to: member.email,
+      subject: overdue
+        ? "Your KMA membership fee is overdue"
+        : expiry
+          ? `Your KMA membership renewal — £${amount.toFixed(2)} due`
+          : `Your KMA membership fee — £${amount.toFixed(2)} due`,
+      html: `<p>As-salāmu ʿalaykum ${member.firstName},</p>
+        <p>${
+          overdue
+            ? `Our records show an outstanding membership fee of <b>£${amount.toFixed(2)}</b>${expiry ? ` — your membership expired on <b>${expiry.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</b>` : ""}.`
+            : expiry
+              ? `Your Kingston Muslim Association membership${member.membershipNumber ? ` (number <b>${member.membershipNumber}</b>)` : ""} runs until <b>${expiry.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</b> and <b>£${amount.toFixed(2)}</b> is due for the next year.`
+              : `A membership fee of <b>£${amount.toFixed(2)}</b> is outstanding on your account.`
+        }</p>
+        <p>Please pay by bank transfer using your personal reference <b>${member.paymentReference || member.applicationNumber}</b> — the bank details and an “I've paid” button are in your account:</p>
+        <p><a href="${SITE()}/membership/account">${SITE()}/membership/account</a></p>`,
+    });
+  } catch {
+    return false;
+  }
+  const at = new Date().toISOString();
+  try {
+    await payload.update({
+      collection: "members" as never,
+      id: member.id,
+      data: {
+        remindersSent: [...((member.remindersSent as AnyDoc[]) || []), { kind, at }],
+        lastReminderAt: at,
+      } as never,
+      overrideAccess: true,
+      context: { internal: true } as never,
+    });
+    member.remindersSent = [...((member.remindersSent as AnyDoc[]) || []), { kind, at }];
+    member.lastReminderAt = at;
+  } catch {
+    /* recorded best-effort */
+  }
+  await recordCommunication(payload, member, {
+    kind: opts?.manual ? "Manual payment reminder" : `Renewal reminder (${kind})`,
+    note: `£${amount.toFixed(2)} outstanding`,
+  });
+  return true;
+}
+
 /** Daily housekeeping: move statuses along the renewal lifecycle and send the
  *  reminder emails that are due. Idempotent — each reminder is recorded on the
  *  member and never sent twice in a cycle. Returns a summary for the admin. */
 export async function runMembershipSweep(payload: Payload): Promise<AnyDoc> {
-  const out = { checked: 0, markedRenewalDue: 0, markedExpired: 0, remindersSent: 0, errors: 0 };
-  const site = process.env.SERVER_URL || process.env.NEXT_PUBLIC_SERVER_URL || "https://masjid-production.up.railway.app";
+  const out = { checked: 0, markedRenewalDue: 0, markedExpired: 0, markedOverdue: 0, remindersSent: 0, errors: 0 };
   const now = Date.now();
 
   const res = await payload.find({
@@ -170,41 +274,30 @@ export async function runMembershipSweep(payload: Payload): Promise<AnyDoc> {
       }
       if (raw.status === "renewal-pending") continue; // payment reported — humans take it from here
 
-      // Reminder emails.
+      // Past expiry with money still owing → stamp the payment status Overdue
+      // so the list/filters/dashboard show it. (deriveFee preserves "overdue"
+      // until the money arrives.)
+      const fee = (raw.fee as AnyDoc) || {};
+      if (daysLeft < 0 && Number(fee.outstanding) > 0 && String(fee.paymentStatus) !== "overdue") {
+        await payload.update({
+          collection: "members" as never,
+          id: raw.id,
+          data: { fee: { ...fee, paymentStatus: "overdue" } } as never,
+          overrideAccess: true,
+          context: { internal: true } as never,
+        });
+        raw.fee = { ...fee, paymentStatus: "overdue" };
+        out.markedOverdue++;
+      }
+
+      // Reminder emails — at most one per member per sweep, never repeated
+      // within a cycle.
       const sent = new Set(((raw.remindersSent as AnyDoc[]) || []).map((r) => String(r.kind)));
       for (const r of REMINDERS) {
-        const due = r.daysBefore >= 0 ? daysLeft <= r.daysBefore : daysLeft <= r.daysBefore;
-        if (!due || sent.has(r.kind)) continue;
-        const overdue = daysLeft < 0;
-        try {
-          await payload.sendEmail({
-            to: raw.email,
-            subject: overdue
-              ? "Your KMA membership has expired — renew today"
-              : `Your KMA membership expires in ${daysLeft} day${daysLeft === 1 ? "" : "s"}`,
-            html: `<p>As-salāmu ʿalaykum ${raw.firstName},</p>
-              <p>${
-                overdue
-                  ? "Your Kingston Muslim Association membership has <b>expired</b>."
-                  : `Your Kingston Muslim Association membership (number <b>${raw.membershipNumber}</b>) expires on <b>${new Date(expiry).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</b>.`
-              }</p>
-              <p>To renew, pay the annual fee using your personal reference <b>${raw.paymentReference || raw.applicationNumber}</b> — the bank details and a “I've paid” button are in your account:</p>
-              <p><a href="${site}/membership/account">${site}/membership/account</a></p>`,
-          });
-          await payload.update({
-            collection: "members" as never,
-            id: raw.id,
-            data: {
-              remindersSent: [...((raw.remindersSent as AnyDoc[]) || []), { kind: r.kind, at: new Date().toISOString() }],
-            } as never,
-            overrideAccess: true,
-          });
-          raw.remindersSent = [...((raw.remindersSent as AnyDoc[]) || []), { kind: r.kind, at: new Date().toISOString() }];
-          out.remindersSent++;
-        } catch {
-          out.errors++;
-        }
-        break; // at most one reminder per member per sweep
+        if (daysLeft > r.daysBefore || sent.has(r.kind)) continue;
+        if (await sendPaymentReminder(payload, raw, r.kind)) out.remindersSent++;
+        else out.errors++;
+        break;
       }
     } catch {
       out.errors++;
@@ -230,6 +323,14 @@ const EXPORT_COLUMNS: Array<[string, (m: AnyDoc) => string]> = [
   ["Start date", (m) => (m.startDate ? String(m.startDate).slice(0, 10) : "")],
   ["Expiry date", (m) => (m.expiryDate ? String(m.expiryDate).slice(0, 10) : "")],
   ["Payment reference", (m) => m.paymentReference || ""],
+  ["Monthly rate", (m) => (m.fee?.monthlyRate != null ? Number(m.fee.monthlyRate).toFixed(2) : "")],
+  ["Months charged", (m) => (m.fee?.monthsCharged != null ? String(m.fee.monthsCharged) : "")],
+  ["Amount due", (m) => (m.fee?.amountDue != null ? Number(m.fee.amountDue).toFixed(2) : "")],
+  ["Discount", (m) => (Number(m.fee?.adjustment) ? Number(m.fee.adjustment).toFixed(2) : "")],
+  ["Amount paid", (m) => (m.fee?.amountPaid != null ? Number(m.fee.amountPaid).toFixed(2) : "")],
+  ["Outstanding", (m) => (m.fee?.outstanding != null ? Number(m.fee.outstanding).toFixed(2) : "")],
+  ["Payment status", (m) => (m.fee?.paymentStatus ? paymentStatusLabel(String(m.fee.paymentStatus)) : "")],
+  ["Last reminder", (m) => (m.lastReminderAt ? String(m.lastReminderAt).slice(0, 10) : "")],
   ["Marketing consent", (m) => (m.consents?.marketing ? "yes" : "no")],
   ["Proposer 1", (m) => m.proposer1?.fullName || ""],
   ["Proposer 2", (m) => m.proposer2?.fullName || ""],

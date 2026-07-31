@@ -257,8 +257,20 @@ export type MembershipMember = {
   paymentReference: string | null;
   canReportPayment: boolean;
   fee: number;
+  billing?: {
+    monthlyRate: number;
+    monthsCharged: number;
+    amountDue: number;
+    adjustment: number;
+    netDue: number;
+    amountPaid: number;
+    outstanding: number;
+    paymentStatus: string;
+    paymentStatusLabel: string;
+    renewalDate: string | null;
+  };
   bank: { accountName: string; sortCode: string; accountNumber: string } | null;
-  paymentHistory: Array<{ at: string; reference: string; note: string }>;
+  paymentHistory: Array<{ at: string; amount?: number | null; reference: string; note: string }>;
 };
 
 export async function membershipApply(body: Record<string, unknown>): Promise<{
@@ -303,6 +315,45 @@ export async function membershipReportPayment(
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `JWT ${token}` },
     body: JSON.stringify({ paymentDate, paymentReference }),
+  });
+  return (await res.json()) as never;
+}
+
+/* ------------------------- Members-only portal ---------------------------- */
+
+export type PortalDocument = {
+  id: number | string;
+  title: string;
+  year: string | null;
+  version: string | null;
+  publishedDate: string | null;
+  filename: string;
+  mimeType: string;
+  filesize: number;
+  url: string; // access-controlled — fetch WITH the member token
+};
+
+export type PortalCategory = {
+  id: number | string;
+  name: string;
+  description: string;
+  documents: PortalDocument[];
+};
+
+export type PortalNotice = {
+  id: number | string;
+  title: string;
+  body: unknown;
+  publishedDate: string | null;
+  pinned: boolean;
+};
+
+/** The members-only portal feed (approved members only — 403 otherwise). */
+export async function membershipPortal(
+  token: string,
+): Promise<{ ok: boolean; categories?: PortalCategory[]; notices?: PortalNotice[]; error?: string }> {
+  const res = await fetch(`${apiBase}/app-api/membership/portal`, {
+    headers: { Authorization: `JWT ${token}` },
   });
   return (await res.json()) as never;
 }

@@ -2109,3 +2109,51 @@ a.camp-card:hover { transform: translateY(-5px); box-shadow: 0 24px 50px -30px r
   .doc-card__actions { width: 100%; }
   .doc-card__btn { flex: 1; }
 }
+
+/* Header "Member login" button — green outline that works on the cream header
+   (and dark mode), distinct from the gold Donate CTA. */
+.member-login-btn { border: 1.5px solid var(--green, #0e5c3f); color: var(--green, #0e5c3f); font-weight: 700; }
+.member-login-btn:hover { background: rgba(14, 92, 63, 0.08); }
+[data-theme="dark"] .member-login-btn { border-color: rgba(244, 239, 226, 0.55); color: var(--ink, #f4efe2); }
+[data-theme="dark"] .member-login-btn:hover { background: rgba(244, 239, 226, 0.1); }
+/* In the mobile menu the same class sits on a light card — keep it green there too. */
+.mobile-nav .btn-outline { border: 1.5px solid var(--green, #0e5c3f); color: var(--green, #0e5c3f); }
+
+/* --- Member account: fee breakdown panel --- */
+.ma-billing { border: 1px solid #e4dcc8; border-radius: 14px; padding: 18px 22px; margin-top: 18px; background: #fffdf8; }
+.ma-billing h3 { margin: 0 0 10px; font-size: 1.05rem; }
+.ma-billing__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 0; }
+.ma-billing__grid div { border: 1px solid #eee6d4; border-radius: 10px; padding: 10px 14px; background: #fff; }
+.ma-billing__grid dt { font-size: .78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.ma-billing__grid dd { margin: 3px 0 0; font-weight: 700; }
+.ma-billing__grid dd.is-owing { color: #9c2b1f; }
+.ma-paychip { display: inline-block; border-radius: 999px; padding: 2px 11px; font-size: .82rem; font-weight: 700; background: #f0efeb; color: #6c6557; }
+.ma-paychip.is-paid { background: #e7f4ec; color: #0f6a45; }
+.ma-paychip.is-pending { background: #e7eef8; color: #1f4d8f; }
+.ma-paychip.is-part-paid { background: #fdf1de; color: #8a5a00; }
+.ma-paychip.is-overdue { background: #fbe9e7; color: #9c2b1f; }
+.ma-paychip.is-waived { background: #efe9f7; color: #5b3a8e; }
+
+/* --- Members-only portal (documents & notices) --- */
+.ma-portal { margin-top: 18px; display: grid; gap: 20px; }
+.ma-portal__h { margin: 0 0 10px; font-size: 1.05rem; }
+.ma-portal__loading, .ma-portal__empty { color: var(--muted); }
+.ma-notices { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ma-notice { border: 1px solid #e4dcc8; border-radius: 12px; padding: 14px 18px; background: #fff; }
+.ma-notice.is-pinned { border-color: var(--gold, #c4951c); background: #fffbf0; }
+.ma-notice__head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.ma-notice__date { font-size: .82rem; color: var(--muted); margin-left: auto; }
+.ma-notice__body { margin-top: 6px; font-size: .95rem; }
+.ma-notice__body p { margin: 6px 0; }
+.ma-portal__cat { border: 1px solid #e4dcc8; border-radius: 12px; padding: 14px 18px; background: #fff; }
+.ma-portal__cat h4 { margin: 0; }
+.ma-portal__catdesc { margin: 4px 0 0; font-size: .9rem; color: var(--muted); }
+.ma-doclist { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+.ma-doclist li { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid #eee6d4; border-radius: 10px; padding: 10px 14px; background: #fffdf8; flex-wrap: wrap; }
+.ma-doc__meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ma-doc__meta span { font-size: .82rem; color: var(--muted); }
+.ma-doc__btn { min-height: 44px; }
+[data-theme="dark"] .ma-billing, [data-theme="dark"] .ma-billing__grid div,
+[data-theme="dark"] .ma-notice, [data-theme="dark"] .ma-portal__cat, [data-theme="dark"] .ma-doclist li {
+  background: rgba(255, 255, 255, 0.04); border-color: rgba(244, 239, 226, 0.16);
+}

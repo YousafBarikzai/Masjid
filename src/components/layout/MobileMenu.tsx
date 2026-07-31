@@ -32,7 +32,10 @@ export default function MobileMenu({ items }: { items: NavItem[] }) {
                 ))}
               </div>
             ))}
-          <Link href="/donate" className="btn btn-gold" style={{ marginTop: 10 }}>
+          <Link href="/membership/account" className="btn btn-outline" style={{ marginTop: 10 }}>
+            Member login
+          </Link>
+          <Link href="/donate" className="btn btn-gold" style={{ marginTop: 6 }}>
             Donate
           </Link>
         </div>

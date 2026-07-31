@@ -15,14 +15,13 @@ const TONES: Record<string, { bg: string; fg: string; label: string }> = {
   rejected: { bg: "#f0efeb", fg: "#6c6557", label: "Rejected" },
 };
 
-export function MemberStatusCell({ cellData }: { cellData?: string }) {
-  const t = TONES[String(cellData)] ?? { bg: "#f0efeb", fg: "#6c6557", label: String(cellData || "—") };
+function Chip({ bg, fg, label }: { bg: string; fg: string; label: string }) {
   return (
     <span
       style={{
         display: "inline-block",
-        background: t.bg,
-        color: t.fg,
+        background: bg,
+        color: fg,
         borderRadius: 999,
         padding: "3px 10px",
         fontSize: 12,
@@ -30,7 +29,26 @@ export function MemberStatusCell({ cellData }: { cellData?: string }) {
         whiteSpace: "nowrap",
       }}
     >
-      {t.label}
+      {label}
     </span>
   );
+}
+
+export function MemberStatusCell({ cellData }: { cellData?: string }) {
+  const t = TONES[String(cellData)] ?? { bg: "#f0efeb", fg: "#6c6557", label: String(cellData || "—") };
+  return <Chip {...t} />;
+}
+
+const PAY_TONES: Record<string, { bg: string; fg: string; label: string }> = {
+  "not-due": { bg: "#f0efeb", fg: "#6c6557", label: "Not due yet" },
+  pending: { bg: "#e7eef8", fg: "#1f4d8f", label: "Payment pending" },
+  "part-paid": { bg: "#fdf1de", fg: "#8a5a00", label: "Part paid" },
+  paid: { bg: "#e7f4ec", fg: "#0f6a45", label: "Paid in full" },
+  overdue: { bg: "#fbe9e7", fg: "#9c2b1f", label: "Overdue" },
+  waived: { bg: "#efe9f7", fg: "#5b3a8e", label: "Waived" },
+};
+
+export function PaymentStatusCell({ cellData }: { cellData?: string }) {
+  const t = PAY_TONES[String(cellData)] ?? { bg: "#f0efeb", fg: "#6c6557", label: String(cellData || "—") };
+  return <Chip {...t} />;
 }

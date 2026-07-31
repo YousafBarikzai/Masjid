@@ -33,6 +33,8 @@ import { ScreenLinkCell as ScreenLinkCell_kma00000000000000000000000000002 } fro
 import { ScreenPreview as ScreenPreview_kma00000000000000000000000000003 } from '@/payload/components/ScreenPreview'
 import { MembershipDashboard as MembershipDashboard_kma000000000000000000004 } from '@/payload/components/MembershipDashboard'
 import { MemberStatusCell as MemberStatusCell_kma00000000000000000000000005 } from '@/payload/components/MemberStatusCell'
+import { PaymentStatusCell as PaymentStatusCell_kma0000000000000000000000006 } from '@/payload/components/MemberStatusCell'
+import { FeePreview as FeePreview_kma00000000000000000000000000007 } from '@/payload/components/FeePreview'
 import { FolderTableCell as FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { FolderField as FolderField_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { RoleGuide as RoleGuide_1ae8b8f2eb313b6e07a2fbd815409f4c } from '@/payload/components/RoleGuide'
@@ -79,6 +81,8 @@ export const importMap = {
   "@/payload/components/ScreenPreview#ScreenPreview": ScreenPreview_kma00000000000000000000000000003,
   "@/payload/components/MembershipDashboard#MembershipDashboard": MembershipDashboard_kma000000000000000000004,
   "@/payload/components/MemberStatusCell#MemberStatusCell": MemberStatusCell_kma00000000000000000000000005,
+  "@/payload/components/MemberStatusCell#PaymentStatusCell": PaymentStatusCell_kma0000000000000000000000006,
+  "@/payload/components/FeePreview#FeePreview": FeePreview_kma00000000000000000000000000007,
   "@payloadcms/next/rsc#FolderTableCell": FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@payloadcms/next/rsc#FolderField": FolderField_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@/payload/components/RoleGuide#RoleGuide": RoleGuide_1ae8b8f2eb313b6e07a2fbd815409f4c,

@@ -91,6 +91,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Same person under a different email: identical name + date of birth is
+    // treated as a duplicate application, not a new one.
+    const dob = typeof body.dateOfBirth === "string" ? body.dateOfBirth.slice(0, 10) : "";
+    if (dob) {
+      const person = await payload.find({
+        collection: "members" as never,
+        where: {
+          and: [
+            { firstName: { equals: String(body.firstName || "").trim() } },
+            { surname: { equals: String(body.surname || "").trim() } },
+            { dateOfBirth: { equals: dob } },
+          ],
+        } as never,
+        limit: 1,
+        depth: 0,
+        overrideAccess: true,
+      });
+      if (person.totalDocs > 0) {
+        return NextResponse.json(
+          {
+            ok: false,
+            errors: {
+              email:
+                "We already have an application or membership in this name and date of birth. Please sign in to your existing account, or contact the mosque office if you think this is a mistake.",
+            },
+          },
+          { status: 409, headers: CORS },
+        );
+      }
+    }
+
     const pick = (k: string, max = 200) =>
       typeof body[k] === "string" ? (body[k] as string).trim().slice(0, max) : undefined;
     const proposer = (p: unknown) => {
