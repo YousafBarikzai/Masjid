@@ -372,7 +372,9 @@ const s = StyleSheet.create({
   offlineDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.danger },
   offlineText: { color: colors.text, fontSize: t.tiny, fontWeight: "600" },
   body: { flex: 1 },
-  bodyContent: { padding: space.lg, gap: space.md },
+  // Extra bottom padding so the last card scrolls clear of the floating
+  // dock tab bar (dock height + its bottom offset).
+  bodyContent: { padding: space.lg, gap: space.md, paddingBottom: 118 },
   card: {
     backgroundColor: colors.glass,
     borderColor: colors.glassBorder,
