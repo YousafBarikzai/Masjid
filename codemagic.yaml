@@ -135,12 +135,28 @@ workflows:
         script: npx expo prebuild --platform android --no-install
       - name: Point Gradle at the CI keystore
         script: |
+          # Fail LOUDLY if the kma_keystore signing identity isn't attached —
+          # otherwise Gradle dies later with a confusing "unknown property".
+          if [ -z "$CM_KEYSTORE_PATH" ]; then
+            echo "ERROR: CM_KEYSTORE_PATH is empty — the 'kma_keystore' Android keystore"
+            echo "is not set up in Codemagic → Settings → Code signing identities."
+            exit 1
+          fi
+          # Expo's generated gradle.properties has NO trailing newline, so a
+          # plain append glues the first property onto the last existing line
+          # (…hermesEnabled=trueMYAPP_UPLOAD_STORE_FILE=…) and Gradle then
+          # reports "unknown property MYAPP_UPLOAD_STORE_FILE". Start with a
+          # newline so every property lands on its own line.
+          printf '\n' >> android/gradle.properties
           cat >> android/gradle.properties <<EOF
           MYAPP_UPLOAD_STORE_FILE=$CM_KEYSTORE_PATH
           MYAPP_UPLOAD_STORE_PASSWORD=$CM_KEYSTORE_PASSWORD
           MYAPP_UPLOAD_KEY_ALIAS=$CM_KEY_ALIAS
           MYAPP_UPLOAD_KEY_PASSWORD=$CM_KEY_PASSWORD
           EOF
+          echo "--- last lines of gradle.properties (values hidden) ---"
+          tail -5 android/gradle.properties | sed 's/=.*/=***/'
+          printf '\n' >> android/app/build.gradle
           cat >> android/app/build.gradle <<'EOF'
           android {
               signingConfigs {
