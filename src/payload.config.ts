@@ -37,6 +37,7 @@ import {
 } from "./payload/globals";
 import { AuditLog, withAudit } from "./payload/audit";
 import { Members, MembershipSettings } from "./payload/membership";
+import { MemberDocumentCategories, MemberDocuments, MemberNotices, seedMemberPortal } from "./payload/member-portal";
 import { ResourceDocuments } from "./payload/documents";
 import { Screens } from "./payload/screens";
 import { withHelp, withHelpGlobal } from "./payload/help";
@@ -175,6 +176,9 @@ export default buildConfig({
     withHelp(withAudit(Media)),
     withHelp(withAudit(Users)),
     withHelp(withAudit(Members)),
+    withHelp(withAudit(MemberDocuments)),
+    withHelp(withAudit(MemberDocumentCategories)),
+    withHelp(withAudit(MemberNotices)),
     withHelp(withAudit(ResourceDocuments)),
     withHelp(AuditLog),
   ],
@@ -244,6 +248,7 @@ export default buildConfig({
       setTimeout(run, 30_000);
       g.__membershipSweepTimer = setInterval(run, 12 * 60 * 60 * 1000);
     }
+
 
     // Make sure the public menu is complete and offers the membership page.
     // The site header falls back to the built-in default menu ONLY while the
@@ -406,6 +411,15 @@ export default buildConfig({
       await seedSampleKhutbahs(payload);
     } catch (err) {
       payload.logger.warn("Website page seeding failed: " + (err as Error).message);
+    }
+
+    // Members-portal categories (Financial accounts, AGM minutes, …) — seeded
+    // once so the portal has its agreed structure; admins extend via the CMS.
+    // Runs AFTER the schema sync above so the tables exist on first boot.
+    try {
+      await seedMemberPortal(payload);
+    } catch (err) {
+      payload.logger.warn(`Member portal seed failed: ${(err as Error).message}`);
     }
 
     // Optional: provision a Super Admin login from env vars, so there's a

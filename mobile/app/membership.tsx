@@ -438,7 +438,16 @@ export default function MembershipScreen() {
 
             {member.bank && (
               <>
-                <Section title={`Pay your £${member.fee} fee`} />
+                <Section title={`Pay your £${Number(member.fee).toFixed(2)} fee`} />
+                {member.billing ? (
+                  <Card>
+                    <Text style={s.hint}>
+                      {member.billing.monthsCharged} month{member.billing.monthsCharged === 1 ? "" : "s"} at £
+                      {member.billing.monthlyRate.toFixed(2)}/month until your renewal on {fmt(member.billing.renewalDate)}
+                      {member.billing.adjustment > 0 ? ` (after a £${member.billing.adjustment.toFixed(2)} discount)` : ""}.
+                    </Text>
+                  </Card>
+                ) : null}
                 <Card>
                   {(
                     [
@@ -484,7 +493,8 @@ export default function MembershipScreen() {
                 <Card>
                   {member.paymentHistory.map((p, i) => (
                     <Text key={i} style={s.histRow}>
-                      {fmt(p.at)} — £{member.fee} ({p.note})
+                      {fmt(p.at)}
+                      {p.amount != null && p.amount > 0 ? ` — £${Number(p.amount).toFixed(2)}` : ""} ({p.note})
                     </Text>
                   ))}
                 </Card>

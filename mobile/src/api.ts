@@ -257,8 +257,20 @@ export type MembershipMember = {
   paymentReference: string | null;
   canReportPayment: boolean;
   fee: number;
+  billing?: {
+    monthlyRate: number;
+    monthsCharged: number;
+    amountDue: number;
+    adjustment: number;
+    netDue: number;
+    amountPaid: number;
+    outstanding: number;
+    paymentStatus: string;
+    paymentStatusLabel: string;
+    renewalDate: string | null;
+  };
   bank: { accountName: string; sortCode: string; accountNumber: string } | null;
-  paymentHistory: Array<{ at: string; reference: string; note: string }>;
+  paymentHistory: Array<{ at: string; amount?: number | null; reference: string; note: string }>;
 };
 
 export async function membershipApply(body: Record<string, unknown>): Promise<{
