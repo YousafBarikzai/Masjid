@@ -11,7 +11,32 @@
 #      and upload it under Teams → Code signing identities → Android, referenced
 #      below as "kma_keystore".
 #   4. The "android-preview" workflow needs NO credentials — run it first to get
-#      an installable APK for testing on any Android phone.
+#      an installable APK for testing on any Android phone. Every finished
+#      build also EMAILS a tap-to-install link, so there's no cable/manual
+#      APK copying: open the email on the phone, tap the .apk link, install.
+#
+# Android "like TestFlight" — Google Play internal testing (android-release):
+#   Once set up, running android-release publishes straight to the Play Store's
+#   internal-testing track and your phone updates through the Play Store —
+#   the same flow as TestFlight on iOS. One-time setup:
+#     a. Google Play Console account (play.google.com/console, one-off $25).
+#     b. Create the app there: name "Kingston Masjid", package
+#        org.kingstonmosque.app (must match mobile/app.json exactly).
+#     c. Play Console → Users & permissions is NOT enough for CI: create a
+#        Google Cloud SERVICE ACCOUNT (console.cloud.google.com → IAM →
+#        Service accounts → create → add key → JSON), then in Play Console →
+#        Setup → API access, link that Cloud project and grant the service
+#        account "Release to testing tracks" permission.
+#     d. Codemagic → your app → Environment variables: add
+#        GCLOUD_SERVICE_ACCOUNT_CREDENTIALS = (paste the whole JSON file),
+#        group "google_play", mark it Secure.
+#     e. Google requires the VERY FIRST bundle to be uploaded by hand: run
+#        android-release once, download the .aab artifact, and upload it in
+#        Play Console → Testing → Internal testing → Create release. Add your
+#        Google account as a tester there and open the opt-in link on your
+#        phone once.
+#     f. Every android-release build after that publishes automatically and
+#        the phone updates from the Play Store. Done.
 
 workflows:
   # ── Android test build — zero setup, installable .apk ─────────────────────
@@ -65,6 +90,15 @@ workflows:
       # regardless of the workflow's working_directory. A broad recursive
       # glob is more forgiving than the exact debug/*.apk path.
       - "**/*.apk"
+    publishing:
+      # Tap-to-install: the build email contains a direct link to the .apk —
+      # open it ON the phone, tap, install. No cables, no manual copying.
+      email:
+        recipients:
+          - barikzai@gmail.com
+        notify:
+          success: true
+          failure: true
 
   # ── Android release — signed .aab for Google Play ─────────────────────────
   android-release:
@@ -76,6 +110,11 @@ workflows:
     environment:
       android_signing:
         - kma_keystore
+      groups:
+        # Must contain GCLOUD_SERVICE_ACCOUNT_CREDENTIALS (the Google Cloud
+        # service-account JSON with Play "Release to testing tracks" access) —
+        # see the setup notes at the top of this file.
+        - google_play
       node: 20.18.1
       java: 17
     scripts:
@@ -136,6 +175,24 @@ workflows:
       # regardless of the workflow's working_directory. A broad recursive
       # glob is more forgiving than a fixed path.
       - "**/*.aab"
+    publishing:
+      email:
+        recipients:
+          - barikzai@gmail.com
+        notify:
+          success: true
+          failure: true
+      # TestFlight-for-Android: push the signed bundle to the Play Store's
+      # internal-testing track. Testers' phones then update through the Play
+      # Store automatically. Remember: Google insists the FIRST-ever bundle is
+      # uploaded by hand in the Play Console (step e in the header notes).
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        # Draft releases work before the app's store listing is complete;
+        # switch to false once the app is fully set up in the Play Console so
+        # each build goes straight out to internal testers.
+        submit_as_draft: true
 
   # ── iOS release — signed .ipa for TestFlight / App Store ──────────────────
   ios-release:
