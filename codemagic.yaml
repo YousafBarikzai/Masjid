@@ -187,11 +187,15 @@ workflows:
           find "$CM_BUILD_DIR" -name '*.aab' -print 2>/dev/null || true
           find "$CM_BUILD_DIR" -name '*.aab' -exec ls -la {} + 2>/dev/null || true
     artifacts:
-      # ONLY the final signed bundle. A broad **/*.aab glob also catches
-      # Gradle's UNSIGNED build/intermediates/…/intermediary-bundle.aab, and
-      # Codemagic publishes every matched .aab to Google Play — the unsigned
-      # one is rejected ("must be signed") and fails the whole build even
-      # after the real bundle published fine.
+      # ONLY the final signed bundle — never Gradle's unsigned
+      # build/intermediates/…/intermediary-bundle.aab (Codemagic publishes
+      # every matched .aab to Google Play, and the unsigned one gets rejected
+      # and fails the build). Both path bases are listed because the matcher
+      # can resolve from the clone root OR the mobile/ working directory —
+      # an unmatched pattern is silently skipped, so listing both is safe.
+      # (A build that matched only mobile/… produced NO artifact and silently
+      # skipped publishing — that's the failure mode being prevented here.)
+      - android/app/build/outputs/bundle/release/*.aab
       - mobile/android/app/build/outputs/bundle/release/*.aab
     publishing:
       email:
