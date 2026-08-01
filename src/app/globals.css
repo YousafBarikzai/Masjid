@@ -2111,9 +2111,24 @@ a.camp-card:hover { transform: translateY(-5px); box-shadow: 0 24px 50px -30px r
 }
 
 /* Header "Member login" button — green outline that works on the cream header
-   (and dark mode), distinct from the gold Donate CTA. */
-.member-login-btn { border: 1.5px solid var(--green, #0e5c3f); color: var(--green, #0e5c3f); font-weight: 700; }
-.member-login-btn:hover { background: rgba(14, 92, 63, 0.08); }
+   (and dark mode), distinct from the gold Donate CTA. Must stay a single-line
+   pill at the same height as the Donate button, never an oval. */
+.member-login-btn {
+  border: 1.5px solid var(--green, #0e5c3f);
+  color: var(--green, #0e5c3f);
+  font-weight: 700;
+  white-space: nowrap;
+  flex: none;
+  padding: .8em 1.3em;
+}
+.member-login-btn:hover { background: rgba(14, 92, 63, 0.08); transform: translateY(-2px); }
+/* Tight desktop widths: collapse to a round icon button so the header never
+   wraps — the label comes back once there's room. */
+@media (max-width: 1250px) {
+  .member-login-label { display: none; }
+  .member-login-btn { padding: .8em; }
+  .member-login-btn svg { width: 18px; height: 18px; }
+}
 [data-theme="dark"] .member-login-btn { border-color: rgba(244, 239, 226, 0.55); color: var(--ink, #f4efe2); }
 [data-theme="dark"] .member-login-btn:hover { background: rgba(244, 239, 226, 0.1); }
 /* In the mobile menu the same class sits on a light card — keep it green there too. */

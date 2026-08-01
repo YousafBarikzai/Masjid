@@ -1,5 +1,6 @@
 import type { CollectionConfig, GlobalConfig, PayloadRequest } from "payload";
 import { isAdmin, isMembershipStaff } from "./access";
+import { section } from "./sections";
 
 /* ============================================================================
    KMA Membership — applications, approval, payment verification, active
@@ -535,61 +536,78 @@ export const Members: CollectionConfig = {
     ],
   },
   fields: [
-    // ---- Identity ----------------------------------------------------------
     { name: "fullName", type: "text", admin: { hidden: true } },
-    {
-      type: "row",
-      fields: [
-        { name: "title", type: "select", options: ["Mr", "Mrs", "Miss", "Ms", "Dr", "Other"], admin: { width: "20%" } },
-        { name: "firstName", type: "text", required: true, admin: { width: "40%" } },
-        { name: "surname", type: "text", required: true, admin: { width: "40%" } },
-      ],
-    },
-    {
-      type: "row",
-      fields: [
-        {
-          name: "gender",
-          type: "select",
-          options: [
-            { label: "Male", value: "male" },
-            { label: "Female", value: "female" },
-            { label: "Other", value: "other" },
-            { label: "Prefer not to say", value: "not-said" },
-          ],
-          admin: { width: "50%" },
-        },
-        { name: "dateOfBirth", type: "date", admin: { width: "50%", date: { pickerAppearance: "dayOnly" } } },
-      ],
-    },
-    { name: "username", type: "text", required: true, unique: true },
+    // ---- Applicant ---------------------------------------------------------
+    section("👤 Applicant", [
+      {
+        type: "row",
+        fields: [
+          { name: "title", type: "select", options: ["Mr", "Mrs", "Miss", "Ms", "Dr", "Other"], admin: { width: "20%" } },
+          { name: "firstName", type: "text", required: true, admin: { width: "40%" } },
+          { name: "surname", type: "text", required: true, admin: { width: "40%" } },
+        ],
+      },
+      {
+        type: "row",
+        fields: [
+          {
+            name: "gender",
+            type: "select",
+            options: [
+              { label: "Male", value: "male" },
+              { label: "Female", value: "female" },
+              { label: "Other", value: "other" },
+              { label: "Prefer not to say", value: "not-said" },
+            ],
+            admin: { width: "34%" },
+          },
+          { name: "dateOfBirth", type: "date", admin: { width: "33%", date: { pickerAppearance: "dayOnly" } } },
+          { name: "username", type: "text", required: true, unique: true, admin: { width: "33%" } },
+        ],
+      },
+    ]),
     // ---- Address & contact -------------------------------------------------
-    { name: "address1", type: "text", label: "Address line 1" },
-    { name: "address2", type: "text", label: "Address line 2" },
-    {
-      type: "row",
-      fields: [
-        { name: "townCity", type: "text", admin: { width: "40%" } },
-        { name: "county", type: "text", admin: { width: "30%" } },
-        { name: "postcode", type: "text", admin: { width: "30%" } },
+    section("🏠 Address & contact", [
+      {
+        type: "row",
+        fields: [
+          { name: "address1", type: "text", label: "Address line 1", admin: { width: "50%" } },
+          { name: "address2", type: "text", label: "Address line 2", admin: { width: "50%" } },
+        ],
+      },
+      {
+        type: "row",
+        fields: [
+          { name: "townCity", type: "text", admin: { width: "30%" } },
+          { name: "county", type: "text", admin: { width: "20%" } },
+          { name: "postcode", type: "text", admin: { width: "20%" } },
+          { name: "telephone", type: "text", admin: { width: "30%" } },
+        ],
+      },
+    ]),
+    // ---- Proposers & consents ---------------------------------------------
+    section("🤝 Proposers", [proposerFields(1), proposerFields(2)], {
+      collapsed: true,
+      description: "The two current KMA members who proposed this applicant.",
+    }),
+    section(
+      "✅ Consents at application",
+      [
+        {
+          name: "consents",
+          type: "group",
+          label: false as never,
+          fields: [
+            { name: "accurate", type: "checkbox", label: "Confirmed information is accurate" },
+            { name: "terms", type: "checkbox", label: "Agreed to membership terms" },
+            { name: "privacy", type: "checkbox", label: "Agreed to privacy policy" },
+            { name: "marketing", type: "checkbox", label: "Opted in to news & community updates" },
+            { name: "recordedAt", type: "date", admin: { readOnly: true } },
+          ],
+        },
       ],
-    },
-    { name: "telephone", type: "text" },
-    // ---- Proposers ---------------------------------------------------------
-    proposerFields(1),
-    proposerFields(2),
-    // ---- Consents (timestamped at application) -----------------------------
-    {
-      name: "consents",
-      type: "group",
-      fields: [
-        { name: "accurate", type: "checkbox", label: "Confirmed information is accurate" },
-        { name: "terms", type: "checkbox", label: "Agreed to membership terms" },
-        { name: "privacy", type: "checkbox", label: "Agreed to privacy policy" },
-        { name: "marketing", type: "checkbox", label: "Opted in to news & community updates" },
-        { name: "recordedAt", type: "date", admin: { readOnly: true } },
-      ],
-    },
+      { collapsed: true },
+    ),
     // ---- Membership state (sidebar) ---------------------------------------
     {
       name: "status",
@@ -615,29 +633,32 @@ export const Members: CollectionConfig = {
     { name: "startDate", type: "date", label: "Membership start", admin: { position: "sidebar" } },
     { name: "expiryDate", type: "date", label: "Membership expiry", admin: { position: "sidebar" } },
     // ---- Decisions & payment ----------------------------------------------
-    {
-      name: "moreInfoRequest",
-      type: "textarea",
-      admin: {
-        description: "Shown/emailed to the applicant when status is set to “More information required”.",
-        condition: (data) => ["more-info-required", "pending-review"].includes(data?.status),
+    section("📝 Review & decision", [
+      {
+        name: "moreInfoRequest",
+        type: "textarea",
+        admin: {
+          description: "Shown/emailed to the applicant when status is set to “More information required”.",
+          condition: (data) => ["more-info-required", "pending-review"].includes(data?.status),
+        },
       },
-    },
-    {
-      name: "decisionReason",
-      type: "textarea",
-      admin: { description: "Internal record of why the application was approved/rejected (emailed on rejection)." },
-    },
-    {
-      name: "paymentReference",
-      type: "text",
-      admin: { readOnly: true, description: "The personal bank reference the member must use — generated on approval." },
-    },
+      {
+        name: "decisionReason",
+        type: "textarea",
+        admin: { description: "Internal record of why the application was approved/rejected (emailed on rejection)." },
+      },
+      {
+        name: "paymentReference",
+        type: "text",
+        admin: { readOnly: true, description: "The personal bank reference the member must use — generated on approval." },
+      },
+    ]),
     // ---- Fee & billing (pro-rata to the April renewal) ---------------------
+    section("💷 Fee & billing", [
     {
       name: "fee",
       type: "group",
-      label: "Fee & billing",
+      label: false as never,
       admin: {
         description:
           "Calculated automatically on approval: monthly rate × months remaining until the annual renewal month. Adjust the discount/waiver (with a reason) BEFORE approving to change what the member is asked to pay — every change is recorded in the audit log.",
@@ -687,86 +708,107 @@ export const Members: CollectionConfig = {
       name: "feeAudit",
       type: "array",
       label: "Fee audit trail",
-      admin: { readOnly: true, description: "Every change to the amounts — who and when. Written automatically." },
+      admin: {
+        readOnly: true,
+        initCollapsed: true,
+        description: "Every change to the amounts — who and when. Written automatically.",
+      },
       fields: [
         { name: "at", type: "date" },
         { name: "by", type: "text" },
         { name: "change", type: "text" },
       ],
     },
-    {
-      name: "communications",
-      type: "array",
-      admin: { readOnly: true, description: "Every email and reminder sent to this member, newest last." },
-      fields: [
-        { name: "at", type: "date" },
-        { name: "kind", type: "text" },
-        { name: "channel", type: "text" },
-        { name: "note", type: "text" },
+    ]),
+    // ---- Payments ----------------------------------------------------------
+    section("🧾 Payments", [
+      {
+        type: "row",
+        fields: [
+          { name: "reportedPaymentDate", type: "date", label: "Member says paid on", admin: { width: "34%", readOnly: true } },
+          { name: "reportedPaymentRef", type: "text", label: "Member's stated reference", admin: { width: "33%", readOnly: true } },
+          { name: "paymentConfirmedAt", type: "date", admin: { width: "33%", readOnly: true } },
+        ],
+      },
+      {
+        name: "proofOfPayment",
+        type: "upload",
+        relationTo: "media",
+        admin: { description: "Optional proof the member uploaded." },
+      },
+      {
+        name: "paymentHistory",
+        type: "array",
+        admin: { readOnly: true, initCollapsed: true, description: "Verified payments, newest last." },
+        fields: [
+          { name: "at", type: "date" },
+          { name: "amount", type: "number" },
+          { name: "reference", type: "text" },
+          { name: "confirmedBy", type: "text" },
+          { name: "note", type: "text" },
+        ],
+      },
+    ]),
+    // ---- Communications & reminders ---------------------------------------
+    section(
+      "💬 Communications & reminders",
+      [
+        {
+          name: "communications",
+          type: "array",
+          admin: { readOnly: true, initCollapsed: true, description: "Every email and reminder sent to this member, newest last." },
+          fields: [
+            { name: "at", type: "date" },
+            { name: "kind", type: "text" },
+            { name: "channel", type: "text" },
+            { name: "note", type: "text" },
+          ],
+        },
+        {
+          name: "remindersSent",
+          type: "array",
+          admin: { readOnly: true, initCollapsed: true, description: "Renewal reminders sent this membership cycle." },
+          fields: [
+            { name: "kind", type: "text" },
+            { name: "at", type: "date" },
+          ],
+        },
+        {
+          name: "lastReminderAt",
+          type: "date",
+          admin: { readOnly: true, description: "When the most recent payment/renewal reminder was sent — filter on this to see who has (not) been chased." },
+        },
       ],
-    },
-    {
-      type: "row",
-      fields: [
-        { name: "reportedPaymentDate", type: "date", label: "Member says paid on", admin: { width: "50%", readOnly: true } },
-        { name: "reportedPaymentRef", type: "text", label: "Member's stated reference", admin: { width: "50%", readOnly: true } },
-      ],
-    },
-    {
-      name: "proofOfPayment",
-      type: "upload",
-      relationTo: "media",
-      admin: { description: "Optional proof the member uploaded." },
-    },
-    { name: "paymentConfirmedAt", type: "date", admin: { readOnly: true } },
-    {
-      name: "paymentHistory",
-      type: "array",
-      admin: { readOnly: true, description: "Verified payments, newest last." },
-      fields: [
-        { name: "at", type: "date" },
-        { name: "amount", type: "number" },
-        { name: "reference", type: "text" },
-        { name: "confirmedBy", type: "text" },
-        { name: "note", type: "text" },
-      ],
-    },
+      { collapsed: true },
+    ),
     // ---- Staff-only bookkeeping -------------------------------------------
-    {
-      name: "internalNotes",
-      type: "array",
-      labels: { singular: "Note", plural: "Internal notes" },
-      admin: { description: "Never shown to the member." },
-      fields: [
-        { name: "note", type: "textarea", required: true },
-        { name: "by", type: "text" },
-        { name: "at", type: "date" },
+    section(
+      "🗒 Internal notes & history",
+      [
+        {
+          name: "internalNotes",
+          type: "array",
+          labels: { singular: "Note", plural: "Internal notes" },
+          admin: { initCollapsed: true, description: "Never shown to the member." },
+          fields: [
+            { name: "note", type: "textarea", required: true },
+            { name: "by", type: "text" },
+            { name: "at", type: "date" },
+          ],
+        },
+        {
+          name: "statusHistory",
+          type: "array",
+          admin: { readOnly: true, initCollapsed: true, description: "The full journey, oldest first." },
+          fields: [
+            { name: "status", type: "text" },
+            { name: "at", type: "date" },
+            { name: "by", type: "text" },
+          ],
+        },
       ],
-    },
-    {
-      name: "statusHistory",
-      type: "array",
-      admin: { readOnly: true, description: "The full journey, oldest first." },
-      fields: [
-        { name: "status", type: "text" },
-        { name: "at", type: "date" },
-        { name: "by", type: "text" },
-      ],
-    },
-    {
-      name: "remindersSent",
-      type: "array",
-      admin: { readOnly: true, description: "Renewal reminders sent this membership cycle." },
-      fields: [
-        { name: "kind", type: "text" },
-        { name: "at", type: "date" },
-      ],
-    },
-    {
-      name: "lastReminderAt",
-      type: "date",
-      admin: { readOnly: true, description: "When the most recent payment/renewal reminder was sent — filter on this to see who has (not) been chased." },
-    },
+      { collapsed: true },
+    ),
   ],
 };
 
@@ -781,74 +823,98 @@ export const MembershipSettings: GlobalConfig = {
   },
   access: { read: isMembershipStaff, update: isAdmin },
   fields: [
-    {
-      type: "row",
-      fields: [
-        {
-          name: "annualFee",
-          type: "select",
-          defaultValue: "12",
-          options: ONE_TO_TWELVE,
-          admin: { width: "25%", description: "Annual fee in £ (1–12)." },
-        },
-        {
-          name: "membershipPeriodMonths",
-          type: "select",
-          defaultValue: "12",
-          options: ONE_TO_TWELVE,
-          admin: { width: "25%", description: "Membership duration in months (1–12)." },
-        },
-        {
-          name: "monthlyRate",
-          type: "number",
-          min: 0,
-          admin: {
-            width: "25%",
-            description: "£ per month for pro-rata joiners. Leave empty to use annual fee ÷ 12.",
-          },
-        },
-        {
-          name: "renewalMonth",
-          type: "select",
-          defaultValue: "4",
-          options: [
-            "January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December",
-          ].map((m, i) => ({ label: m, value: String(i + 1) })),
-          admin: {
-            width: "25%",
-            description: "ALL memberships renew on the 1st of this month. New joiners pay pro-rata for the months remaining.",
-          },
-        },
-      ],
-    },
-    {
-      name: "bank",
-      type: "group",
-      label: "KMA bank account (shown to approved applicants only)",
-      fields: [
-        { name: "accountName", type: "text" },
+    section(
+      "💷 Fees & annual renewal",
+      [
         {
           type: "row",
           fields: [
-            { name: "sortCode", type: "text", admin: { width: "50%", description: "e.g. 12-34-56" } },
-            { name: "accountNumber", type: "text", admin: { width: "50%" } },
+            {
+              name: "annualFee",
+              type: "select",
+              label: "Annual fee (£)",
+              defaultValue: "12",
+              options: ONE_TO_TWELVE,
+              admin: { width: "50%", description: "The full-year fee — pick 1 to 12." },
+            },
+            {
+              name: "membershipPeriodMonths",
+              type: "select",
+              label: "Membership duration (months)",
+              defaultValue: "12",
+              options: ONE_TO_TWELVE,
+              admin: { width: "50%", description: "How long a membership runs — pick 1 to 12." },
+            },
+          ],
+        },
+        {
+          type: "row",
+          fields: [
+            {
+              name: "monthlyRate",
+              type: "number",
+              label: "Monthly rate (£)",
+              min: 0,
+              admin: {
+                width: "50%",
+                description: "What pro-rata joiners pay per month. Leave empty to use annual fee ÷ 12.",
+              },
+            },
+            {
+              name: "renewalMonth",
+              type: "select",
+              label: "Renewal month",
+              defaultValue: "4",
+              options: [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December",
+              ].map((m, i) => ({ label: m, value: String(i + 1) })),
+              admin: {
+                width: "50%",
+                description: "ALL memberships renew on the 1st of this month — new joiners pay only for the months remaining.",
+              },
+            },
           ],
         },
       ],
-    },
-    { name: "proofOfPaymentEnabled", type: "checkbox", defaultValue: true, label: "Let members upload proof of payment" },
-    {
-      name: "benefits",
-      type: "richText",
-      label: "Rights & benefits of membership (public)",
-      admin: { description: "Shown on the public membership page — edit freely, the wording is yours." },
-    },
-    {
-      name: "terms",
-      type: "richText",
-      label: "Membership terms (public)",
-      admin: { description: "What applicants agree to when they tick “I agree to the membership terms”." },
-    },
+      {
+        description:
+          "Example: April renewal, £12 a year → someone joining in December pays 4 months × £1 = £4, then renews with everyone else on 1 April.",
+      },
+    ),
+    section("🏦 Bank account for fee payments", [
+      {
+        name: "bank",
+        type: "group",
+        label: false as never,
+        fields: [
+          { name: "accountName", type: "text" },
+          {
+            type: "row",
+            fields: [
+              { name: "sortCode", type: "text", admin: { width: "50%", description: "e.g. 12-34-56" } },
+              { name: "accountNumber", type: "text", admin: { width: "50%" } },
+            ],
+          },
+        ],
+      },
+      { name: "proofOfPaymentEnabled", type: "checkbox", defaultValue: true, label: "Let members upload proof of payment" },
+    ], {
+      description: "Shown ONLY to approved applicants who are due to pay — never on the public website.",
+    }),
+    section("📣 Public wording", [
+      {
+        name: "benefits",
+        type: "richText",
+        label: "Rights & benefits of membership",
+        admin: { description: "Shown on the public membership page — edit freely, the wording is yours." },
+      },
+      {
+        name: "terms",
+        type: "richText",
+        label: "Membership terms",
+        admin: { description: "What applicants agree to when they tick “I agree to the membership terms”." },
+      },
+    ]),
   ],
 };

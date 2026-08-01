@@ -1,6 +1,7 @@
 import path from "path";
 import type { CollectionConfig, Payload, Where } from "payload";
 import { isAdmin, isMembershipStaff, userIsMembershipStaff } from "./access";
+import { section } from "./sections";
 
 /* ============================================================================
    Members-only portal content — documents and notices that ONLY approved,
@@ -50,9 +51,21 @@ export const MemberDocumentCategories: CollectionConfig = {
   },
   defaultSort: "order",
   fields: [
-    { name: "name", type: "text", required: true },
-    { name: "description", type: "text", admin: { description: "One line shown under the category heading on the portal." } },
-    { name: "order", type: "number", defaultValue: 0, admin: { description: "Sort position on the portal — lowest first." } },
+    section("🗂 Category", [
+      {
+        type: "row",
+        fields: [
+          { name: "name", type: "text", required: true, admin: { width: "60%" } },
+          {
+            name: "order",
+            type: "number",
+            defaultValue: 0,
+            admin: { width: "40%", description: "Sort position on the portal — lowest first." },
+          },
+        ],
+      },
+      { name: "description", type: "text", admin: { description: "One line shown under the category heading on the portal." } },
+    ]),
   ],
 };
 
@@ -91,44 +104,62 @@ export const MemberDocuments: CollectionConfig = {
   },
   defaultSort: "order",
   fields: [
-    { name: "title", type: "text", required: true, admin: { description: "Shown on the portal card, e.g. “Approved Accounts — Year End 2025”." } },
-    {
-      name: "category",
-      type: "relationship",
-      relationTo: "member-document-categories" as never,
-      required: true,
-      admin: { description: "Which portal section this appears under. Add new sections in Portal Categories." },
-    },
-    {
-      type: "row",
-      fields: [
-        { name: "year", type: "text", admin: { width: "34%", description: "e.g. 2025" } },
-        { name: "version", type: "text", admin: { width: "33%", description: "e.g. v1.0" } },
-        { name: "publishedDate", type: "date", admin: { width: "33%", date: { pickerAppearance: "dayOnly" } } },
-      ],
-    },
-    {
-      type: "row",
-      fields: [
+    section("📄 Document", [
+      {
+        type: "row",
+        fields: [
+          {
+            name: "title",
+            type: "text",
+            required: true,
+            admin: { width: "60%", description: "Shown on the portal card, e.g. “Approved Accounts — Year End 2025”." },
+          },
+          {
+            name: "category",
+            type: "relationship",
+            relationTo: "member-document-categories" as never,
+            required: true,
+            admin: { width: "40%", description: "The portal section it appears under — add more in Portal Categories." },
+          },
+        ],
+      },
+      {
+        type: "row",
+        fields: [
+          { name: "year", type: "text", admin: { width: "34%", description: "e.g. 2025" } },
+          { name: "version", type: "text", admin: { width: "33%", description: "e.g. v1.0" } },
+          { name: "publishedDate", type: "date", admin: { width: "33%", date: { pickerAppearance: "dayOnly" } } },
+        ],
+      },
+    ]),
+    section(
+      "🔒 Visibility",
+      [
         {
-          name: "visibility",
-          type: "select",
-          defaultValue: "members",
-          options: [
-            { label: "All approved members", value: "members" },
-            { label: "Staff only (hidden from the portal)", value: "staff" },
+          type: "row",
+          fields: [
+            {
+              name: "visibility",
+              type: "select",
+              defaultValue: "members",
+              options: [
+                { label: "All approved members", value: "members" },
+                { label: "Staff only (hidden from the portal)", value: "staff" },
+              ],
+              admin: { width: "40%", description: "Who may see and download this document." },
+            },
+            {
+              name: "published",
+              type: "checkbox",
+              defaultValue: true,
+              admin: { width: "30%", description: "Untick to hide without deleting." },
+            },
+            { name: "order", type: "number", defaultValue: 0, admin: { width: "30%", description: "Sort position — lowest first." } },
           ],
-          admin: { width: "40%", description: "Who may see and download this document." },
         },
-        {
-          name: "published",
-          type: "checkbox",
-          defaultValue: true,
-          admin: { width: "30%", description: "Untick to hide without deleting." },
-        },
-        { name: "order", type: "number", defaultValue: 0, admin: { width: "30%", description: "Sort position — lowest first." } },
       ],
-    },
+      { description: "Every download is checked against the signed-in member — these files have no public link." },
+    ),
   ],
 };
 
@@ -154,16 +185,20 @@ export const MemberNotices: CollectionConfig = {
   },
   defaultSort: "-publishedDate",
   fields: [
-    { name: "title", type: "text", required: true },
-    { name: "body", type: "richText" },
-    {
-      type: "row",
-      fields: [
-        { name: "publishedDate", type: "date", defaultValue: () => new Date().toISOString(), admin: { width: "40%", date: { pickerAppearance: "dayOnly" } } },
-        { name: "pinned", type: "checkbox", defaultValue: false, admin: { width: "30%", description: "Keep at the top of the portal." } },
-        { name: "published", type: "checkbox", defaultValue: true, admin: { width: "30%", description: "Untick to hide from members." } },
-      ],
-    },
+    section("📣 Notice", [
+      { name: "title", type: "text", required: true },
+      { name: "body", type: "richText" },
+    ]),
+    section("🔒 Publication", [
+      {
+        type: "row",
+        fields: [
+          { name: "publishedDate", type: "date", defaultValue: () => new Date().toISOString(), admin: { width: "40%", date: { pickerAppearance: "dayOnly" } } },
+          { name: "pinned", type: "checkbox", defaultValue: false, admin: { width: "30%", description: "Keep at the top of the portal." } },
+          { name: "published", type: "checkbox", defaultValue: true, admin: { width: "30%", description: "Untick to hide from members." } },
+        ],
+      },
+    ]),
   ],
 };
 

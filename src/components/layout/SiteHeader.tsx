@@ -49,12 +49,12 @@ export default async function SiteHeader() {
           <Brand />
           <DesktopNav items={menu} />
           <div className="header-cta">
-            <Link className="btn btn-outline desktop-only member-login-btn" href="/membership/account">
+            <Link className="btn desktop-only member-login-btn" href="/membership/account" aria-label="Member login">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
               </svg>
-              Member login
+              <span className="member-login-label">Member login</span>
             </Link>
             <Link className="btn btn-gold desktop-only" href="/donate">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C3322" strokeWidth="2" aria-hidden>

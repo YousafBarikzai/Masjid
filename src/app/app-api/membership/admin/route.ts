@@ -57,7 +57,13 @@ export async function GET(req: NextRequest) {
     const fmt = (d: Date | string) =>
       new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
     const f = (member?.fee as Record<string, any>) || {};
-    const charged = Number(f.amountDue) > 0; // a charge has been fixed (approval or renewal)
+    // A charge is FIXED once the application has passed approval (or a renewal
+    // cycle opened); before that the amounts are a live preview of today.
+    const charged =
+      Number(f.amountDue) > 0 &&
+      ["approved-payment-required", "payment-verification", "active", "renewal-due", "renewal-pending", "expired"].includes(
+        String(member?.status),
+      );
     const quote = prorate(settings, new Date());
     const monthlyRate = charged ? Number(f.monthlyRate) || quote.monthlyRate : quote.monthlyRate;
     const monthsCharged = charged ? Number(f.monthsCharged) || quote.monthsCharged : quote.monthsCharged;
