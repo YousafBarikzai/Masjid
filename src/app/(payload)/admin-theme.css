@@ -252,7 +252,11 @@ textarea,
    screen reads as: what is it → how it looks → the content → where it shows.
    ============================================================================ */
 
-/* The card shell (collapsible sections and group sections alike). */
+/* The card shell (collapsible sections and group sections alike).
+   NOTE: overflow must stay VISIBLE — with `hidden`, any select/dropdown menu
+   near the bottom of a card gets clipped at the card edge (e.g. the 1–12 fee
+   dropdowns showed only up to 9). The rounded corners are preserved by
+   rounding the header strip itself below. */
 .collapsible-field.kma-section,
 .group-field.kma-section {
   background: var(--theme-elevation-0);
@@ -260,7 +264,7 @@ textarea,
   border-radius: 14px;
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.05);
   margin-bottom: 22px;
-  overflow: hidden;
+  overflow: visible;
 }
 [data-theme="dark"] .collapsible-field.kma-section,
 [data-theme="dark"] .group-field.kma-section {
@@ -268,11 +272,13 @@ textarea,
   border-color: var(--theme-elevation-150);
 }
 
-/* Card header: the collapsible's toggle strip. */
+/* Card header: the collapsible's toggle strip. Rounded to match the card
+   shell (the shell no longer clips it — see the overflow note above). */
 .kma-section .collapsible__header-wrap {
   background: var(--theme-elevation-50);
   border-bottom: 1px solid var(--theme-elevation-100);
   padding: 4px 8px;
+  border-radius: 13px 13px 0 0;
 }
 .kma-section .collapsible-field__row-label-wrap,
 .kma-section .collapsible__header-wrap .row-label {
@@ -281,8 +287,12 @@ textarea,
   letter-spacing: -0.01em;
   color: var(--theme-elevation-800);
 }
-/* Collapsed cards keep the header strip but lose the divider line. */
-.kma-section .collapsible--collapsed .collapsible__header-wrap { border-bottom: none; }
+/* Collapsed cards keep the header strip but lose the divider line; the strip
+   is the whole visible card then, so round all four corners. */
+.kma-section .collapsible--collapsed .collapsible__header-wrap {
+  border-bottom: none;
+  border-radius: 13px;
+}
 
 /* Card body. */
 .kma-section .collapsible__content { padding: 22px 24px 8px; }
@@ -342,4 +352,10 @@ textarea,
   }
   .collapsible-field.kma-section,
   .group-field.kma-section { border-radius: 12px; margin-bottom: 16px; }
+}
+
+/* Select menus inside section cards: tall enough that a 12-option list (the
+   1–12 fee dropdowns, the month picker) shows in full with no inner scroll. */
+.kma-section .rs__menu-list {
+  max-height: 460px;
 }
