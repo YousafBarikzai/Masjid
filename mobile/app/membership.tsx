@@ -1,14 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { View, Text, TextInput, StyleSheet, Pressable, ScrollView, Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 import { Page, Card, Section, GoldButton, tap } from "../src/ui";
 import { colors, radius, space, type as t } from "../src/theme";
 import {
+  absUrl,
   membershipApply,
   membershipLogin,
   membershipMe,
+  membershipPortal,
   membershipReportPayment,
   type MembershipMember,
+  type PortalCategory,
+  type PortalDocument,
+  type PortalNotice,
 } from "../src/api";
 
 /* KMA membership in the app — the same journey, statuses and endpoints as the
@@ -41,6 +48,118 @@ function strength(p: string): { score: number; label: string } {
 
 function fmt(d?: string | null): string {
   return d ? new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—";
+}
+
+/** Plain text from a Lexical rich-text body (member notices are simple). */
+function lexicalToText(body: unknown): string {
+  const walk = (n: unknown): string => {
+    const node = n as { text?: string; children?: unknown[] } | null;
+    if (!node) return "";
+    if (typeof node.text === "string") return node.text;
+    return (node.children ?? []).map(walk).join("");
+  };
+  const root = (body as { root?: { children?: unknown[] } } | null)?.root;
+  return (root?.children ?? []).map((c) => walk(c)).filter(Boolean).join("\n");
+}
+
+/* -------------------------- Members-only portal --------------------------- */
+
+function MembersArea({ token }: { token: string }) {
+  const [cats, setCats] = useState<PortalCategory[] | null>(null);
+  const [notices, setNotices] = useState<PortalNotice[]>([]);
+  const [err, setErr] = useState("");
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  useEffect(() => {
+    membershipPortal(token)
+      .then((d) => {
+        if (d.ok) {
+          setCats(d.categories ?? []);
+          setNotices(d.notices ?? []);
+        } else setErr(d.error || "The members' area could not be loaded.");
+      })
+      .catch(() => setErr("The members' area could not be loaded — pull down to retry."));
+  }, [token]);
+
+  // Authenticated download → native share/open sheet. The file endpoint
+  // re-checks the member's session on every request; there is no public URL.
+  async function openDoc(doc: PortalDocument) {
+    tap();
+    setBusyId(String(doc.id));
+    try {
+      const dest = `${FileSystem.cacheDirectory}${doc.filename || `document-${doc.id}.pdf`}`;
+      const res = await FileSystem.downloadAsync(absUrl(doc.url), dest, {
+        headers: { Authorization: `JWT ${token}` },
+      });
+      if (res.status !== 200) throw new Error(String(res.status));
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(res.uri, { mimeType: doc.mimeType || "application/pdf", dialogTitle: doc.title });
+      }
+    } catch {
+      setErr("That download didn't work — please try again.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  if (err) return (
+    <>
+      <Section title="Members' area" />
+      <Card><Text style={s.hint}>{err}</Text></Card>
+    </>
+  );
+  if (!cats) return (
+    <>
+      <Section title="Members' area" />
+      <Card><Text style={s.hint}>Loading…</Text></Card>
+    </>
+  );
+
+  return (
+    <>
+      {notices.length > 0 && (
+        <>
+          <Section title="Member notices" />
+          <Card style={{ gap: space.md }}>
+            {notices.map((n) => (
+              <View key={n.id}>
+                <View style={s.noticeHead}>
+                  <Text style={s.noticeTitle}>{n.pinned ? "📌 " : ""}{n.title}</Text>
+                  {n.publishedDate ? <Text style={s.noticeDate}>{fmt(n.publishedDate)}</Text> : null}
+                </View>
+                {n.body ? <Text style={s.noticeBody}>{lexicalToText(n.body)}</Text> : null}
+              </View>
+            ))}
+          </Card>
+        </>
+      )}
+      {(cats ?? []).map((c) => (
+        <View key={c.id}>
+          <Section title={c.name} />
+          <Card style={{ gap: space.sm }}>
+            {c.description ? <Text style={s.hint}>{c.description}</Text> : null}
+            {c.documents.map((doc) => (
+              <Pressable key={doc.id} style={s.docRow} onPress={() => openDoc(doc)} disabled={busyId === String(doc.id)}>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.docTitle}>{doc.title}</Text>
+                  <Text style={s.hint}>
+                    {[doc.year, doc.version, fmt(doc.publishedDate)].filter(Boolean).join(" · ")}
+                  </Text>
+                </View>
+                <Text style={s.docBtn}>{busyId === String(doc.id) ? "…" : "⬇"}</Text>
+              </Pressable>
+            ))}
+          </Card>
+        </View>
+      ))}
+      {cats && cats.length === 0 && notices.length === 0 && (
+        <>
+          <Section title="Members' area" />
+          <Card><Text style={s.hint}>No members-only documents or notices have been published yet.</Text></Card>
+        </>
+      )}
+    </>
+  );
 }
 
 function Input({
@@ -487,6 +606,10 @@ export default function MembershipScreen() {
               </>
             )}
 
+            {["active", "renewal-due", "renewal-pending"].includes(member.status) && token ? (
+              <MembersArea token={token} />
+            ) : null}
+
             {member.paymentHistory.length > 0 && (
               <>
                 <Section title="Payment history" />
@@ -595,5 +718,19 @@ const s = StyleSheet.create({
   cardK: { color: "rgba(244,239,226,0.6)", fontSize: 9, fontWeight: "700", letterSpacing: 1 },
   cardV: { color: colors.text, fontWeight: "800", marginTop: 2 },
   histRow: { color: colors.text, fontSize: t.small, marginBottom: 6 },
+  noticeHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 8 },
+  noticeTitle: { color: colors.text, fontSize: t.body, fontWeight: "700", flex: 1 },
+  noticeDate: { color: colors.textDim, fontSize: t.small },
+  noticeBody: { color: colors.textDim, fontSize: t.small, marginTop: 4, lineHeight: 19 },
+  docRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "rgba(244,239,226,0.14)",
+  },
+  docTitle: { color: colors.text, fontSize: t.body, fontWeight: "600" },
+  docBtn: { color: colors.gold, fontSize: 20, paddingHorizontal: 6 },
   space: { height: space.lg },
 });

@@ -318,3 +318,42 @@ export async function membershipReportPayment(
   });
   return (await res.json()) as never;
 }
+
+/* ------------------------- Members-only portal ---------------------------- */
+
+export type PortalDocument = {
+  id: number | string;
+  title: string;
+  year: string | null;
+  version: string | null;
+  publishedDate: string | null;
+  filename: string;
+  mimeType: string;
+  filesize: number;
+  url: string; // access-controlled — fetch WITH the member token
+};
+
+export type PortalCategory = {
+  id: number | string;
+  name: string;
+  description: string;
+  documents: PortalDocument[];
+};
+
+export type PortalNotice = {
+  id: number | string;
+  title: string;
+  body: unknown;
+  publishedDate: string | null;
+  pinned: boolean;
+};
+
+/** The members-only portal feed (approved members only — 403 otherwise). */
+export async function membershipPortal(
+  token: string,
+): Promise<{ ok: boolean; categories?: PortalCategory[]; notices?: PortalNotice[]; error?: string }> {
+  const res = await fetch(`${apiBase}/app-api/membership/portal`, {
+    headers: { Authorization: `JWT ${token}` },
+  });
+  return (await res.json()) as never;
+}
