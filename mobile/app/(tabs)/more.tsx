@@ -117,6 +117,13 @@ export default function More() {
         />
         <Divider />
         <ListRow
+          icon="🤲"
+          title="Volunteer with us"
+          sub="Tell us how you'd like to help — two minutes to register"
+          onPress={() => router.push("/volunteer" as never)}
+        />
+        <Divider />
+        <ListRow
           icon="💌"
           title="Email updates"
           sub="Join the mosque's mailing list — news, events & Ramadan"

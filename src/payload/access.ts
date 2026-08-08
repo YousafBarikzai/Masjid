@@ -1,6 +1,15 @@
 import type { Access, FieldAccess } from "payload";
 
-type Role = "super-admin" | "admin" | "editor" | "updater" | "prayer-times-manager" | "contributor" | "membership-manager";
+type Role =
+  | "super-admin"
+  | "admin"
+  | "editor"
+  | "updater"
+  | "prayer-times-manager"
+  | "contributor"
+  | "membership-manager"
+  | "volunteer-manager"
+  | "volunteer-viewer";
 
 function hasRole(user: unknown, ...roles: Role[]): boolean {
   const u = user as { roles?: Role[] } | null | undefined;
@@ -14,6 +23,24 @@ export const isMembershipStaff: Access = ({ req: { user } }) =>
 /** Same check, usable outside Payload's Access signature. */
 export const userIsMembershipStaff = (user: unknown): boolean =>
   hasRole(user, "super-admin", "admin", "membership-manager");
+
+/** Staff who may SEE volunteers (viewers included — personal data, read-only). */
+export const isVolunteerStaff: Access = ({ req: { user } }) =>
+  hasRole(user, "super-admin", "admin", "volunteer-manager", "volunteer-viewer");
+
+/** Staff who may MANAGE volunteers (status, notes, contact, categories). */
+export const isVolunteerManager: Access = ({ req: { user } }) =>
+  hasRole(user, "super-admin", "admin", "volunteer-manager");
+
+/** Boolean forms for use inside hooks/components. */
+export const userIsVolunteerStaff = (user: unknown): boolean =>
+  hasRole(user, "super-admin", "admin", "volunteer-manager", "volunteer-viewer");
+export const userIsVolunteerManager = (user: unknown): boolean =>
+  hasRole(user, "super-admin", "admin", "volunteer-manager");
+
+/** Field-level: volunteer managers only (internal notes, safeguarding). */
+export const isVolunteerManagerFieldLevel: FieldAccess = ({ req: { user } }) =>
+  hasRole(user, "super-admin", "admin", "volunteer-manager");
 
 /** Anyone (public read for site content). */
 export const anyone: Access = () => true;

@@ -60,6 +60,7 @@ export const nav: NavItem[] = [
     href: "/resources",
     children: [
       { label: "Membership Form", href: "/membership" },
+      { label: "Volunteer With Us", href: "/volunteer" },
       { label: "Data Policy", href: "/resources/data-policy" },
       { label: "Right of Access Request", href: "/resources/right-of-access-request" },
       { label: "AGM Meeting Minutes", href: "/resources/agm-minutes" },

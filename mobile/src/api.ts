@@ -357,3 +357,52 @@ export async function membershipPortal(
   });
   return (await res.json()) as never;
 }
+
+/* ------------------------------ Volunteering ------------------------------ */
+
+export type VolunteerCat = {
+  id: number | string;
+  name: string;
+  audience: string;
+  safeguarding: boolean;
+  requiresDbs: boolean;
+  popular: boolean;
+};
+export type VolunteerArea = {
+  id: number | string;
+  name: string;
+  icon: string;
+  description: string;
+  categories: VolunteerCat[];
+};
+export type VolunteerMeta = {
+  ok: boolean;
+  areas: VolunteerArea[];
+  options: {
+    ageGroups: string[];
+    days: string[];
+    times: string[];
+    frequencies: string[];
+    languages: string[];
+    contactMethods: Array<{ label: string; value: string }>;
+  };
+};
+
+/** The CMS-driven volunteer form structure — same feed as the website. */
+export async function volunteerMeta(): Promise<VolunteerMeta> {
+  const res = await fetch(`${apiBase}/app-api/volunteer/meta`);
+  return (await res.json()) as VolunteerMeta;
+}
+
+/** Submit a volunteer registration to the SAME central database as the
+ *  website — one CMS Volunteers module for every platform. */
+export async function volunteerRegister(
+  body: Record<string, unknown>,
+): Promise<{ ok: boolean; duplicate?: boolean; error?: string; errors?: Record<string, string> }> {
+  const res = await fetch(`${apiBase}/app-api/volunteer/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return (await res.json()) as never;
+}

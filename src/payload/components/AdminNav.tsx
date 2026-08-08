@@ -60,6 +60,8 @@ const CONTENT_CREATE = [...EDITORS, "contributor"]; // may create pages/posts (u
 const PRAYER = [...ADMINS, "prayer-times-manager", "editor"];
 const PRAYER_CREATE = [...ADMINS, "prayer-times-manager"];
 const MEMBERSHIP = [...ADMINS, "membership-manager"];
+const VOLUNTEERS = [...ADMINS, "volunteer-manager", "volunteer-viewer"];
+const VOLUNTEERS_MANAGE = [...ADMINS, "volunteer-manager"];
 
 const GROUPS: Group[] = [
   {
@@ -123,6 +125,17 @@ const GROUPS: Group[] = [
       { label: "Portal categories", href: col("member-document-categories"), addHref: add("member-document-categories"), create: MEMBERSHIP, hint: "The sections of the members portal" },
       { label: "Member notices", href: col("member-notices"), addHref: add("member-notices"), create: MEMBERSHIP, hint: "Announcements only members can see" },
       { label: "Membership settings", href: glob("membership-settings"), hint: "Fee, bank account, period, wording", view: ADMINS },
+    ],
+  },
+  {
+    key: "volunteers",
+    label: "Volunteers",
+    icon: "🤲",
+    view: VOLUNTEERS,
+    items: [
+      { label: "Volunteers", href: col("volunteers"), hint: "Everyone who registered — find, review & contact" },
+      { label: "Volunteer activities", href: col("volunteer-categories"), addHref: add("volunteer-categories"), create: VOLUNTEERS_MANAGE, hint: "The options on the volunteer form" },
+      { label: "Volunteer areas", href: col("volunteer-category-groups"), addHref: add("volunteer-category-groups"), create: VOLUNTEERS_MANAGE, hint: "The form's sections (Events, Ramadan…)" },
     ],
   },
   {

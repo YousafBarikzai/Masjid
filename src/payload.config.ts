@@ -38,6 +38,7 @@ import {
 import { AuditLog, withAudit } from "./payload/audit";
 import { Members, MembershipSettings } from "./payload/membership";
 import { MemberDocumentCategories, MemberDocuments, MemberNotices, seedMemberPortal } from "./payload/member-portal";
+import { Volunteers, VolunteerCategories, VolunteerCategoryGroups, seedVolunteerCategories } from "./payload/volunteers";
 import { ResourceDocuments } from "./payload/documents";
 import { Screens } from "./payload/screens";
 import { withHelp, withHelpGlobal } from "./payload/help";
@@ -179,6 +180,9 @@ export default buildConfig({
     withHelp(withAudit(MemberDocuments)),
     withHelp(withAudit(MemberDocumentCategories)),
     withHelp(withAudit(MemberNotices)),
+    withHelp(withAudit(Volunteers)),
+    withHelp(withAudit(VolunteerCategories)),
+    withHelp(withAudit(VolunteerCategoryGroups)),
     withHelp(withAudit(ResourceDocuments)),
     withHelp(AuditLog),
   ],
@@ -273,19 +277,22 @@ export default buildConfig({
         await payload.updateGlobal({ slug: "main-menu" as never, data: { items: full } as never });
         payload.logger.info("Seeded the full site menu (incl. Resources → Membership Form).");
       } else {
-        // Admin-managed menu: just make sure membership is reachable.
-        const has = items.some(
-          (i) => i.url === "/membership" || (i.children ?? []).some((c) => c.url === "/membership"),
-        );
-        if (!has) {
+        // Admin-managed menu: just make sure membership + volunteering are
+        // reachable.
+        let changed = false;
+        const ensure = (url: string, label: string) => {
+          const has = items.some((i) => i.url === url || (i.children ?? []).some((c) => c.url === url));
+          if (has) return;
           const resources = items.find((i) => /resources/i.test(String(i.label)) && Array.isArray(i.children));
-          if (resources) {
-            resources.children = [...(resources.children ?? []), { label: "Membership Form", url: "/membership" }];
-          } else {
-            items.push({ label: "Membership", url: "/membership" });
-          }
+          if (resources) resources.children = [...(resources.children ?? []), { label, url }];
+          else items.push({ label, url });
+          changed = true;
+        };
+        ensure("/membership", "Membership Form");
+        ensure("/volunteer", "Volunteer With Us");
+        if (changed) {
           await payload.updateGlobal({ slug: "main-menu" as never, data: { items } as never });
-          payload.logger.info("Added “Membership Form” to the site menu.");
+          payload.logger.info("Added membership/volunteering links to the site menu.");
         }
       }
     } catch {
@@ -420,6 +427,14 @@ export default buildConfig({
       await seedMemberPortal(payload);
     } catch (err) {
       payload.logger.warn(`Member portal seed failed: ${(err as Error).message}`);
+    }
+
+    // Volunteer areas & activities — seeded once (reviewed set with
+    // safeguarding/visibility flags); admins own them from then on.
+    try {
+      await seedVolunteerCategories(payload);
+    } catch (err) {
+      payload.logger.warn(`Volunteer category seed failed: ${(err as Error).message}`);
     }
 
     // Optional: provision a Super Admin login from env vars, so there's a
