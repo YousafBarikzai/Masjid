@@ -34,6 +34,7 @@ const NATIVE: { test: RegExp; to: (m: RegExpMatchArray) => string }[] = [
   { test: /^\/?(tasbih|tasbeeh|dhikr)\/?$/i, to: () => "/tasbih" },
   { test: /^\/?(newsletter|subscribe|mailing-list)\/?$/i, to: () => "/newsletter" },
   { test: /^\/?membership(\/.*)?$/i, to: () => "/membership" },
+  { test: /^\/?volunteer(ing)?(\/.*)?$/i, to: () => "/volunteer" },
   { test: /^\/?khutbahs?\/([\w-]+)\/?$/i, to: (m) => `/khutbah/${m[1]}` },
   { test: /^\/?(mosques|nearby-mosques|find-a-mosque|nearby)\/?$/i, to: () => "/mosques" },
   { test: /^\/?media\/?$/i, to: () => "/media" },

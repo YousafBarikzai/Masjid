@@ -52,3 +52,17 @@ export function PaymentStatusCell({ cellData }: { cellData?: string }) {
   const t = PAY_TONES[String(cellData)] ?? { bg: "#f0efeb", fg: "#6c6557", label: String(cellData || "—") };
   return <Chip {...t} />;
 }
+
+const VOL_TONES: Record<string, { bg: string; fg: string; label: string }> = {
+  new: { bg: "#e7eef8", fg: "#1f4d8f", label: "New" },
+  reviewed: { bg: "#efe9f7", fg: "#5b3a8e", label: "Reviewed" },
+  approved: { bg: "#e2f0e9", fg: "#156146", label: "Approved" },
+  active: { bg: "#e7f4ec", fg: "#0f6a45", label: "Active" },
+  "follow-up": { bg: "#fdf1de", fg: "#8a5a00", label: "Follow-up" },
+  inactive: { bg: "#f0efeb", fg: "#6c6557", label: "Inactive" },
+};
+
+export function VolunteerStatusCell({ cellData }: { cellData?: string }) {
+  const t = VOL_TONES[String(cellData)] ?? { bg: "#f0efeb", fg: "#6c6557", label: String(cellData || "—") };
+  return <Chip {...t} />;
+}

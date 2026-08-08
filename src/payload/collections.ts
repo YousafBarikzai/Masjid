@@ -80,6 +80,8 @@ export const Users: CollectionConfig = {
         { label: "Contributor — write drafts, an editor publishes", value: "contributor" },
         { label: "Prayer Times Manager — timetable & Jumuʿah only", value: "prayer-times-manager" },
         { label: "Membership Manager — applications, payments & renewals", value: "membership-manager" },
+        { label: "Volunteer Manager — volunteers, categories & contact", value: "volunteer-manager" },
+        { label: "Volunteer Viewer — see volunteers, read-only", value: "volunteer-viewer" },
       ],
     },
   ],
