@@ -406,3 +406,120 @@ export async function volunteerRegister(
   });
   return (await res.json()) as never;
 }
+
+/* ------------------------------ Nikah service ----------------------------- */
+
+export type NikahCard = {
+  id: number | string;
+  reference: string;
+  age: number | null;
+  area: string;
+  ethnicity: string;
+  languages: string;
+  maritalStatus: string;
+  hasChildren: boolean;
+  practising: string;
+  education: string;
+  profession: string;
+  heightCm: number | null;
+  timeframe: string;
+  willingToRelocate: boolean;
+};
+export type NikahProfileFull = NikahCard & {
+  childrenDetails: string;
+  background: string;
+  faithNotes: string;
+  aboutMe: string;
+  familyBackground: string;
+  relocateWhere: string;
+  lookingFor: string;
+  essentials: string;
+};
+export type NikahMe = {
+  id: number | string;
+  firstName: string;
+  gender: string;
+  status: string;
+  statusLabel: string;
+  reference: string | null;
+  profileHidden: boolean;
+  editable: Record<string, unknown>;
+};
+export type NikahInterestVM = {
+  id: number | string;
+  direction: string;
+  status: string;
+  createdAt: string;
+  card: NikahCard | null;
+};
+
+export async function nikahApply(body: Record<string, unknown>): Promise<{
+  ok: boolean; duplicate?: boolean; error?: string; errors?: Record<string, string>;
+}> {
+  const res = await fetch(`${apiBase}/app-api/nikah/apply`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return (await res.json()) as never;
+}
+
+export async function nikahLogin(email: string, password: string): Promise<{
+  ok: boolean; token?: string; me?: NikahMe; error?: string;
+}> {
+  const res = await fetch(`${apiBase}/app-api/nikah/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  return (await res.json()) as never;
+}
+
+export async function nikahMe(token: string): Promise<{ ok: boolean; me?: NikahMe }> {
+  const res = await fetch(`${apiBase}/app-api/nikah/me`, { headers: { Authorization: `JWT ${token}` } });
+  return (await res.json()) as never;
+}
+
+export async function nikahBrowse(
+  token: string,
+  filters: Record<string, string>,
+): Promise<{ ok: boolean; cards?: NikahCard[]; notApproved?: boolean; error?: string }> {
+  const q = new URLSearchParams();
+  Object.entries(filters).forEach(([k, v]) => v && q.set(k, v));
+  const res = await fetch(`${apiBase}/app-api/nikah/browse?${q}`, { headers: { Authorization: `JWT ${token}` } });
+  return (await res.json()) as never;
+}
+
+export async function nikahProfile(token: string, id: number | string): Promise<{ ok: boolean; profile?: NikahProfileFull; error?: string }> {
+  const res = await fetch(`${apiBase}/app-api/nikah/browse?profile=${id}`, { headers: { Authorization: `JWT ${token}` } });
+  return (await res.json()) as never;
+}
+
+export async function nikahInterests(token: string): Promise<{
+  ok: boolean; received?: NikahInterestVM[]; sent?: NikahInterestVM[]; mutual?: NikahInterestVM[];
+}> {
+  const res = await fetch(`${apiBase}/app-api/nikah/interest`, { headers: { Authorization: `JWT ${token}` } });
+  return (await res.json()) as never;
+}
+
+export async function nikahExpressInterest(token: string, to: number | string): Promise<{ ok: boolean; error?: string }> {
+  const res = await fetch(`${apiBase}/app-api/nikah/interest`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `JWT ${token}` },
+    body: JSON.stringify({ to }),
+  });
+  return (await res.json()) as never;
+}
+
+export async function nikahDecide(
+  token: string,
+  id: number | string,
+  action: "accept" | "decline" | "withdraw",
+): Promise<{ ok: boolean; status?: string; error?: string }> {
+  const res = await fetch(`${apiBase}/app-api/nikah/interest`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `JWT ${token}` },
+    body: JSON.stringify({ id, action }),
+  });
+  return (await res.json()) as never;
+}

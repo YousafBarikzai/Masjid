@@ -9,7 +9,9 @@ type Role =
   | "contributor"
   | "membership-manager"
   | "volunteer-manager"
-  | "volunteer-viewer";
+  | "volunteer-viewer"
+  | "nikah-admin"
+  | "nikah-reviewer";
 
 function hasRole(user: unknown, ...roles: Role[]): boolean {
   const u = user as { roles?: Role[] } | null | undefined;
@@ -41,6 +43,23 @@ export const userIsVolunteerManager = (user: unknown): boolean =>
 /** Field-level: volunteer managers only (internal notes, safeguarding). */
 export const isVolunteerManagerFieldLevel: FieldAccess = ({ req: { user } }) =>
   hasRole(user, "super-admin", "admin", "volunteer-manager");
+
+/** Nikah service staff (reviewers included — may read applications, add notes). */
+export const isNikahStaff: Access = ({ req: { user } }) =>
+  hasRole(user, "super-admin", "admin", "nikah-admin", "nikah-reviewer");
+
+/** Nikah administrators — approvals, introductions, safeguarding, decisions. */
+export const isNikahAdmin: Access = ({ req: { user } }) =>
+  hasRole(user, "super-admin", "admin", "nikah-admin");
+
+export const userIsNikahStaff = (user: unknown): boolean =>
+  hasRole(user, "super-admin", "admin", "nikah-admin", "nikah-reviewer");
+export const userIsNikahAdmin = (user: unknown): boolean =>
+  hasRole(user, "super-admin", "admin", "nikah-admin");
+
+/** Field-level: nikah admins only (verification, mosque-only identity data). */
+export const isNikahAdminFieldLevel: FieldAccess = ({ req: { user } }) =>
+  hasRole(user, "super-admin", "admin", "nikah-admin");
 
 /** Anyone (public read for site content). */
 export const anyone: Access = () => true;

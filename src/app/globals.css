@@ -2278,3 +2278,45 @@ a.camp-card:hover { transform: translateY(-5px); box-shadow: 0 24px 50px -30px r
   background: rgba(255,255,255,.06); border-color: rgba(244,239,226,.2); color: var(--ink, #f4efe2);
 }
 [data-theme="dark"] .vw-general { background: rgba(196,149,28,.08); }
+
+/* ============================== Nikah service ============================== */
+.nk-promises { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 8px 0 4px; }
+@media (max-width: 640px) { .nk-promises { grid-template-columns: 1fr; } }
+.nk-promise { display: flex; gap: 12px; align-items: flex-start; background: #fffdf8; border: 1px solid #e4dcc8; border-radius: 14px; padding: 16px 18px; }
+.nk-promise__icon { font-size: 1.5rem; }
+.nk-promise p { margin: 0; font-size: .93rem; line-height: 1.55; }
+
+.nk-who { display: inline-block; margin-left: 8px; font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; border-radius: 999px; padding: 2px 9px; vertical-align: middle; }
+.nk-who--members { background: #e7f4ec; color: #0f6a45; }
+.nk-who--mosque { background: #efe9f7; color: #5b3a8e; }
+.nk-help { margin: 0; color: var(--muted); font-size: .85rem; }
+
+.nk-panel { background: #fff; border: 1px solid #e4dcc8; border-radius: 16px; padding: 20px; display: grid; gap: 14px; margin-top: 16px; }
+.nk-panel h3 { margin: 6px 0 0; font-size: 1.05rem; }
+.nk-quiet { color: var(--muted); font-size: .9rem; margin: 0; }
+
+.nk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 700px) { .nk-grid { grid-template-columns: 1fr; } }
+.nk-card { background: #fffdf8; border: 1px solid #e4dcc8; border-radius: 14px; padding: 14px 16px; display: grid; gap: 9px; text-align: left; font: inherit; }
+.nk-card p { margin: 0; font-size: .92rem; line-height: 1.55; }
+.nk-card--tap { cursor: pointer; transition: all .12s ease; }
+.nk-card--tap:hover { border-color: var(--green-2); transform: translateY(-1px); box-shadow: 0 6px 16px -8px rgba(16,24,40,.18); }
+.nk-card--mutual { border-color: var(--gold); background: #fffbf0; }
+.nk-card--preview { border-style: dashed; }
+.nk-card__head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.nk-ref { font-weight: 800; color: var(--green); letter-spacing: .04em; }
+.nk-facts { display: flex; flex-wrap: wrap; gap: 6px; }
+.nk-fact { background: #eef5f1; color: #0b3d2e; border-radius: 999px; padding: 3px 11px; font-size: .82rem; font-weight: 600; }
+.nk-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.nk-filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.nk-filters input, .nk-filters select { border: 1.5px solid #e0d8c4; border-radius: 10px; padding: 9px 12px; font: inherit; background: #fffdf8; min-height: 42px; }
+
+.nk-modal { position: fixed; inset: 0; background: rgba(8, 31, 21, .55); display: grid; place-items: center; padding: 16px; z-index: 200; }
+.nk-modal__card { background: #fff; border-radius: 16px; padding: 22px; max-width: 560px; width: 100%; max-height: 86vh; overflow-y: auto; display: grid; gap: 12px; }
+.nk-modal__card textarea { border: 1.5px solid #e0d8c4; border-radius: 10px; padding: 11px 13px; font: inherit; width: 100%; }
+
+[data-theme="dark"] .nk-panel, [data-theme="dark"] .nk-card, [data-theme="dark"] .nk-promise, [data-theme="dark"] .nk-modal__card {
+  background: rgba(20, 34, 27, .96); border-color: rgba(244,239,226,.16);
+}
+[data-theme="dark"] .nk-fact { background: rgba(244,239,226,.1); color: var(--ink, #f4efe2); }
+[data-theme="dark"] .nk-filters input, [data-theme="dark"] .nk-filters select { background: rgba(255,255,255,.06); border-color: rgba(244,239,226,.2); color: var(--ink, #f4efe2); }

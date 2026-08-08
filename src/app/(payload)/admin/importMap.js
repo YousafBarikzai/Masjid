@@ -37,6 +37,9 @@ import { PaymentStatusCell as PaymentStatusCell_kma0000000000000000000000006 } f
 import { FeePreview as FeePreview_kma00000000000000000000000000007 } from '@/payload/components/FeePreview'
 import { VolunteerStatusCell as VolunteerStatusCell_kma000000000000000000008 } from '@/payload/components/MemberStatusCell'
 import { VolunteersDashboard as VolunteersDashboard_kma000000000000000000009 } from '@/payload/components/VolunteersDashboard'
+import { NikahStatusCell as NikahStatusCell_kma0000000000000000000000010 } from '@/payload/components/MemberStatusCell'
+import { IntroStatusCell as IntroStatusCell_kma0000000000000000000000011 } from '@/payload/components/MemberStatusCell'
+import { NikahDashboard as NikahDashboard_kma00000000000000000000000012 } from '@/payload/components/NikahDashboard'
 import { FolderTableCell as FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { FolderField as FolderField_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { RoleGuide as RoleGuide_1ae8b8f2eb313b6e07a2fbd815409f4c } from '@/payload/components/RoleGuide'
@@ -87,6 +90,9 @@ export const importMap = {
   "@/payload/components/FeePreview#FeePreview": FeePreview_kma00000000000000000000000000007,
   "@/payload/components/MemberStatusCell#VolunteerStatusCell": VolunteerStatusCell_kma000000000000000000008,
   "@/payload/components/VolunteersDashboard#VolunteersDashboard": VolunteersDashboard_kma000000000000000000009,
+  "@/payload/components/MemberStatusCell#NikahStatusCell": NikahStatusCell_kma0000000000000000000000010,
+  "@/payload/components/MemberStatusCell#IntroStatusCell": IntroStatusCell_kma0000000000000000000000011,
+  "@/payload/components/NikahDashboard#NikahDashboard": NikahDashboard_kma00000000000000000000000012,
   "@payloadcms/next/rsc#FolderTableCell": FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@payloadcms/next/rsc#FolderField": FolderField_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@/payload/components/RoleGuide#RoleGuide": RoleGuide_1ae8b8f2eb313b6e07a2fbd815409f4c,
