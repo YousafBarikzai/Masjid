@@ -62,6 +62,8 @@ const PRAYER_CREATE = [...ADMINS, "prayer-times-manager"];
 const MEMBERSHIP = [...ADMINS, "membership-manager"];
 const VOLUNTEERS = [...ADMINS, "volunteer-manager", "volunteer-viewer"];
 const VOLUNTEERS_MANAGE = [...ADMINS, "volunteer-manager"];
+const NIKAH = [...ADMINS, "nikah-admin", "nikah-reviewer"];
+const NIKAH_ADMIN = [...ADMINS, "nikah-admin"];
 
 const GROUPS: Group[] = [
   {
@@ -136,6 +138,18 @@ const GROUPS: Group[] = [
       { label: "Volunteers", href: col("volunteers"), hint: "Everyone who registered — find, review & contact" },
       { label: "Volunteer activities", href: col("volunteer-categories"), addHref: add("volunteer-categories"), create: VOLUNTEERS_MANAGE, hint: "The options on the volunteer form" },
       { label: "Volunteer areas", href: col("volunteer-category-groups"), addHref: add("volunteer-category-groups"), create: VOLUNTEERS_MANAGE, hint: "The form's sections (Events, Ramadan…)" },
+    ],
+  },
+  {
+    key: "nikah",
+    label: "Nikah Service",
+    icon: "💠",
+    view: NIKAH,
+    items: [
+      { label: "Applications & members", href: col("nikah-profiles"), hint: "Review, verify, approve — the whole journey" },
+      { label: "Expressions of interest", href: col("nikah-interests"), view: NIKAH, hint: "Structured interests — no messaging, ever" },
+      { label: "Introductions", href: col("nikah-introductions"), view: NIKAH, hint: "NI-cases: wali contact, meetings, outcomes" },
+      { label: "Safeguarding (confidential)", href: col("nikah-cases"), view: NIKAH_ADMIN, hint: "Member reports — nikah admins only" },
     ],
   },
   {

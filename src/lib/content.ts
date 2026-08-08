@@ -53,6 +53,7 @@ export const nav: NavItem[] = [
       { label: "School Visits", href: "/services/school-visits" },
       { label: "Funeral Services", href: "/services/funeral" },
       { label: "Youth Programs", href: "/services/youth-programs" },
+      { label: "Nikah Matrimonial Service", href: "/nikah" },
     ],
   },
   {

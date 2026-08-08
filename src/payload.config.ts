@@ -39,6 +39,7 @@ import { AuditLog, withAudit } from "./payload/audit";
 import { Members, MembershipSettings } from "./payload/membership";
 import { MemberDocumentCategories, MemberDocuments, MemberNotices, seedMemberPortal } from "./payload/member-portal";
 import { Volunteers, VolunteerCategories, VolunteerCategoryGroups, seedVolunteerCategories } from "./payload/volunteers";
+import { NikahProfiles, NikahInterests, NikahIntroductions, NikahCases } from "./payload/nikah";
 import { ResourceDocuments } from "./payload/documents";
 import { Screens } from "./payload/screens";
 import { withHelp, withHelpGlobal } from "./payload/help";
@@ -183,6 +184,12 @@ export default buildConfig({
     withHelp(withAudit(Volunteers)),
     withHelp(withAudit(VolunteerCategories)),
     withHelp(withAudit(VolunteerCategoryGroups)),
+    withHelp(withAudit(NikahProfiles)),
+    withHelp(withAudit(NikahInterests)),
+    withHelp(withAudit(NikahIntroductions)),
+    // Safeguarding cases deliberately NOT in the shared audit log — strict
+    // need-to-know (nikah admins only), with actions recorded in the case.
+    withHelp(NikahCases),
     withHelp(withAudit(ResourceDocuments)),
     withHelp(AuditLog),
   ],
@@ -280,16 +287,17 @@ export default buildConfig({
         // Admin-managed menu: just make sure membership + volunteering are
         // reachable.
         let changed = false;
-        const ensure = (url: string, label: string) => {
+        const ensure = (url: string, label: string, parent: RegExp = /resources/i) => {
           const has = items.some((i) => i.url === url || (i.children ?? []).some((c) => c.url === url));
           if (has) return;
-          const resources = items.find((i) => /resources/i.test(String(i.label)) && Array.isArray(i.children));
-          if (resources) resources.children = [...(resources.children ?? []), { label, url }];
+          const group = items.find((i) => parent.test(String(i.label)) && Array.isArray(i.children));
+          if (group) group.children = [...(group.children ?? []), { label, url }];
           else items.push({ label, url });
           changed = true;
         };
         ensure("/membership", "Membership Form");
         ensure("/volunteer", "Volunteer With Us");
+        ensure("/nikah", "Nikah Matrimonial Service", /services/i);
         if (changed) {
           await payload.updateGlobal({ slug: "main-menu" as never, data: { items } as never });
           payload.logger.info("Added membership/volunteering links to the site menu.");
