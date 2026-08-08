@@ -215,10 +215,12 @@ workflows:
       google_play:
         credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
         track: internal
-        # Draft releases work before the app's store listing is complete;
-        # switch to false once the app is fully set up in the Play Console so
-        # each build goes straight out to internal testers.
-        submit_as_draft: true
+        # Straight to internal testers — no draft, no Console click: press
+        # Start build and every joined tester's phone updates via the Play
+        # Store (their one-time opt-in link already done). If Google ever
+        # rejects this with an "app is in draft status" error, complete the
+        # store listing once in Play Console and it works forever after.
+        submit_as_draft: false
 
   # ── iOS release — signed .ipa for TestFlight / App Store ──────────────────
   ios-release:
