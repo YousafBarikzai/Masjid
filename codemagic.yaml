@@ -198,11 +198,15 @@ workflows:
       - android/app/build/outputs/bundle/release/*.aab
       - mobile/android/app/build/outputs/bundle/release/*.aab
     publishing:
+      # Failure alerts only. Success emails here linked the .aab, which is a
+      # Play-publishing bundle a phone CANNOT install — it kept inviting
+      # confusing "Open with…" attempts. On success the bundle is already in
+      # Play Console (internal testing); installs go through the Play Store.
       email:
         recipients:
           - barikzai@gmail.com
         notify:
-          success: true
+          success: false
           failure: true
       # TestFlight-for-Android: push the signed bundle to the Play Store's
       # internal-testing track. Testers' phones then update through the Play
